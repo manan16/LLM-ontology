@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import OrderedDict
+import re
 from typing import Any
 
 
@@ -43,9 +44,14 @@ TPO_GROUP_TERMS = (
 )
 
 TPO_EXCLUSION_TERMS = (
+    "required by law",
     "research-related treatment",
+    "research-related treatment authorization",
     "authorization for research",
+    "authorization required",
+    "with authorization",
     "emergency",
+    "emergency directory",
     "directory",
     "employment records",
     "business associate",
@@ -53,6 +59,7 @@ TPO_EXCLUSION_TERMS = (
     "personal representative",
     "parent",
     "guardian",
+    "caretaker",
     "law enforcement",
     "public health",
     "disaster relief",
@@ -62,10 +69,19 @@ TPO_EXCLUSION_TERMS = (
     "judicial",
     "subpoena",
     "donation",
+    "organ",
     "whistleblower",
 )
 
-MAX_EVIDENCE_SNIPPETS_PER_ITEM = 3
+EMPLOYMENT_RECORD_TERMS = (
+    "employment record",
+    "employment records",
+    "held by a covered entity in its role as employer",
+    "covered entity as employer",
+    "as employer",
+)
+
+MAX_EVIDENCE_SNIPPETS_PER_ITEM = 4
 
 
 def build_context(rows: list[dict[str, Any]], max_chars: int = 8000) -> str:
@@ -75,9 +91,11 @@ def build_context(rows: list[dict[str, Any]], max_chars: int = 8000) -> str:
 
     items: list[str] = []
     seen_evidence: set[str] = set()
-    grouped_rows = _group_rows(rows)
+    grouped_rows = _group_rows(_filter_context_rows(rows))
 
     for row in grouped_rows:
+        if _is_employment_record_row(row):
+            continue
         statement_name = _clean(row.get("statement_name"))
         seed_name = _clean(row.get("seed_name"))
         evidence = _clean(row.get("evidence_text")) or _clean(row.get("source_chunk_text"))
@@ -88,6 +106,10 @@ def build_context(rows: list[dict[str, Any]], max_chars: int = 8000) -> str:
         block = _format_item(len(items) + 1, row, evidence)
         next_context = "\n\n".join([*items, block])
         if len(next_context) > max_chars:
+            if not items:
+                compact_block = _format_item(len(items) + 1, row, evidence, compact=True)
+                if len(compact_block) <= max_chars:
+                    items.append(compact_block)
             break
 
         items.append(block)
@@ -101,7 +123,7 @@ def build_context(rows: list[dict[str, Any]], max_chars: int = 8000) -> str:
 
 def _group_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     grouped: OrderedDict[str, dict[str, Any]] = OrderedDict()
-    for row in sorted(rows, key=_row_rank):
+    for source_index, row in enumerate(sorted(rows, key=_row_rank), start=1):
         key = _context_group_key(row)
         if not key:
             key = "|".join(
@@ -113,35 +135,59 @@ def _group_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 ]
             )
         if key not in grouped:
-            grouped[key] = _prepare_grouped_row(row)
+            grouped[key] = _prepare_grouped_row(row, source_index)
             continue
-        grouped[key] = _merge_grouped_row(grouped[key], row)
+        grouped[key] = _merge_grouped_row(grouped[key], row, source_index)
     return list(grouped.values())
 
 
+def _filter_context_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    has_evidence_rows = any(_has_context_evidence(row) for row in rows)
+    if not has_evidence_rows:
+        return rows
+    return [row for row in rows if not _is_missing_entity_placeholder(row)]
+
+
 def _context_group_key(row: dict[str, Any]) -> str:
-    if _is_tpo_row(row):
-        return f"group:{TPO_GROUP_NAME}"
+    semantic_group = get_semantic_group(row)
+    if semantic_group:
+        return f"group:{semantic_group}"
     statement_name = _clean(row.get("statement_name"))
     if statement_name:
         return f"statement:{statement_name}"
     return ""
 
 
-def _prepare_grouped_row(row: dict[str, Any]) -> dict[str, Any]:
-    prepared = dict(row)
+def get_semantic_group(row: dict[str, Any]) -> str | None:
+    """Return a semantic answer/context group for rows that should be merged."""
     if _is_tpo_row(row):
-        prepared["statement_name"] = TPO_GROUP_NAME
-        prepared["grouped_statements"] = [_clean(row.get("statement_name")) or TPO_GROUP_NAME]
+        return TPO_GROUP_NAME
+    return None
+
+
+def is_suppressed_context_row(row: dict[str, Any]) -> bool:
+    return _is_employment_record_row(row)
+
+
+def _prepare_grouped_row(row: dict[str, Any], source_index: int) -> dict[str, Any]:
+    prepared = dict(row)
+    semantic_group = get_semantic_group(row)
+    if semantic_group:
+        prepared["semantic_group"] = semantic_group
+        prepared["statement_name"] = semantic_group
+        prepared["grouped_statements"] = [_clean(row.get("statement_name")) or semantic_group]
     evidence = _clean(row.get("evidence_text")) or _clean(row.get("source_chunk_text"))
     prepared["evidence_snippets"] = [evidence] if evidence else []
+    prepared["evidence_refs"] = [source_index] if evidence else []
     return prepared
 
 
-def _merge_grouped_row(base: dict[str, Any], row: dict[str, Any]) -> dict[str, Any]:
+def _merge_grouped_row(base: dict[str, Any], row: dict[str, Any], source_index: int) -> dict[str, Any]:
     merged = dict(base)
-    if _is_tpo_row(base) or _is_tpo_row(row):
-        merged["statement_name"] = TPO_GROUP_NAME
+    semantic_group = _clean(base.get("semantic_group")) or get_semantic_group(row)
+    if semantic_group:
+        merged["semantic_group"] = semantic_group
+        merged["statement_name"] = semantic_group
         merged["grouped_statements"] = _combine_lists(
             merged.get("grouped_statements"),
             [_clean(row.get("statement_name"))],
@@ -152,6 +198,12 @@ def _merge_grouped_row(base: dict[str, Any], row: dict[str, Any]) -> dict[str, A
             evidence,
             limit=MAX_EVIDENCE_SNIPPETS_PER_ITEM,
         )
+        if evidence:
+            merged["evidence_refs"] = _append_limited_unique(
+                merged.get("evidence_refs"),
+                source_index,
+                limit=MAX_EVIDENCE_SNIPPETS_PER_ITEM,
+            )
     for key in (
         "seed_name",
         "relationship",
@@ -164,7 +216,7 @@ def _merge_grouped_row(base: dict[str, Any], row: dict[str, Any]) -> dict[str, A
         "source_document",
     ):
         merged[key] = _combine_values(merged.get(key), row.get(key))
-    if not _is_tpo_row(merged):
+    if not _clean(merged.get("semantic_group")):
         merged["evidence_text"] = _combine_limited_values(
             merged.get("evidence_text"),
             row.get("evidence_text"),
@@ -181,9 +233,9 @@ def _merge_grouped_row(base: dict[str, Any], row: dict[str, Any]) -> dict[str, A
     return merged
 
 
-def _format_item(index: int, row: dict[str, Any], evidence: str) -> str:
+def _format_item(index: int, row: dict[str, Any], evidence: str, compact: bool = False) -> str:
     labels = _statement_type(row) or _join_labels(row.get("statement_labels")) or _join_labels(row.get("seed_labels"))
-    statement = TPO_GROUP_NAME if _is_tpo_row(row) else _clean(row.get("statement_name")) or _clean(row.get("related_name")) or "Unknown"
+    statement = _clean(row.get("semantic_group")) or _clean(row.get("statement_name")) or _clean(row.get("related_name")) or "Unknown"
     actor = _clean(row.get("seed_name"))
     if actor == statement:
         actor = _clean(row.get("related_name"))
@@ -195,17 +247,20 @@ def _format_item(index: int, row: dict[str, Any], evidence: str) -> str:
     _append(lines, "Type", labels)
     _append(lines, "Entity/Actor", actor)
     grouped_statements = _clean_grouped_statements(row)
-    if grouped_statements:
+    if grouped_statements and not compact:
         lines.append("Grouped statements:")
         lines.extend(f"- {statement_name}" for statement_name in grouped_statements)
-    _append(lines, "Relationship", _clean(row.get("relationship")))
+    if not compact:
+        _append(lines, "Relationship", _clean(row.get("relationship")))
     _append(lines, "Evidence", _format_evidence(row, evidence))
-    _append(lines, "Citation", _clean(row.get("citation")))
-    _append(lines, "Section", _clean(row.get("section_title")))
-    _append(lines, "Page", _clean(row.get("page_number")))
-    _append(lines, "Article", _clean(row.get("article_number")))
-    _append(lines, "Clause", _clean(row.get("clause_number")))
-    _append(lines, "Source Document", _clean(row.get("source_document")))
+    _append(lines, "Evidence References", _format_evidence_references(row, index, statement))
+    if not compact:
+        _append(lines, "Citation", _clean_citation(row.get("citation")))
+        _append(lines, "Section", _clean(row.get("section_title")))
+        _append(lines, "Page", _clean(row.get("page_number")))
+        _append(lines, "Article", _clean(row.get("article_number")))
+        _append(lines, "Clause", _clean(row.get("clause_number")))
+        _append(lines, "Source Document", _clean(row.get("source_document")))
     return "\n".join(lines)
 
 
@@ -245,7 +300,37 @@ def _is_tpo_row(row: dict[str, Any]) -> bool:
         f"{_clean(row.get('statement_name'))} "
         f"{_clean(row.get('evidence_text'))}"
     ).lower()
-    return any(term in text for term in TPO_GROUP_TERMS) and not any(term in text for term in TPO_EXCLUSION_TERMS)
+    return any(term in text for term in TPO_GROUP_TERMS) and not any(
+        _contains_exclusion_term(text, term) for term in TPO_EXCLUSION_TERMS
+    )
+
+
+def _is_employment_record_row(row: dict[str, Any]) -> bool:
+    text = (
+        f"{_clean(row.get('statement_name'))} "
+        f"{_clean(row.get('related_name'))} "
+        f"{_clean(row.get('evidence_text'))} "
+        f"{_clean(row.get('source_chunk_text'))}"
+    ).lower()
+    return any(term in text for term in EMPLOYMENT_RECORD_TERMS)
+
+
+def _has_context_evidence(row: dict[str, Any]) -> bool:
+    return bool(_clean(row.get("evidence_text")) or _clean(row.get("source_chunk_text")))
+
+
+def _is_missing_entity_placeholder(row: dict[str, Any]) -> bool:
+    labels = set(str(label) for label in _as_list(row.get("seed_labels")))
+    labels.update(str(label) for label in _as_list(row.get("related_labels")))
+    labels.update(str(label) for label in _as_list(row.get("statement_labels")))
+    statement_name = _clean(row.get("statement_name"))
+    return not _has_context_evidence(row) and ("Entity" in labels or not statement_name or statement_name == "Unknown")
+
+
+def _contains_exclusion_term(text: str, term: str) -> bool:
+    if term == "organ":
+        return re.search(r"\borgan\b", text) is not None
+    return term in text
 
 
 def _statement_type(row: dict[str, Any]) -> str:
@@ -279,6 +364,20 @@ def _combine_values(left: Any, right: Any) -> str:
         if text and text not in seen:
             seen.add(text)
             cleaned.append(text)
+    return "; ".join(cleaned)
+
+
+def _clean_citation(value: Any) -> str:
+    values = [_clean(item) for item in _split_joined_value(value)]
+    cleaned = []
+    seen: set[str] = set()
+    for item in values:
+        if not item or item in seen:
+            continue
+        seen.add(item)
+        cleaned.append(item)
+    if len(cleaned) > 4:
+        return ""
     return "; ".join(cleaned)
 
 
@@ -326,7 +425,7 @@ def _clean_grouped_statements(row: dict[str, Any]) -> list[str]:
         if statement not in seen and statement != TPO_GROUP_NAME:
             seen.add(statement)
             unique.append(statement)
-    return unique if len(unique) > 1 else []
+    return unique
 
 
 def _format_evidence(row: dict[str, Any], fallback: str) -> str:
@@ -334,6 +433,23 @@ def _format_evidence(row: dict[str, Any], fallback: str) -> str:
     if not snippets:
         snippets = [_clean(item) for item in _split_joined_value(fallback) if _clean(item)]
     return "; ".join(snippets[:MAX_EVIDENCE_SNIPPETS_PER_ITEM])
+
+
+def _format_evidence_references(row: dict[str, Any], context_index: int, statement: str) -> str:
+    refs = []
+    for ref in _as_list(row.get("evidence_refs")):
+        try:
+            refs.append(f"[{int(ref)}]")
+        except (TypeError, ValueError):
+            continue
+    if not refs:
+        refs = [f"[{context_index}]"]
+    source_document = _clean(row.get("source_document"))
+    prefix = ", ".join(refs[:MAX_EVIDENCE_SNIPPETS_PER_ITEM])
+    details = [prefix, statement]
+    if source_document:
+        details.append(source_document)
+    return ", ".join(details)
 
 
 def _split_joined_value(value: Any) -> list[str]:

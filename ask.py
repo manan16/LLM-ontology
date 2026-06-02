@@ -24,7 +24,7 @@ def main() -> None:
     context = build_context(rows)
 
     if args.debug_retrieval:
-        _print_debug_retrieval(retriever.last_query_plan, retriever.last_debug_rows)
+        _print_debug_retrieval(retriever.last_query_plan, retriever.last_debug_rows, retriever.last_expansion_debug)
         print()
 
     if args.show_context:
@@ -36,7 +36,11 @@ def main() -> None:
     print(answer)
 
 
-def _print_debug_retrieval(plan: QueryPlan | None, rows: list[dict[str, object]]) -> None:
+def _print_debug_retrieval(
+    plan: QueryPlan | None,
+    rows: list[dict[str, object]],
+    expansion_debug: dict[str, list[dict[str, object]]] | None = None,
+) -> None:
     print("Retrieval debug:")
     if plan is None:
         print("(no query plan built)")
@@ -46,15 +50,42 @@ def _print_debug_retrieval(plan: QueryPlan | None, rows: list[dict[str, object]]
     print(f"Detected phrases: {_join(plan.phrases)}")
     print(f"Detected actors: {_join(plan.detected_actors)}")
     print(f"Detected objects: {_join(plan.detected_objects)}")
+    print(f"Concept groups: {plan.concept_groups or '(none)'}")
+    print(f"Ambiguous terms: {_join(plan.ambiguous_terms)}")
     print(f"Expansion terms: {_join(plan.expansion_terms)}")
     print(f"Sub-questions: {_join(plan.sub_questions)}")
+    if expansion_debug:
+        _print_debug_bucket("Entity seeds", expansion_debug.get("seeds", []))
+        _print_debug_bucket("Expanded evidence rows", expansion_debug.get("expanded", []))
+        _print_debug_bucket("Excluded rows", expansion_debug.get("excluded", []))
+        _print_debug_bucket("Final selected context rows", expansion_debug.get("selected", []))
     print("Top rows:")
     for index, row in enumerate(rows[:10], start=1):
         name = row.get("statement_name") or row.get("seed_name") or "(unknown)"
         route = row.get("query_route") or "(unknown route)"
         score = row.get("score") or 0
         relationship = row.get("relationship") or ""
-        print(f"{index}. score={score} route={route} statement={name} relationship={relationship}")
+        source_group = row.get("source_group") or "unknown"
+        source_document = row.get("source_document") or ""
+        matched_groups = row.get("matched_concept_groups") or []
+        matched_terms = row.get("matched_terms") or []
+        penalties = row.get("penalties") or []
+        print(
+            f"{index}. score={score} route={route} source={source_group} "
+            f"source_document={source_document} statement={name} relationship={relationship} "
+            f"matched={matched_groups} terms={matched_terms} penalties={penalties}"
+        )
+
+
+def _print_debug_bucket(label: str, rows: list[dict[str, object]]) -> None:
+    print(f"{label}: {len(rows)}")
+    for index, row in enumerate(rows[:5], start=1):
+        name = row.get("statement") or row.get("seed") or "(unknown)"
+        print(
+            f"  {index}. score={row.get('score') or 0} route={row.get('route') or '(unknown route)'} "
+            f"source={row.get('source_group') or 'unknown'} statement={name} "
+            f"matched={row.get('matched_concept_groups') or []} penalties={row.get('penalties') or []}"
+        )
 
 
 def _join(values: list[str]) -> str:

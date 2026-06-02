@@ -69,21 +69,34 @@ Instructions:
    * prefer categories that are explicitly permitted or excepted
    * do not include “with authorization” categories
    * do not say “authorization is not required” unless the evidence supports a permitted disclosure/use category
-   * phrase the answer as “the graph retrieved the following permitted categories” if the evidence may be incomplete
+   * use this phrasing for the direct answer: “The graph retrieved the following HIPAA-permitted categories where a Covered Entity may use or disclose PHI without relying on a standard individual authorization, subject to the conditions shown in the retrieved evidence.”
+   * always include this caveat: “The retrieved graph evidence may not be exhaustive.”
 9. Do not rename a context item to a different category unless the statement name or evidence clearly supports that category.
 10. If [1] is labeled Treatment, Payment, and Health Care Operations, do not cite it as Emergency Disclosure - Directory.
 11. Use the context item’s statement name as the category unless grouping metadata explicitly says otherwise.
-12. When evidence contains conditions, say “subject to conditions” and summarize only the conditions shown in that evidence.
-13. If the graph contains only partial evidence, say: “The retrieved graph evidence may not be exhaustive.”
-14. Use concise, clean citations. Prefer:
+12. Do not transfer conditions from one category to another.
+13. Attach conditions only when they appear in the same evidence item or directly linked grouped evidence.
+14. For Treatment, Payment, and Health Care Operations, do not say the individual must be informed or given an opportunity to agree/object unless that exact condition appears in the TPO evidence itself.
+15. Do not mix emergency directory conditions into Treatment, Payment, and Health Care Operations.
+16. When evidence contains conditions, say “subject to conditions” and summarize only the conditions shown in that evidence.
+17. If the graph contains only partial evidence, say: “The retrieved graph evidence may not be exhaustive.”
+18. Use concise, clean evidence references. Prefer:
 
 * Evidence item number, e.g. [1], [2]
 * Statement name
 * Source document
+* Example: Evidence Reference: [4], Treatment, Payment, and Health Care Operations, hipaa.pdf
+* For grouped evidence, use: Evidence References: [4], [5], [6]
   Avoid messy combined citations such as repeated section numbers or raw internal IDs unless no cleaner citation is available.
 
-15. Include an “Evidence used” section at the end with the most relevant evidence item numbers and statement names.
-16. Do not provide legal advice. Present retrieved regulatory information only.
+19. Include an “Evidence used” section at the end with the most relevant evidence item numbers and statement names.
+20. Do not provide legal advice. Present retrieved regulatory information only.
+21. Use the highest-ranked evidence first; lower-ranked evidence should not override a stronger, more complete concept match.
+22. If retrieved evidence comes from multiple regulations or source documents, separate the answer by source/regulation when that helps avoid mixing meanings.
+23. If the user uses an ambiguous term such as “provider” and multiple meanings are retrieved, mention the ambiguity briefly and separate meanings such as health care provider and AI system provider.
+24. Do not say a regulation is missing merely because its rows were ranked lower; say only what the retrieved evidence supports.
+25. For high-risk AI system questions, do not answer from unrelated HIPAA evidence that only matches the generic word “provider.”
+26. For high-risk AI risk-management questions, answer from evidence that mentions high-risk AI systems, AI systems, risk management, controls, safeguards, documentation, monitoring, human oversight, conformity assessment, accuracy, robustness, or cybersecurity. Do not let unrelated HIPAA authorization, PHI, or minimum-necessary evidence override those items.
 
 Answer format:
 

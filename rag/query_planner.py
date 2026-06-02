@@ -295,7 +295,28 @@ EXPANSION_TERMS = {
     "documentation": ["technical documentation", "record keeping", "logs", "evidence", "instructions for use"],
     "technical documentation": ["documentation", "record keeping", "instructions for use", "evidence"],
     "risk": ["mitigation", "safeguard", "control", "risk management", "fundamental rights"],
-    "risk management": ["mitigation", "safeguard", "control", "risk", "fundamental rights"],
+    "risk management": [
+        "risk management system",
+        "risk mitigation",
+        "residual risk",
+        "known and foreseeable risks",
+        "testing",
+        "validation",
+        "accuracy",
+        "robustness",
+        "cybersecurity",
+        "human oversight",
+        "technical documentation",
+        "post-market monitoring",
+        "conformity assessment",
+        "control measures",
+        "safeguards",
+        "mitigation",
+        "safeguard",
+        "control",
+        "risk",
+        "fundamental rights",
+    ],
 }
 
 INTENT_RULES = [
@@ -355,6 +376,9 @@ class QueryPlan:
     preferred_relationships: list[str] = field(default_factory=list)
     expansion_terms: list[str] = field(default_factory=list)
     sub_questions: list[str] = field(default_factory=list)
+    concept_groups: dict[str, list[str]] = field(default_factory=dict)
+    required_concepts: list[str] = field(default_factory=list)
+    ambiguous_terms: list[str] = field(default_factory=list)
     needs_rewrite: bool = False
     needs_decomposition: bool = False
     has_negated_authorization: bool = False
@@ -388,6 +412,9 @@ def build_query_plan(question: str, conversation_history: list[str] | None = Non
     sub_questions = decompose_question(effective_question)
     expansion_terms = expand_terms([*phrases, *terms])
     domains = _detect_domains([*phrases, *terms, *expansion_terms])
+    concept_groups = _build_concept_groups(effective_question, phrases, terms, modalities, intent)
+    required_concepts = [name for name, values in concept_groups.items() if values]
+    ambiguous_terms = _detect_ambiguous_terms(effective_question, terms)
 
     if category == "follow_up_question" and needs_rewrite and not history:
         category = "unsupported_or_unclear"
@@ -407,6 +434,9 @@ def build_query_plan(question: str, conversation_history: list[str] | None = Non
         preferred_relationships=relationships,
         expansion_terms=expansion_terms,
         sub_questions=sub_questions,
+        concept_groups=concept_groups,
+        required_concepts=required_concepts,
+        ambiguous_terms=ambiguous_terms,
         needs_rewrite=needs_rewrite and bool(rewritten),
         needs_decomposition=bool(sub_questions),
         has_negated_authorization=has_negated_authorization,
@@ -530,6 +560,106 @@ def _detect_domains(terms: list[str]) -> list[str]:
     return domains
 
 
+def _build_concept_groups(
+    question: str,
+    phrases: list[str],
+    terms: list[str],
+    modalities: list[str],
+    intent: str,
+) -> dict[str, list[str]]:
+    text = normalize_question(question)
+    term_set = set(phrases) | set(terms)
+    groups: dict[str, list[str]] = {}
+
+    actors = []
+    if "provider" in term_set or "provider" in text:
+        actors.extend(["provider", "providers"])
+    if "deployer" in term_set or "deployer" in text:
+        actors.extend(["deployer", "deployers"])
+    if "health care provider" in text:
+        actors.extend(["health care provider", "health care providers"])
+    if "covered entity" in term_set:
+        actors.append("covered entity")
+    if actors:
+        groups["actor"] = _dedupe_raw(actors)
+
+    objects = []
+    if "high-risk ai system" in term_set or "high risk ai system" in text or "high-risk" in text:
+        objects.extend(["high-risk ai system", "high risk ai system", "high-risk artificial intelligence system"])
+    if "ai system" in term_set or "ai system" in text:
+        objects.extend(["ai system", "artificial intelligence system"])
+    if "phi" in term_set or "protected health information" in term_set:
+        objects.extend(["phi", "protected health information"])
+    if objects:
+        groups["object"] = _dedupe_raw(objects)
+
+    topics = []
+    if any(
+        item in text
+        for item in (
+            "risk management",
+            "risk-manag",
+            "risk mitigation",
+            "residual risk",
+            "known and foreseeable risk",
+            "control measure",
+            "safeguard",
+            "testing",
+            "validation",
+            "accuracy",
+            "robustness",
+            "cybersecurity",
+        )
+    ):
+        topics.extend(
+            [
+                "risk management",
+                "risk management system",
+                "risk mitigation",
+                "residual risk",
+                "known and foreseeable risks",
+                "control measures",
+                "safeguard",
+                "safeguards",
+                "testing",
+                "validation",
+                "accuracy",
+                "robustness",
+                "cybersecurity",
+            ]
+        )
+    if topics:
+        groups["topic"] = _dedupe_raw(topics)
+
+    modality = []
+    if intent == "obligations" or any(item in text for item in ("obligation", "required", "must", "should")):
+        modality.extend(["obligation", "obligations", "requirement", "requirements", "compliance", "must", "should"])
+    if "documentation" in term_set or "documentation" in text:
+        modality.extend(["documentation", "technical documentation", "instructions for use"])
+    if modalities:
+        modality.extend(modalities)
+    if modality:
+        groups["modality"] = _dedupe_raw(modality)
+
+    domain = []
+    if any(item in text for item in ("eu ai act", "high-risk ai", "ai system", "artificial intelligence")):
+        domain.extend(["eu ai act", "eu_ai_act", "regulation (eu) 2024/1689", "this regulation"])
+    if any(item in text for item in ("hipaa", "phi", "covered entity", "health care provider")):
+        domain.extend(["hipaa", "protected health information", "covered entity"])
+    if domain:
+        groups["domain"] = _dedupe_raw(domain)
+
+    return groups
+
+
+def _detect_ambiguous_terms(question: str, terms: list[str]) -> list[str]:
+    text = normalize_question(question)
+    ambiguous = []
+    if "provider" in terms or "provider" in text:
+        ambiguous.append("provider")
+    return ambiguous
+
+
 def _is_follow_up(question: str) -> bool:
     text = normalize_question(question)
     return (
@@ -573,6 +703,17 @@ def _dedupe(values: list[str]) -> list[str]:
     unique: list[str] = []
     for value in values:
         normalized = _canonical_phrase(value)
+        if normalized and normalized not in seen:
+            seen.add(normalized)
+            unique.append(normalized)
+    return unique
+
+
+def _dedupe_raw(values: list[str]) -> list[str]:
+    seen: set[str] = set()
+    unique: list[str] = []
+    for value in values:
+        normalized = value.lower().strip()
         if normalized and normalized not in seen:
             seen.add(normalized)
             unique.append(normalized)
