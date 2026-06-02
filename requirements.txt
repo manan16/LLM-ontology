@@ -1,0 +1,8 @@
+pydantic>=2.7,<3.0
+pydantic-settings>=2.2,<3.0
+python-dotenv>=1.0,<2.0
+neo4j>=5.20,<6.0
+requests>=2.31,<3.0
+PyPDF>=4.2,<5.0
+tenacity>=8.2,<9.0
+pytest>=8.2,<9.0

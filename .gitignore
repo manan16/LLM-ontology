@@ -1,0 +1,13 @@
+kep/
+.env
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.DS_Store
+data/
+*.png
+*.csv
+Neo4j-*.txt
