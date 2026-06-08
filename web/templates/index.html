@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TrustGraph Health</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <div class="demo-shell">
+      <header class="demo-header">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+          </div>
+          <div>
+            <h1>TrustGraph Health</h1>
+            <p>Evidence-backed compliance reasoning for healthcare AI</p>
+            <strong class="sr-only">TrustGraph Health</strong>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <div class="status-strip" aria-label="System status">
+            <span class="status-badge good">Knowledge graph loaded</span>
+            <span class="status-badge good">Evidence search active</span>
+            <span class="status-badge demo">Research demo</span>
+          </div>
+          <button id="reset-demo-button" type="button" class="reset-demo-button">Reset demo</button>
+        </div>
+      </header>
+
+      <main id="demo-grid" class="demo-grid">
+        <aside id="left-sidebar" class="panel session-panel" aria-label="Demo presets and session history">
+          <div class="panel-heading">
+            <div>
+              <h2>Demo presets</h2>
+            </div>
+            <div class="sidebar-actions">
+              <button id="sidebar-toggle-button" type="button" class="icon-button" aria-label="Collapse sidebar">‹</button>
+              <button id="new-session-button" type="button" class="icon-button" aria-label="Start a new session">＋</button>
+            </div>
+          </div>
+
+          <nav class="sidebar-nav" aria-label="Workspace navigation">
+            <button type="button" class="rail-icon active" title="Demo presets" aria-label="Demo presets">☷</button>
+            <button type="button" class="rail-icon" title="Questions" aria-label="Questions">▣</button>
+            <button type="button" class="rail-icon" title="History" aria-label="History">◷</button>
+            <button type="button" class="rail-icon" title="Evidence" aria-label="Evidence">▤</button>
+            <button type="button" class="rail-icon" title="Settings" aria-label="Settings">⚙</button>
+          </nav>
+
+          <section class="demo-prompts" aria-labelledby="demo-prompts-title">
+            <div class="section-title sr-only">
+              <h3 id="demo-prompts-title">Demo presets</h3>
+              <span id="question-count">5 suggested questions</span>
+            </div>
+            <div id="demo-question-list" class="demo-question-list"></div>
+          </section>
+
+          <details class="session-questions" aria-labelledby="session-questions-title" open>
+            <summary class="section-title">
+              <h3 id="session-questions-title">Session history</h3>
+              <button id="clear-session-button" type="button" class="clear-session-button">Clear</button>
+            </summary>
+            <span id="session-state" class="session-state-pill">Ready</span>
+            <div id="question-cards" class="question-cards"></div>
+          </details>
+        </aside>
+
+        <div class="resize-handle" data-resize-handle="left" role="separator" aria-label="Resize sidebar"></div>
+
+        <section class="panel journey-panel" aria-label="Graph journey">
+          <form id="question-form" class="question-form composer-card" autocomplete="off">
+            <div class="composer-main">
+              <label for="question-input">Question composer</label>
+              <textarea id="question-input" rows="2" maxlength="500" placeholder="Ask about GDPR, HIPAA, or the EU AI Act..."></textarea>
+            <div class="composer-footer">
+              <span id="char-count">0 / 500</span>
+                <button id="ask-button" type="submit">Ask compliance assistant</button>
+              </div>
+            </div>
+            <div class="response-state-card" aria-label="Response state">
+              <strong>Response state</strong>
+              <span id="composer-source-badge" class="active-response-state">Live pipeline run</span>
+              <span class="state-option live"><i></i>Live pipeline run</span>
+              <span class="state-option cached"><i></i>Cached demo response</span>
+              <span class="state-option timeout"><i></i>Live retrieval timed out</span>
+            </div>
+          </form>
+
+          <section class="journey-card">
+            <div class="panel-heading">
+              <h2>Graph Journey</h2>
+              <button id="advanced-graph-button" type="button" class="secondary-button">View details</button>
+            </div>
+            <div id="stepper" class="stepper"></div>
+          </section>
+
+          <section class="graph-card">
+            <div class="graph-card-heading">
+              <div>
+                <h2>Knowledge graph path <span aria-hidden="true">ⓘ</span></h2>
+              </div>
+            </div>
+            <div id="graph-stage" class="graph-stage"></div>
+            <section id="technical-details-drawer" class="technical-details-drawer" aria-label="Technical details"></section>
+          </section>
+
+          <div class="panel-heading legacy-heading">
+            <div>
+              <p>Knowledge graph path</p>
+              <h2>Graph Journey</h2>
+            </div>
+          </div>
+        </section>
+
+        <div class="resize-handle" data-resize-handle="right" role="separator" aria-label="Resize assessment panel"></div>
+
+        <aside class="panel answer-panel" aria-label="Compliance answer and evidence">
+          <div class="panel-heading">
+            <div>
+              <p>Compliance Assessment</p>
+              <h2>Evidence-backed answer</h2>
+            </div>
+            <button id="copy-answer-button" type="button" class="secondary-button">Copy</button>
+          </div>
+
+          <div id="answer-content" class="answer-content"></div>
+          <div id="evidence-content" class="evidence-content"></div>
+        </aside>
+      </main>
+
+      <footer class="demo-footer">
+        <span>Research demo only — not legal advice.</span>
+        <span>Compliance-aware RAG + knowledge graph for healthcare AI.</span>
+      </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+  </body>
+</html>
