@@ -282,6 +282,44 @@ def test_source_card_keeps_document_citation_title_and_snippet_separate() -> Non
     assert "The question asks when a DPIA is required." in result
 
 
+def test_source_document_is_not_rendered_as_section_or_article() -> None:
+    result = _run_policy_probe(
+        """({
+          safe: api.safeEvidenceReference("gdpr.pdf", "gdpr.pdf"),
+          card: api.renderEvidenceCard({
+            regulation: "GDPR",
+            sourceDocument: "gdpr.pdf",
+            reference: "gdpr.pdf",
+            statementTitle: "Data protection impact assessment",
+            concept: "DPIA",
+            passage: "DPIA evidence.",
+            explanation: "Selected for DPIA evidence."
+          })
+        })"""
+    )
+
+    assert result["safe"] == ""
+    assert "<dt>Source document</dt><dd>gdpr.pdf</dd>" in result["card"]
+    assert "<dt>Section or article</dt><dd>Not available</dd>" in result["card"]
+    assert "gdpr.pdf / gdpr.pdf" not in result["card"]
+
+
+def test_retrieval_scores_use_qualitative_labels_not_confidence_percentages() -> None:
+    result = _run_policy_probe(
+        """({
+          high: api.formatScore(527),
+          medium: api.formatScore(0.5),
+          low: api.formatScore(0.2)
+        })"""
+    )
+
+    assert result == {
+        "high": "High match",
+        "medium": "Medium match",
+        "low": "Low match",
+    }
+
+
 def test_graph_labeling_and_regulation_split_are_demo_safe() -> None:
     result = _run_policy_probe(
         """(() => {

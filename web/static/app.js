@@ -150,8 +150,19 @@ document.addEventListener("click", (event) => {
   const questionCard = event.target.closest("[data-question-id]");
   if (questionCard) {
     state.selectedId = questionCard.dataset.questionId;
+    const selected = getSelectedQuestion();
+    if (selected && els.input) {
+      els.input.value = selected.question;
+      updateCharacterCount();
+    }
     persistSelectedQuestion();
     render();
+  }
+
+  const sourcesToggle = event.target.closest("[data-sources-toggle]");
+  if (sourcesToggle) {
+    toggleSourcesForSelected();
+    return;
   }
 
   const technicalTab = event.target.closest("[data-technical-tab]");
@@ -201,6 +212,7 @@ async function submitQuestion(question) {
     error: "",
     usedCache: false,
     responseSource: "live",
+    sourcesCollapsed: false,
   };
 
   state.questions = state.questions.map((entry) => ({ ...entry, expanded: false }));
@@ -311,11 +323,12 @@ function normalizeBackendResponse(question, data, usedCache, responseSource = "l
     const sourceDocument = item.source_document || item.document || item.source || "Unknown source document";
     const statementTitle = item.statement || item.statement_name || item.title || "Matched regulatory statement";
     const regulation = regulationFromText(`${item.source_group || ""} ${sourceDocument} ${statementTitle}`);
+    const reference = citationFromEvidenceItem(item, sourceDocument);
     return {
       id: String(item.id || index + 1),
       regulation,
       sourceDocument,
-      reference: item.citation || item.section || sourceDocument || "Evidence passage",
+      reference,
       statementTitle,
       concept: item.matched_concept || item.concept || statementTitle || "Matched compliance concept",
       explanation: item.why_selected || explainEvidenceUse(regulation, statementTitle, question),
@@ -824,7 +837,7 @@ function renderTechnicalTabContent(selected, tabId) {
     const scores = getRetrievalScores(selected);
     if (!scores.length) return `${renderTechnicalSummary("Why this evidence was retrieved", "The backend did not expose ranked scores for this response.")}${renderTechnicalEmpty("No retrieval scores available for this response.")}`;
     return `${renderTechnicalSummary("Why this evidence was retrieved", "Top passages were selected because they matched the routed regulation and compliance concepts.")}<div class="technical-table">${scores.map((item) => `
-      <div><strong>${escapeHtml(item.reference)}</strong><span>${escapeHtml(item.regulation)}</span><em>${formatScore(item.score)}</em></div>
+      <div><strong>${escapeHtml(item.reference || "Evidence passage")}</strong><span>${escapeHtml(item.regulation)}</span><em title="${escapeHtml(rawScoreTooltip(item.score))}">${escapeHtml(formatScore(item.score))}</em></div>
     `).join("")}</div>`;
   }
   if (tabId === "evidence-ids") {
@@ -853,7 +866,11 @@ function renderTechnicalSummary(title, body) {
 
 function renderChipList(items, emptyMessage) {
   if (!items.length) return renderTechnicalEmpty(emptyMessage);
-  return `<div class="entity-chips">${items.map((item) => `<span title="${escapeHtml(item)}">${escapeHtml(item)}</span>`).join("")}</div>`;
+  return `<div class="entity-chips">${items.map((item) => {
+    const more = String(item).match(/^(\+\d+ more):\s*(.+)$/);
+    if (more) return `<span class="more-chip" title="${escapeHtml(more[2])}">${escapeHtml(more[1])}</span>`;
+    return `<span title="${escapeHtml(item)}">${escapeHtml(item)}</span>`;
+  }).join("")}</div>`;
 }
 
 function renderTechnicalEmpty(message) {
@@ -867,7 +884,7 @@ function getMatchedEntities(item) {
 function getRetrievalScores(item) {
   if (isCachedFallback(item)) return [];
   return (item.evidence || []).map((entry) => ({
-    reference: entry.reference || entry.id || "Evidence passage",
+    reference: safeEvidenceReference(entry.reference, entry.sourceDocument) || entry.statementTitle || entry.id || "Evidence passage",
     regulation: entry.regulation || "Regulation",
     score: entry.score,
   }));
@@ -931,6 +948,7 @@ function renderAnswer() {
     return;
   }
   const selectedEvidence = selected.evidence || [];
+  const sourcesCollapsed = Boolean(selected.sourcesCollapsed);
 
   els.answerContent.innerHTML = `
     <article class="answer-card">
@@ -954,10 +972,13 @@ function renderAnswer() {
 
   els.evidenceContent.innerHTML = `
     <div class="section-title evidence-title">
-      <h3>Sources used</h3>
-      <span>${selectedEvidence.length} regulatory sources selected</span>
+      <div>
+        <h3>Sources used</h3>
+        <span>${selectedEvidence.length} regulatory sources selected${selectedEvidence.length ? ` · ${escapeHtml((selected.regulations || inferRegulations(selected.question, selectedEvidence)).join(" · "))}` : ""}</span>
+      </div>
+      <button type="button" class="section-toggle-button" data-sources-toggle aria-expanded="${String(!sourcesCollapsed)}">${sourcesCollapsed ? "Show" : "Collapse"}</button>
     </div>
-    <div class="evidence-list">
+    <div class="evidence-list ${sourcesCollapsed ? "is-collapsed" : ""}" ${sourcesCollapsed ? "hidden" : ""}>
       ${selectedEvidence.map(renderEvidenceCard).join("") || renderEmptyState("No evidence passages were returned.")}
     </div>
   `;
@@ -965,7 +986,8 @@ function renderAnswer() {
 
 function renderEvidenceCard(item) {
   const sourceDocument = item.sourceDocument || demoSourceDocument(item.regulation);
-  const reference = item.reference || "Evidence passage";
+  const reference = safeEvidenceReference(item.reference, sourceDocument);
+  const referenceLabel = reference || "Not available";
   const explanation = sourceShortExplanation(item);
   const snippet = item.passage || "No snippet returned.";
   return `
@@ -974,14 +996,14 @@ function renderEvidenceCard(item) {
         <span class="reg-badge ${slug(item.regulation)}">${escapeHtml(item.regulation)}</span>
         <span class="source-card-copy">
           <strong ${titleIfTruncated(sourceDocument, 42)}>${escapeHtml(truncate(sourceDocument, 42))}</strong>
-          <b ${titleIfTruncated(reference, 48)}>${escapeHtml(truncate(reference, 48))}</b>
+          <b ${titleIfTruncated(referenceLabel, 48)}>${escapeHtml(truncate(referenceLabel, 48))}</b>
           <small ${titleIfTruncated(explanation, 86)}>${escapeHtml(truncate(explanation, 86))}</small>
         </span>
       </summary>
       <dl>
         <div><dt>Source document</dt><dd>${escapeHtml(sourceDocument)}</dd></div>
         <div><dt>Regulation</dt><dd>${escapeHtml(item.regulation)}</dd></div>
-        <div><dt>Section or article</dt><dd>${escapeHtml(reference)}</dd></div>
+        <div><dt>Section or article</dt><dd>${escapeHtml(referenceLabel)}</dd></div>
         <div><dt>Statement title</dt><dd>${escapeHtml(item.statementTitle || item.concept || "Regulatory evidence")}</dd></div>
         <div><dt>Matched concept</dt><dd>${escapeHtml(item.concept)}</dd></div>
         <div><dt>Evidence snippet</dt><dd ${titleIfTruncated(snippet, 260)}>${escapeHtml(truncate(snippet, 260))}</dd></div>
@@ -998,6 +1020,13 @@ function getSelectedQuestion() {
 function updateQuestion(id, patch, shouldRender = true) {
   state.questions = state.questions.map((item) => item.id === id ? { ...item, ...patch } : item);
   if (shouldRender) render();
+}
+
+function toggleSourcesForSelected() {
+  const selected = getSelectedQuestion();
+  if (!selected) return;
+  updateQuestion(selected.id, { sourcesCollapsed: !Boolean(selected.sourcesCollapsed) });
+  persistSession();
 }
 
 function readSession() {
@@ -1020,6 +1049,29 @@ function persistSelectedQuestion() {
 function findDemoResponse(question) {
   const normalized = normalizeQuestion(question);
   return DEMO_CACHE[normalized] || null;
+}
+
+function citationFromEvidenceItem(item, sourceDocument) {
+  const candidates = [
+    item.citation,
+    item.article,
+    item.section,
+    item.reference,
+    item.chunk_reference,
+    item.chunk_id,
+  ];
+  return candidates.map((value) => safeEvidenceReference(value, sourceDocument)).find(Boolean) || "";
+}
+
+function safeEvidenceReference(value, sourceDocument = "") {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  const source = String(sourceDocument || "").trim().toLowerCase();
+  const normalized = raw.toLowerCase();
+  if (source && normalized === source) return "";
+  if (/^[\w.-]+\.pdf$/i.test(raw)) return "";
+  if (/^unknown source document$/i.test(raw)) return "";
+  return raw;
 }
 
 function detectDomain(question, plan) {
@@ -1767,8 +1819,17 @@ function regulationSplitForLabel(node) {
 
 function formatScore(score) {
   const parsed = Number(score);
-  if (!Number.isFinite(parsed)) return "n/a";
-  return `${Math.round(parsed * 100)}%`;
+  if (!Number.isFinite(parsed)) return "Match shown";
+  const normalized = parsed > 1 ? parsed : parsed * 100;
+  if (normalized >= 70) return "High match";
+  if (normalized >= 35) return "Medium match";
+  return "Low match";
+}
+
+function rawScoreTooltip(score) {
+  const parsed = Number(score);
+  if (!Number.isFinite(parsed)) return "Internal retrieval score not available";
+  return `Internal retrieval score: ${parsed}`;
 }
 
 function technicalEntityChips(selected) {
@@ -1783,7 +1844,11 @@ function technicalEntityChips(selected) {
     "human oversight",
   ];
   const concepts = relatedConcepts(selected).map((item) => String(item).toLowerCase());
-  return [...new Set([...base, ...concepts])].slice(0, 8).concat("+3 more");
+  const entities = [...new Set([...base, ...concepts])];
+  const visibleLimit = 14;
+  const visible = entities.slice(0, visibleLimit);
+  const hidden = entities.slice(visibleLimit);
+  return hidden.length ? visible.concat(`+${hidden.length} more: ${hidden.join(", ")}`) : visible;
 }
 
 function nodeTypeFor(label, index) {
@@ -2128,6 +2193,8 @@ if (typeof window !== "undefined") {
     splitOverloadedRegulationNodes,
     graphModeLabel,
     visibleEdgeLabel,
+    formatScore,
+    safeEvidenceReference,
     askQuestionWithDemoPolicy,
     fetchAnswer,
   };
