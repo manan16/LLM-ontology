@@ -2,8 +2,17 @@ from __future__ import annotations
 
 from typing import Any
 
+import pytest
+
 from web.app import app
 from web.services import rag_service
+
+
+@pytest.fixture(autouse=True)
+def reset_rag_service_retriever() -> None:
+    rag_service.close_retriever()
+    yield
+    rag_service.close_retriever()
 
 
 class FakeRetriever:
@@ -32,9 +41,13 @@ class FakeRetriever:
                 "statement_labels": ["Statement", "Obligation"],
                 "evidence_text": "Providers of high-risk AI systems should ensure compliance with this Regulation.",
                 "source_document": "eu_ai_act.pdf",
+                "citation": "Article 16",
                 "score": 42,
                 "query_route": "statement",
                 "source_group": "eu_ai_act",
+                "seed_name": "Provider",
+                "seed_labels": ["Entity"],
+                "relationship": "HAS_REQUIREMENT",
                 "matched_concept_groups": ["object:high-risk ai system"],
             }
         ]
@@ -49,6 +62,7 @@ class FakeAnswerGenerator:
 
 
 def test_answer_question_returns_answer_evidence_context_and_debug(monkeypatch: Any) -> None:
+    monkeypatch.setattr(rag_service, "_retriever", None)
     monkeypatch.setattr(rag_service, "GraphRetriever", FakeRetriever)
     monkeypatch.setattr(rag_service, "AnswerGenerator", FakeAnswerGenerator)
 
@@ -63,6 +77,12 @@ def test_answer_question_returns_answer_evidence_context_and_debug(monkeypatch: 
     assert "Providers of high-risk AI systems" in result["context"]
     assert result["debug"]["query_plan"]["intent"] == "obligations"
     assert result["debug"]["top_rows"][0]["score"] == 42
+    assert result["graph"]["nodes"]
+    assert result["graph"]["edges"]
+    assert any(node["label"] == "eu_ai_act.pdf" for node in result["graph"]["nodes"])
+    assert any(node["type"] == "evidence" and node.get("evidence_id") == "1" for node in result["graph"]["nodes"])
+    assert any(edge["relationship_type"] == "HAS_REQUIREMENT" for edge in result["graph"]["edges"])
+    assert any(edge["label"] == "ranked_for_question" for edge in result["graph"]["edges"])
     assert result["metrics"]["top_k"] == 30
     assert result["metrics"]["rows_retrieved"] == 1
     assert result["metrics"]["evidence_items"] == 1
@@ -70,6 +90,26 @@ def test_answer_question_returns_answer_evidence_context_and_debug(monkeypatch: 
     assert {"routing_ms", "retrieval_ms", "graph_query_ms", "ranking_ms", "generation_ms", "total_ms"}.issubset(
         result["metrics"]
     )
+
+
+def test_answer_question_reuses_single_graph_retriever(monkeypatch: Any) -> None:
+    class CountingRetriever(FakeRetriever):
+        instances = 0
+
+        def __init__(self) -> None:
+            type(self).instances += 1
+
+    monkeypatch.setattr(rag_service, "_retriever", None)
+    monkeypatch.setattr(rag_service, "GraphRetriever", CountingRetriever)
+    monkeypatch.setattr(rag_service, "AnswerGenerator", FakeAnswerGenerator)
+
+    first = rag_service.answer_question("What must providers document?")
+    second = rag_service.answer_question("Which GDPR rights apply?")
+
+    assert first["answer"] == "Grounded answer"
+    assert second["answer"] == "Grounded answer"
+    assert CountingRetriever.instances == 1
+    assert rag_service._get_retriever() is rag_service._get_retriever()
 
 
 def test_answer_question_rejects_empty_question() -> None:
@@ -88,6 +128,7 @@ def test_flask_ask_route_returns_clean_json(monkeypatch: Any) -> None:
             "question": kwargs["question"],
             "answer": "Grounded answer",
             "evidence": [],
+            "graph": {"nodes": [], "edges": []},
             "context": "",
             "debug": {},
             "metrics": {"top_k": 30},
@@ -100,6 +141,7 @@ def test_flask_ask_route_returns_clean_json(monkeypatch: Any) -> None:
     assert response.status_code == 200
     data = response.get_json()
     assert data["answer"] == "Grounded answer"
+    assert data["graph"] == {"nodes": [], "edges": []}
     assert data["metrics"]["top_k"] == 30
     assert data["error"] is None
 
@@ -109,8 +151,12 @@ def test_flask_index_renders_dashboard() -> None:
     response = client.get("/")
 
     assert response.status_code == 200
-    assert b"TrustGraph Health" in response.data
-    assert b"Evidence search active" in response.data
+    assert b"Complaince Aware RAG Assistant" in response.data
+    assert b"Live backend mode" in response.data
+    assert b"Preset cache disabled" in response.data
+    assert b"Responses are generated from retrieved regulatory text and are not legal advice." in response.data
+    assert b"rail-icon" not in response.data
+    assert b"Workspace navigation" not in response.data
 
 
 def test_flask_ask_route_handles_empty_question() -> None:
@@ -121,4 +167,5 @@ def test_flask_ask_route_handles_empty_question() -> None:
     data = response.get_json()
     assert data["error"]
     assert data["answer"] == ""
+    assert data["graph"] == {"nodes": [], "edges": []}
     assert data["metrics"] == {}

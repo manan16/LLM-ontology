@@ -7,6 +7,8 @@ from extraction.normalizer import canonical_key, canonicalize_compliance_term
 from extraction.schemas import NormalizedNode, NormalizedRelationship, NormalizedStatement
 from graph.cypher import CONSTRAINT_STATEMENTS
 from graph.neo4j_client import Neo4jClient
+from graph.ontology_seed import ontology_class_for_entity, seed_ontology
+from graph.mental_health_seed import seed_mental_health_use_case
 from ingestion.chunking import DocumentChunk
 from ingestion.loaders import LoadedDocument
 
@@ -108,6 +110,8 @@ class GraphWriter:
     def ensure_schema(self) -> None:
         logger.debug("Ensuring Neo4j schema")
         self.neo4j_client.run_statements(CONSTRAINT_STATEMENTS)
+        seed_ontology(self.neo4j_client)
+        seed_mental_health_use_case(self.neo4j_client)
 
     def write_document_graph(
         self,
@@ -245,6 +249,7 @@ class GraphWriter:
                     "evidence_texts": node.evidence_texts,
                 },
             )
+            self._link_entity_to_ontology(node.node_type, node.canonical_name, node.aliases)
 
     def _merge_statements(self, document: LoadedDocument, statements: list[NormalizedStatement]) -> None:
         for statement in statements:
@@ -358,6 +363,7 @@ class GraphWriter:
                     "node_type": node_type,
                 },
             )
+            self._link_entity_to_ontology(node_type, canonical_name)
 
             rel_type = spec["rel"] if spec["rel"] in ALLOWED_REL_TYPES else "RELATED_TO"
             primary_query = f"""
@@ -366,6 +372,28 @@ class GraphWriter:
             MERGE (s)-[:{rel_type}]->(e)
             """
             self.neo4j_client.run_query(primary_query, {"statement_id": statement.statement_id, "node_key": node_key})
+
+    def _link_entity_to_ontology(
+        self,
+        node_type: str,
+        canonical_name: str,
+        aliases: list[str] | None = None,
+    ) -> None:
+        ontology_class = ontology_class_for_entity(node_type, canonical_name, aliases)
+        if not ontology_class:
+            return
+        query = """
+        MATCH (e:Entity {key: $entity_key})
+        MERGE (c:OntologyClass {name: $class_name})
+        MERGE (e)-[:INSTANCE_OF]->(c)
+        """
+        self.neo4j_client.run_query(
+            query,
+            {
+                "entity_key": canonical_key(node_type, canonical_name),
+                "class_name": ontology_class,
+            },
+        )
 
     def _merge_relationships(self, relationships: list[NormalizedRelationship]) -> None:
         for relationship in relationships:

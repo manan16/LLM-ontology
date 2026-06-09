@@ -35,6 +35,31 @@ COMPLIANCE_ALIASES: dict[str, tuple[str, str]] = {
     "authorization": ("Authorization", "Authorization"),
     "use and disclosure": ("UseDisclosure", "Use and Disclosure"),
     "uses and disclosures": ("UseDisclosure", "Use and Disclosure"),
+    "controller": ("Actor", "Controller"),
+    "data controller": ("Actor", "Controller"),
+    "processor": ("Actor", "Processor"),
+    "data processor": ("Actor", "Processor"),
+    "data subject": ("Actor", "Data Subject"),
+    "supervisory authority": ("Regulator", "Supervisory Authority"),
+    "data protection authority": ("Regulator", "Supervisory Authority"),
+    "dpa": ("Regulator", "Supervisory Authority"),
+    "data protection officer": ("Role", "Data Protection Officer"),
+    "dpo": ("Role", "Data Protection Officer"),
+    "personal data": ("DataCategory", "Personal Data"),
+    "special category data": ("SensitiveDataCategory", "Special Category Data"),
+    "special categories of personal data": ("SensitiveDataCategory", "Special Category Data"),
+    "health data": ("SensitiveDataCategory", "Health Data"),
+    "data concerning health": ("SensitiveDataCategory", "Health Data"),
+    "lawful basis": ("LegalBasis", "Lawful Basis"),
+    "legal basis": ("LegalBasis", "Lawful Basis"),
+    "explicit consent": ("LegalBasis", "Explicit Consent"),
+    "consent": ("LegalBasis", "Consent"),
+    "data protection impact assessment": ("ImpactAssessment", "Data Protection Impact Assessment"),
+    "dpia": ("ImpactAssessment", "Data Protection Impact Assessment"),
+    "personal data breach": ("Incident", "Personal Data Breach"),
+    "data breach": ("Incident", "Personal Data Breach"),
+    "right to erasure": ("IndividualRight", "Right to Erasure"),
+    "right to be forgotten": ("IndividualRight", "Right to Erasure"),
 }
 
 
@@ -79,7 +104,7 @@ def normalize_chunk_results(
                     evidence_text=statement.evidence_text.strip(),
                     evidence_start_char=statement.evidence_start_char,
                     evidence_end_char=statement.evidence_end_char,
-                    source_document=statement.source_document or chunk.regulation_name,
+                    source_document=_canonical_source_document(statement.source_document, chunk.regulation_name),
                     page_number=statement.page_number,
                     article_number=statement.article_number,
                     clause_number=statement.clause_number,
@@ -105,7 +130,7 @@ def normalize_chunk_results(
                     _append_unique(entry.aliases, node.canonical_name.strip())
                 if node.description and node.description.strip() and node.description.strip() not in entry.descriptions:
                     entry.descriptions.append(node.description.strip())
-                _append_unique(entry.source_documents, node.source_document or chunk.regulation_name)
+                _append_unique(entry.source_documents, _canonical_source_document(node.source_document, chunk.regulation_name))
                 _append_unique(entry.evidence_chunks, node.chunk_id or chunk.chunk_id)
                 _append_unique(entry.evidence_texts, node.evidence_text or statement.evidence_text)
 
@@ -129,7 +154,10 @@ def normalize_chunk_results(
                     )
                     relationship_index[key] = entry
                 _append_unique(entry.evidence_chunks, relationship.chunk_id or chunk.chunk_id)
-                _append_unique(entry.source_documents, relationship.source_document or chunk.regulation_name)
+                _append_unique(
+                    entry.source_documents,
+                    _canonical_source_document(relationship.source_document, chunk.regulation_name),
+                )
                 _append_unique(entry.section_ids, relationship.section_id or chunk.section_id)
                 _append_unique(entry.section_titles, relationship.section_title or chunk.section_title)
                 _append_unique(entry.evidence_texts, relationship.evidence_text or relationship.raw_text)
@@ -211,3 +239,10 @@ def _append_unique(items: list, value: object) -> None:
             return
     if value not in items:
         items.append(value)
+
+
+def _canonical_source_document(source_document: str | None, fallback: str) -> str:
+    value = (source_document or fallback).strip()
+    if value.lower() == "gdpr.pdf":
+        return "GDPR"
+    return value

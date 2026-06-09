@@ -1,0 +1,254 @@
+[
+  {
+    "id": "gdpr_001",
+    "category": "gdpr_only",
+    "question": "What rights does a data subject have under GDPR?",
+    "expected_regulations": ["GDPR"],
+    "expected_concepts": ["DataSubject", "RightOfAccess", "RightToRectification", "RightToErasure", "RightToRestriction", "RightToDataPortability", "RightToObject"],
+    "expected_evidence_keywords": ["data subject", "right of access", "rectification", "erasure", "restriction", "data portability", "object"],
+    "notes": "Should retrieve GDPR data subject rights evidence."
+  },
+  {
+    "id": "gdpr_002",
+    "category": "gdpr_only",
+    "question": "What obligations apply to controllers processing health data under GDPR?",
+    "expected_regulations": ["GDPR"],
+    "expected_concepts": ["Controller", "HealthData", "SpecialCategoryData", "LawfulBasis", "DataProtectionImpactAssessment", "SecurityOfProcessing"],
+    "expected_evidence_keywords": ["controller", "health data", "special category", "lawful basis", "security", "data protection impact assessment"],
+    "notes": "Should connect controller obligations to special category health data."
+  },
+  {
+    "id": "gdpr_003",
+    "category": "gdpr_only",
+    "question": "When can special category health data be processed under GDPR?",
+    "expected_regulations": ["GDPR"],
+    "expected_concepts": ["SpecialCategoryData", "HealthData", "ExplicitConsent", "Article9Exception", "PublicInterest", "HealthCareProvision"],
+    "expected_evidence_keywords": ["special categories", "health data", "explicit consent", "public interest", "health care", "Article 9"],
+    "notes": "Should retrieve GDPR Article 9 processing conditions."
+  },
+  {
+    "id": "gdpr_004",
+    "category": "gdpr_only",
+    "question": "What is a DPIA and when is it required under GDPR?",
+    "expected_regulations": ["GDPR"],
+    "expected_concepts": ["DataProtectionImpactAssessment", "HighRiskProcessing", "Controller", "SystematicMonitoring", "SpecialCategoryData"],
+    "expected_evidence_keywords": ["data protection impact assessment", "high risk", "rights and freedoms", "systematic", "special category"],
+    "notes": "Should retrieve DPIA definition and trigger evidence."
+  },
+  {
+    "id": "gdpr_005",
+    "category": "gdpr_only",
+    "question": "What GDPR obligations apply to automated decision-making or profiling?",
+    "expected_regulations": ["GDPR"],
+    "expected_concepts": ["AutomatedDecisionMaking", "Profiling", "DataSubject", "RightToObject", "MeaningfulInformation", "HumanIntervention"],
+    "expected_evidence_keywords": ["automated decision-making", "profiling", "legal effects", "human intervention", "meaningful information"],
+    "notes": "Should retrieve GDPR automated decision-making and profiling obligations."
+  },
+  {
+    "id": "hipaa_001",
+    "category": "hipaa_only",
+    "question": "When can a covered entity disclose protected health information without authorization?",
+    "expected_regulations": ["HIPAA"],
+    "expected_concepts": ["CoveredEntity", "ProtectedHealthInformation", "Authorization", "PermittedDisclosure", "RequiredByLaw", "PublicHealth"],
+    "expected_evidence_keywords": ["covered entity", "protected health information", "without authorization", "required by law", "public health", "may disclose"],
+    "notes": "Should favor permission and exception evidence over authorization-required evidence."
+  },
+  {
+    "id": "hipaa_002",
+    "category": "hipaa_only",
+    "question": "What obligations apply to business associates under HIPAA?",
+    "expected_regulations": ["HIPAA"],
+    "expected_concepts": ["BusinessAssociate", "CoveredEntity", "ProtectedHealthInformation", "BusinessAssociateAgreement", "Safeguards"],
+    "expected_evidence_keywords": ["business associate", "covered entity", "protected health information", "safeguards", "agreement"],
+    "notes": "Should retrieve business associate obligations and related safeguards."
+  },
+  {
+    "id": "hipaa_003",
+    "category": "hipaa_only",
+    "question": "What safeguards are required for protected health information under HIPAA?",
+    "expected_regulations": ["HIPAA"],
+    "expected_concepts": ["ProtectedHealthInformation", "AdministrativeSafeguard", "PhysicalSafeguard", "TechnicalSafeguard", "SecurityRule"],
+    "expected_evidence_keywords": ["protected health information", "administrative safeguards", "physical safeguards", "technical safeguards", "security"],
+    "notes": "Should retrieve HIPAA Security Rule safeguard evidence."
+  },
+  {
+    "id": "hipaa_004",
+    "category": "hipaa_only",
+    "question": "What rights do individuals have regarding their protected health information under HIPAA?",
+    "expected_regulations": ["HIPAA"],
+    "expected_concepts": ["Individual", "ProtectedHealthInformation", "RightOfAccess", "AmendmentRight", "AccountingOfDisclosures", "NoticeOfPrivacyPractices"],
+    "expected_evidence_keywords": ["individual", "protected health information", "access", "amend", "accounting of disclosures", "notice"],
+    "notes": "Should retrieve individual rights under the HIPAA Privacy Rule."
+  },
+  {
+    "id": "hipaa_005",
+    "category": "hipaa_only",
+    "question": "What is the role of authorization under HIPAA?",
+    "expected_regulations": ["HIPAA"],
+    "expected_concepts": ["Authorization", "CoveredEntity", "ProtectedHealthInformation", "UseAndDisclosure", "PermittedUse"],
+    "expected_evidence_keywords": ["authorization", "covered entity", "use or disclose", "protected health information", "valid authorization"],
+    "notes": "Should explain authorization as a permission mechanism and distinguish exceptions."
+  },
+  {
+    "id": "euai_001",
+    "category": "eu_ai_act_only",
+    "question": "What obligations apply to providers of high-risk AI systems under the EU AI Act?",
+    "expected_regulations": ["EU AI Act"],
+    "expected_concepts": ["Provider", "HighRiskAISystem", "RiskManagementSystem", "QualityManagementSystem", "TechnicalDocumentation", "PostMarketMonitoring"],
+    "expected_evidence_keywords": ["provider", "high-risk AI system", "risk management system", "quality management system", "technical documentation", "post-market monitoring"],
+    "notes": "Should retrieve concrete provider obligations for high-risk AI systems."
+  },
+  {
+    "id": "euai_002",
+    "category": "eu_ai_act_only",
+    "question": "What obligations apply to deployers of high-risk AI systems under the EU AI Act?",
+    "expected_regulations": ["EU AI Act"],
+    "expected_concepts": ["Deployer", "HighRiskAISystem", "InstructionsForUse", "HumanOversightRequirement", "Monitoring", "InputData"],
+    "expected_evidence_keywords": ["deployer", "high-risk AI system", "instructions for use", "human oversight", "monitor", "input data"],
+    "notes": "Should retrieve deployer obligations and operational use requirements."
+  },
+  {
+    "id": "euai_003",
+    "category": "eu_ai_act_only",
+    "question": "What technical documentation is required for high-risk AI systems under the EU AI Act?",
+    "expected_regulations": ["EU AI Act"],
+    "expected_concepts": ["TechnicalDocumentation", "HighRiskAISystem", "Provider", "ConformityAssessment", "RecordKeeping"],
+    "expected_evidence_keywords": ["technical documentation", "high-risk AI system", "provider", "conformity assessment", "record keeping", "logs"],
+    "notes": "Should retrieve technical documentation and record keeping evidence."
+  },
+  {
+    "id": "euai_004",
+    "category": "eu_ai_act_only",
+    "question": "What human oversight requirements apply to high-risk AI systems under the EU AI Act?",
+    "expected_regulations": ["EU AI Act"],
+    "expected_concepts": ["HumanOversightRequirement", "HighRiskAISystem", "NaturalPerson", "Provider", "Deployer", "RiskMitigation"],
+    "expected_evidence_keywords": ["human oversight", "natural persons", "high-risk AI system", "risk", "operational constraints", "intervene"],
+    "notes": "Should retrieve human oversight requirements for high-risk AI systems."
+  },
+  {
+    "id": "euai_005",
+    "category": "eu_ai_act_only",
+    "question": "What post-market monitoring obligations apply to providers under the EU AI Act?",
+    "expected_regulations": ["EU AI Act"],
+    "expected_concepts": ["PostMarketMonitoring", "Provider", "HighRiskAISystem", "SeriousIncident", "CorrectiveAction"],
+    "expected_evidence_keywords": ["post-market monitoring", "provider", "high-risk AI system", "serious incident", "corrective action"],
+    "notes": "Should retrieve monitoring and incident follow-up obligations."
+  },
+  {
+    "id": "cross_001",
+    "category": "cross_regulation",
+    "question": "How do GDPR and HIPAA apply to health data processing?",
+    "expected_regulations": ["GDPR", "HIPAA"],
+    "expected_concepts": ["HealthData", "SpecialCategoryData", "ProtectedHealthInformation", "Controller", "CoveredEntity", "DataSubject"],
+    "expected_evidence_keywords": ["health data", "special category", "protected health information", "controller", "covered entity", "individual"],
+    "notes": "Should retrieve evidence from GDPR and HIPAA and distinguish data concepts."
+  },
+  {
+    "id": "cross_002",
+    "category": "cross_regulation",
+    "question": "How do GDPR and the EU AI Act apply to a high-risk healthcare AI system?",
+    "expected_regulations": ["GDPR", "EU AI Act"],
+    "expected_concepts": ["HighRiskAISystem", "HealthData", "SpecialCategoryData", "Controller", "Provider", "DataProtectionImpactAssessment", "HumanOversightRequirement"],
+    "expected_evidence_keywords": ["high-risk AI system", "health data", "special category", "controller", "provider", "human oversight", "technical documentation"],
+    "notes": "Should retrieve privacy and AI governance evidence."
+  },
+  {
+    "id": "cross_003",
+    "category": "cross_regulation",
+    "question": "What obligations apply when a provider processes patient data using a high-risk AI system?",
+    "expected_regulations": ["GDPR", "HIPAA", "EU AI Act"],
+    "expected_concepts": ["Provider", "HighRiskAISystem", "PatientData", "HealthData", "ProtectedHealthInformation", "TechnicalDocumentation", "SecuritySafeguard"],
+    "expected_evidence_keywords": ["provider", "patient data", "high-risk AI system", "protected health information", "health data", "technical documentation", "safeguards"],
+    "notes": "Should test cross-regulation retrieval for a provider using patient data."
+  },
+  {
+    "id": "cross_004",
+    "category": "cross_regulation",
+    "question": "What are the differences between a GDPR controller, HIPAA covered entity, and EU AI Act provider?",
+    "expected_regulations": ["GDPR", "HIPAA", "EU AI Act"],
+    "expected_concepts": ["Controller", "CoveredEntity", "Provider", "PersonalData", "ProtectedHealthInformation", "AISystem"],
+    "expected_evidence_keywords": ["controller", "covered entity", "provider", "personal data", "protected health information", "AI system"],
+    "notes": "Should retrieve actor definitions from all three regimes."
+  },
+  {
+    "id": "cross_005",
+    "category": "cross_regulation",
+    "question": "What evidence is required to support compliance across GDPR, HIPAA, and the EU AI Act?",
+    "expected_regulations": ["GDPR", "HIPAA", "EU AI Act"],
+    "expected_concepts": ["DataProtectionImpactAssessment", "TechnicalDocumentation", "PoliciesAndProcedures", "Safeguards", "RecordKeeping", "PostMarketMonitoring"],
+    "expected_evidence_keywords": ["data protection impact assessment", "technical documentation", "policies and procedures", "safeguards", "records", "monitoring"],
+    "notes": "Should retrieve documentation and evidence concepts across regulations."
+  },
+  {
+    "id": "mh_001",
+    "category": "mental_health_cross_regulation",
+    "question": "What compliance obligations apply to a mental health diagnostic AI system processing patient data?",
+    "expected_regulations": ["GDPR", "HIPAA", "EU AI Act"],
+    "expected_concepts": ["MentalHealthDiagnosticSystem", "MentalHealthData", "HealthData", "SpecialCategoryData", "ProtectedHealthInformation", "HighRiskAISystem", "HumanOversightRequirement", "DataProtectionImpactAssessment"],
+    "expected_evidence_keywords": ["mental health", "health data", "special category", "protected health information", "high-risk AI system", "human oversight", "technical documentation"],
+    "notes": "Question should retrieve evidence from all three regulations and connect it to the mental-health diagnostics use case."
+  },
+  {
+    "id": "mh_002",
+    "category": "mental_health_diagnostics",
+    "question": "What GDPR obligations apply when processing mental health data?",
+    "expected_regulations": ["GDPR"],
+    "expected_concepts": ["MentalHealthData", "HealthData", "SpecialCategoryData", "Controller", "LawfulBasis", "DataProtectionImpactAssessment", "DataSubjectRights"],
+    "expected_evidence_keywords": ["mental health", "health data", "special category", "controller", "lawful basis", "data protection impact assessment"],
+    "notes": "Should retrieve GDPR evidence and mental-health use-case context."
+  },
+  {
+    "id": "mh_003",
+    "category": "mental_health_diagnostics",
+    "question": "What HIPAA obligations apply to mental health patient data?",
+    "expected_regulations": ["HIPAA"],
+    "expected_concepts": ["MentalHealthData", "PatientData", "ProtectedHealthInformation", "CoveredEntity", "BusinessAssociate", "Safeguards", "Authorization"],
+    "expected_evidence_keywords": ["mental health", "patient data", "protected health information", "covered entity", "business associate", "authorization", "safeguards"],
+    "notes": "Should retrieve HIPAA evidence for PHI and mental-health data context."
+  },
+  {
+    "id": "mh_004",
+    "category": "mental_health_diagnostics",
+    "question": "What EU AI Act requirements apply to a clinical diagnostic AI system?",
+    "expected_regulations": ["EU AI Act"],
+    "expected_concepts": ["ClinicalDiagnosticAISystem", "HighRiskAISystem", "Provider", "RiskManagementSystem", "TechnicalDocumentation", "HumanOversightRequirement", "PostMarketMonitoring"],
+    "expected_evidence_keywords": ["clinical diagnostic", "high-risk AI system", "provider", "risk management", "technical documentation", "human oversight", "post-market monitoring"],
+    "notes": "Should retrieve high-risk AI requirements for a clinical diagnostic system."
+  },
+  {
+    "id": "mh_005",
+    "category": "mental_health_diagnostics",
+    "question": "What safeguards are needed when an AI system generates mental health risk scores?",
+    "expected_regulations": ["GDPR", "HIPAA", "EU AI Act"],
+    "expected_concepts": ["MentalHealthRiskScore", "AISystemOutput", "ProtectedHealthInformation", "SecuritySafeguard", "HumanOversightRequirement", "RiskManagementSystem"],
+    "expected_evidence_keywords": ["risk scores", "mental health", "safeguards", "protected health information", "human oversight", "risk management"],
+    "notes": "Should retrieve safeguards for outputs and regulated health data."
+  },
+  {
+    "id": "mh_006",
+    "category": "mental_health_diagnostics",
+    "question": "What human oversight is required for AI-supported mental health diagnosis?",
+    "expected_regulations": ["EU AI Act", "GDPR"],
+    "expected_concepts": ["HumanOversightRequirement", "MentalHealthDiagnosticSystem", "HighRiskAISystem", "AutomatedDecisionMaking", "HumanIntervention", "ClinicalReviewer"],
+    "expected_evidence_keywords": ["human oversight", "mental health diagnosis", "high-risk AI system", "human intervention", "automated decision"],
+    "notes": "Should retrieve EU AI Act oversight and GDPR human intervention evidence."
+  },
+  {
+    "id": "mh_007",
+    "category": "mental_health_diagnostics",
+    "question": "What data protection risks arise from using mental health screening data?",
+    "expected_regulations": ["GDPR", "HIPAA"],
+    "expected_concepts": ["MentalHealthScreeningData", "HealthData", "SpecialCategoryData", "ProtectedHealthInformation", "ReidentificationRisk", "UnauthorizedDisclosure"],
+    "expected_evidence_keywords": ["mental health screening", "health data", "special category", "protected health information", "risk", "disclosure"],
+    "notes": "Should retrieve data protection risk concepts linked to screening data."
+  },
+  {
+    "id": "mh_008",
+    "category": "mental_health_diagnostics",
+    "question": "How should a mental health diagnostic AI system handle transparency and explainability?",
+    "expected_regulations": ["GDPR", "EU AI Act"],
+    "expected_concepts": ["MentalHealthDiagnosticSystem", "TransparencyRequirement", "Explainability", "InstructionsForUse", "DataSubjectInformation", "TechnicalDocumentation"],
+    "expected_evidence_keywords": ["transparency", "explainability", "instructions for use", "meaningful information", "technical documentation", "mental health"],
+    "notes": "Should retrieve transparency and explanation evidence for mental-health diagnostics."
+  }
+]

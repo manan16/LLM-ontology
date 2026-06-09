@@ -44,11 +44,17 @@ def load_document(path: str | Path) -> LoadedDocument:
         len(text),
     )
     return LoadedDocument(
-        name=document_path.name,
+        name=_canonical_document_name(document_path),
         path=str(document_path),
         file_type=suffix,
         text=text,
     )
+
+
+def _canonical_document_name(path: Path) -> str:
+    if path.name.lower() == "gdpr.pdf":
+        return "GDPR"
+    return path.name
 
 
 def _load_pdf(path: Path) -> str:

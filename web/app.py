@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import Any
 
 from flask import Flask, jsonify, render_template, request
@@ -39,6 +40,7 @@ def ask() -> tuple[Any, int]:
         {
             "answer": result["answer"],
             "evidence": result["evidence"],
+            "graph": result.get("graph", {"nodes": [], "edges": []}),
             "context": result["context"],
             "debug": result["debug"],
             "metrics": result["metrics"],
@@ -51,6 +53,7 @@ def _error_response(message: str) -> dict[str, Any]:
     return {
         "answer": "",
         "evidence": [],
+        "graph": {"nodes": [], "edges": []},
         "context": "",
         "debug": {},
         "metrics": {},
@@ -59,4 +62,6 @@ def _error_response(message: str) -> dict[str, Any]:
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    host = os.environ.get("WEB_HOST", "127.0.0.1")
+    port = int(os.environ.get("WEB_PORT", "5001"))
+    app.run(host=host, port=port, debug=True)

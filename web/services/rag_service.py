@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import atexit
 import logging
+from threading import Lock
 from time import perf_counter
 from typing import Any
 
@@ -10,6 +12,8 @@ from rag.query_planner import QueryPlan
 
 
 LOGGER = logging.getLogger(__name__)
+_retriever: GraphRetriever | None = None
+_retriever_lock = Lock()
 
 
 def answer_question(
@@ -30,7 +34,7 @@ def answer_question(
 
     routing_started = perf_counter()
     _log_stage("routing_started", question=cleaned_question)
-    retriever = GraphRetriever()
+    retriever = _get_retriever()
     timings["routing_ms"] = _elapsed_ms(routing_started)
 
     retrieval_started = perf_counter()
@@ -45,6 +49,7 @@ def answer_question(
     _log_stage("ranking_started", rows_retrieved=len(rows))
     context = build_context(rows)
     evidence = _extract_evidence(rows)
+    graph = _build_graph_payload(cleaned_question, rows, evidence)
     timings["ranking_ms"] = _elapsed_ms(ranking_started)
 
     generation_started = perf_counter()
@@ -59,10 +64,34 @@ def answer_question(
         "question": cleaned_question,
         "answer": answer,
         "evidence": evidence,
+        "graph": graph,
         "context": context if show_context else "",
         "debug": _build_debug(retriever, rows) if debug else {},
         "metrics": _build_metrics(rows, evidence, safe_limit, elapsed_ms, model, timings),
     }
+
+
+def _get_retriever() -> GraphRetriever:
+    global _retriever
+    if _retriever is None:
+        with _retriever_lock:
+            if _retriever is None:
+                LOGGER.info("Creating shared GraphRetriever for web RAG service")
+                _retriever = GraphRetriever()
+    else:
+        LOGGER.debug("Reusing shared GraphRetriever for web RAG service")
+    return _retriever
+
+
+def close_retriever() -> None:
+    global _retriever
+    if _retriever is None:
+        return
+    neo4j_client = getattr(_retriever, "neo4j_client", None)
+    close = getattr(neo4j_client, "close", None)
+    if callable(close):
+        close()
+    _retriever = None
 
 
 def _safe_limit(limit: int) -> int:
@@ -98,6 +127,171 @@ def _extract_evidence(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             }
         )
     return evidence_items
+
+
+def _build_graph_payload(question: str, rows: list[dict[str, Any]], evidence: list[dict[str, Any]]) -> dict[str, Any]:
+    """Build a UI graph from retrieved rows without inventing KG topology."""
+    nodes: dict[str, dict[str, Any]] = {}
+    edges: list[dict[str, Any]] = []
+    seen_edges: set[tuple[str, str, str, str]] = set()
+
+    def add_node(node_id: str, label: str, node_type: str, **extra: Any) -> str:
+        if not node_id:
+            return ""
+        existing = nodes.get(node_id)
+        payload = {
+            "id": node_id,
+            "label": _graph_label(label) or node_id,
+            "type": node_type,
+            **{key: value for key, value in extra.items() if value not in (None, "", [])},
+        }
+        if existing:
+            existing.update({key: value for key, value in payload.items() if value not in (None, "", [])})
+        else:
+            nodes[node_id] = payload
+        return node_id
+
+    def add_edge(source: str, target: str, label: str, relationship_type: str, **extra: Any) -> None:
+        if not source or not target or source == target:
+            return
+        key = (source, target, label, relationship_type)
+        if key in seen_edges:
+            return
+        seen_edges.add(key)
+        edges.append(
+            {
+                "source": source,
+                "target": target,
+                "label": label,
+                "relationship_type": relationship_type,
+                **{field: value for field, value in extra.items() if value not in (None, "", [])},
+            }
+        )
+
+    question_id = add_node("question", question, "question")
+    evidence_by_key = _evidence_ids_by_key(evidence)
+
+    for index, row in enumerate(rows[:20], start=1):
+        source_document = _clean(row.get("source_document")) or "unknown_source"
+        source_group = _source_group(row)
+        statement = _clean(row.get("statement_name")) or _clean(row.get("related_name")) or _clean(row.get("seed_name")) or f"Retrieved row {index}"
+        evidence_text = _clean(row.get("evidence_text")) or _clean(row.get("source_chunk_text"))
+        citation = _clean(row.get("citation")) or _clean(row.get("article_number")) or _clean(row.get("section_title"))
+        statement_key = _clean(row.get("statement_key")) or statement
+        evidence_id = evidence_by_key.get((statement, source_document, evidence_text))
+
+        regulation_id = add_node(
+            f"reg:{source_document}",
+            source_document,
+            "regulation",
+            source_document=source_document,
+            source_group=source_group,
+        )
+        statement_id = add_node(
+            f"stmt:{_slug(statement_key)}",
+            statement,
+            "statement",
+            source_document=source_document,
+            citation=citation,
+            route=row.get("query_route"),
+            score=row.get("score"),
+        )
+        add_edge(question_id, statement_id, "ranked_for_question", "UI_RETRIEVAL", evidence_id=evidence_id)
+        add_edge(statement_id, regulation_id, "supports_answer", "UI_RETRIEVAL", evidence_id=evidence_id)
+
+        if evidence_text:
+            evidence_node_id = add_node(
+                f"evidence:{evidence_id or index}",
+                citation or f"Evidence {evidence_id or index}",
+                "evidence",
+                source_document=source_document,
+                citation=citation,
+                evidence_id=evidence_id,
+            )
+            add_edge(statement_id, evidence_node_id, "retrieved_as_evidence", "UI_RETRIEVAL", evidence_id=evidence_id)
+            add_edge(evidence_node_id, regulation_id, "source_document", "UI_RETRIEVAL", evidence_id=evidence_id)
+
+        relationship = _clean(row.get("relationship"))
+        concept_name = _clean(row.get("seed_name")) or _clean(row.get("related_name"))
+        if concept_name and concept_name != statement:
+            concept_labels = row.get("seed_labels") or row.get("related_labels") or []
+            concept_type = _graph_node_type(concept_labels, row.get("node_type"))
+            concept_id = add_node(
+                f"entity:{_slug(concept_name)}",
+                concept_name,
+                concept_type,
+                source_document=source_document,
+            )
+            if relationship:
+                add_edge(concept_id, statement_id, relationship, relationship, evidence_id=evidence_id)
+            else:
+                add_edge(concept_id, statement_id, "RELATED_CONCEPT", "RELATED_CONCEPT", evidence_id=evidence_id)
+
+        for group in _as_list(row.get("matched_concept_groups"))[:4]:
+            concept_label = _clean(group).split(":", 1)[-1]
+            if not concept_label:
+                continue
+            concept_id = add_node(f"concept:{_slug(concept_label)}", concept_label, "entity")
+            add_edge(question_id, concept_id, "RELATED_CONCEPT", "UI_RETRIEVAL")
+            add_edge(concept_id, statement_id, "ranked_for_question", "UI_RETRIEVAL", evidence_id=evidence_id)
+
+    return {
+        "nodes": list(nodes.values())[:40],
+        "edges": edges[:80],
+        "meta": {
+            "source": "live_retrieval_rows",
+            "ui_edge_types": ["ranked_for_question", "retrieved_as_evidence", "supports_answer"],
+            "real_relationship_types": sorted(
+                {
+                    edge["relationship_type"]
+                    for edge in edges
+                    if edge.get("relationship_type") not in {"UI_RETRIEVAL"}
+                }
+            ),
+        },
+    }
+
+
+def _evidence_ids_by_key(evidence: list[dict[str, Any]]) -> dict[tuple[str, str, str], str]:
+    return {
+        (_clean(item.get("statement")), _clean(item.get("source_document")), _clean(item.get("evidence_text"))): str(item.get("id"))
+        for item in evidence
+    }
+
+
+def _graph_label(value: Any) -> str:
+    text = _clean(value)
+    return text[:80]
+
+
+def _graph_node_type(labels: Any, fallback: Any = None) -> str:
+    label_set = {str(label).lower() for label in _as_list(labels)}
+    fallback_text = _clean(fallback).lower()
+    if "ontologyclass" in label_set or "ontology" in fallback_text:
+        return "ontology"
+    if "statement" in label_set:
+        return "statement"
+    if any(label in label_set for label in {"requirement", "obligation", "control"}):
+        return "control"
+    if "risk" in label_set or "risk" in fallback_text:
+        return "risk"
+    return "entity"
+
+
+def _slug(value: Any) -> str:
+    text = _clean(value).lower()
+    cleaned = "".join(char if char.isalnum() else "-" for char in text)
+    return "-".join(part for part in cleaned.split("-") if part)[:80] or "node"
+
+
+def _as_list(value: Any) -> list[Any]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    if isinstance(value, (tuple, set)):
+        return list(value)
+    return [value]
 
 
 def _build_metrics(
@@ -227,3 +421,6 @@ def _clean(value: Any) -> str:
     if isinstance(value, list):
         return "; ".join(str(item).strip() for item in value if str(item).strip())
     return str(value).strip()
+
+
+atexit.register(close_retriever)

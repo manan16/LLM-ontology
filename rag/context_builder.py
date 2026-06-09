@@ -83,6 +83,17 @@ EMPLOYMENT_RECORD_TERMS = (
 
 MAX_EVIDENCE_SNIPPETS_PER_ITEM = 4
 
+AI_OBLIGATION_GROUPS = OrderedDict(
+    [
+        ("Risk management system", ("risk management", "continuous iterative process", "lifecycle", "risk mitigation", "residual risk", "known and foreseeable risks", "document and explain the choices")),
+        ("Technical documentation and record keeping", ("technical documentation", "record keeping", "record-keeping", "logs", "traceability", "instructions for use")),
+        ("Human oversight", ("human oversight", "natural persons can oversee", "human operator", "operational constraints", "competence training and authority")),
+        ("Cybersecurity, robustness, and resilience", ("cybersecurity", "cyber resilience", "security controls", "data poisoning", "adversarial attacks", "robustness", "accuracy")),
+        ("Conformity assessment", ("conformity assessment", "prior to market placement", "provider responsibility for conformity assessment")),
+        ("Quality management and post-market monitoring", ("quality management", "post-market monitoring", "post market monitoring", "serious incident", "corrective action")),
+    ]
+)
+
 
 def build_context(rows: list[dict[str, Any]], max_chars: int = 8000) -> str:
     """Convert compact retriever rows into evidence-focused LLM context."""
@@ -121,9 +132,46 @@ def build_context(rows: list[dict[str, Any]], max_chars: int = 8000) -> str:
     return "\n\n".join(items)
 
 
+def context_row_ids(rows: list[dict[str, Any]], max_chars: int = 8000) -> list[str]:
+    """Return row IDs in the same order build_context will render them."""
+    if not rows or max_chars <= 0:
+        return []
+
+    items: list[str] = []
+    rendered_ids: list[str] = []
+    seen_evidence: set[str] = set()
+    grouped_rows = _group_rows(_filter_context_rows(rows))
+
+    for row in grouped_rows:
+        if _is_employment_record_row(row):
+            continue
+        evidence = _clean(row.get("evidence_text")) or _clean(row.get("source_chunk_text"))
+        seed_name = _clean(row.get("seed_name"))
+        if evidence and evidence in seen_evidence:
+            continue
+        block = _format_item(len(items) + 1, row, evidence)
+        next_context = "\n\n".join([*items, block])
+        if len(next_context) > max_chars:
+            if not items:
+                compact_block = _format_item(len(items) + 1, row, evidence, compact=True)
+                if len(compact_block) <= max_chars:
+                    rendered_ids.append(_context_debug_id(row))
+            break
+        items.append(block)
+        rendered_ids.append(_context_debug_id(row))
+        if evidence:
+            seen_evidence.add(evidence)
+        elif seed_name:
+            seen_evidence.add(f"no-evidence:{seed_name}:{_clean(row.get('related_name'))}")
+
+    return rendered_ids
+
+
 def _group_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     grouped: OrderedDict[str, dict[str, Any]] = OrderedDict()
-    for source_index, row in enumerate(sorted(rows, key=_row_rank), start=1):
+    preserve_retriever_order = any(row.get("_retriever_ranked") for row in rows)
+    ordered_rows = rows if preserve_retriever_order else sorted(rows, key=_row_rank) if any(_is_permission_exception_evidence(row) for row in rows) else rows
+    for source_index, row in enumerate(ordered_rows, start=1):
         key = _context_group_key(row)
         if not key:
             key = "|".join(
@@ -139,6 +187,26 @@ def _group_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             continue
         grouped[key] = _merge_grouped_row(grouped[key], row, source_index)
     return list(grouped.values())
+
+
+def _context_debug_id(row: dict[str, Any]) -> str:
+    parts = [
+        _canonical_source_document(row.get("source_document")) or "unknown",
+        _clean(row.get("statement_key")) or _clean(row.get("statement_name")) or _clean(row.get("seed_name")) or "unknown",
+        _clean(row.get("citation")) or _clean(row.get("article_number")),
+    ]
+    return "|".join(part.strip().replace("\n", " ") for part in parts)
+
+
+def _canonical_source_document(value: Any) -> str:
+    text = _clean(value).lower().replace("\\", "/").rsplit("/", 1)[-1].replace("-", "_")
+    if text in {"gdpr", "gdpr.pdf"} or "general_data_protection_regulation" in text:
+        return "gdpr.pdf"
+    if text in {"hipaa", "hipaa.pdf"}:
+        return "hipaa.pdf"
+    if text in {"eu_ai_act", "eu_ai_act.pdf", "eu ai act", "eu ai act.pdf"} or "2024_1689" in text:
+        return "eu_ai_act.pdf"
+    return text
 
 
 def _filter_context_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -162,6 +230,11 @@ def get_semantic_group(row: dict[str, Any]) -> str | None:
     """Return a semantic answer/context group for rows that should be merged."""
     if _is_tpo_row(row):
         return TPO_GROUP_NAME
+    if _is_eu_ai_obligation_row(row):
+        text = _row_text(row)
+        for group_name, terms in AI_OBLIGATION_GROUPS.items():
+            if any(_normalized_term(term) in text for term in terms):
+                return group_name
     return None
 
 
@@ -186,23 +259,24 @@ def _merge_grouped_row(base: dict[str, Any], row: dict[str, Any], source_index: 
     merged = dict(base)
     semantic_group = _clean(base.get("semantic_group")) or get_semantic_group(row)
     if semantic_group:
+        evidence_limit = 3 if semantic_group in AI_OBLIGATION_GROUPS else MAX_EVIDENCE_SNIPPETS_PER_ITEM
         merged["semantic_group"] = semantic_group
         merged["statement_name"] = semantic_group
         merged["grouped_statements"] = _combine_lists(
             merged.get("grouped_statements"),
             [_clean(row.get("statement_name"))],
-        )
+        )[:MAX_EVIDENCE_SNIPPETS_PER_ITEM]
         evidence = _clean(row.get("evidence_text")) or _clean(row.get("source_chunk_text"))
         merged["evidence_snippets"] = _append_limited_unique(
             merged.get("evidence_snippets"),
             evidence,
-            limit=MAX_EVIDENCE_SNIPPETS_PER_ITEM,
+            limit=evidence_limit,
         )
         if evidence:
             merged["evidence_refs"] = _append_limited_unique(
                 merged.get("evidence_refs"),
                 source_index,
-                limit=MAX_EVIDENCE_SNIPPETS_PER_ITEM,
+                limit=evidence_limit,
             )
     for key in (
         "seed_name",
@@ -269,18 +343,53 @@ def _append(lines: list[str], label: str, value: str) -> None:
         lines.append(f"{label}: {value}")
 
 
-def _row_rank(row: dict[str, Any]) -> tuple[int, int, int, float, str]:
+def _row_rank(row: dict[str, Any]) -> tuple[int, int, int, int, int, int, float, str]:
     has_evidence = 0 if (_clean(row.get("evidence_text")) or _clean(row.get("source_chunk_text"))) else 1
     has_statement = 0 if _clean(row.get("statement_name")) else 1
     permission_exception_rank = 0 if _is_permission_exception_evidence(row) else 1
+    broad_rank = 1 if row.get("broad_ai_statement") or "broad_preamble" in _as_list(row.get("penalties")) else 0
+    concrete_rank = 0 if row.get("concrete_ai_obligation") or "concrete_obligation" in _as_list(row.get("boosts")) else 1
+    semantic_group = get_semantic_group(row)
+    group_rank = list(AI_OBLIGATION_GROUPS).index(semantic_group) if semantic_group in AI_OBLIGATION_GROUPS else len(AI_OBLIGATION_GROUPS)
     score = -float(row.get("score") or 0)
     return (
         has_evidence,
         permission_exception_rank,
+        broad_rank,
+        concrete_rank,
+        group_rank,
         has_statement,
         score,
         _clean(row.get("statement_name")) or _clean(row.get("seed_name")),
     )
+
+
+def _is_eu_ai_obligation_row(row: dict[str, Any]) -> bool:
+    source = _clean(row.get("source_document")).lower()
+    text = _row_text(row)
+    has_ai_source = "eu_ai" in source or "eu ai" in source or "ai_act" in source or "2024/1689" in source
+    has_ai_text = "ai system" in text or "high risk ai" in text or "this regulation" in text
+    has_concrete_term = any(_normalized_term(term) in text for terms in AI_OBLIGATION_GROUPS.values() for term in terms)
+    return has_concrete_term and (has_ai_source or has_ai_text or bool(row.get("concrete_ai_obligation")))
+
+
+def _row_text(row: dict[str, Any]) -> str:
+    return _normalized_term(
+        " ".join(
+            [
+                _clean(row.get("statement_name")),
+                _clean(row.get("related_name")),
+                _clean(row.get("evidence_text")),
+                _clean(row.get("source_chunk_text")),
+            ]
+        )
+    )
+
+
+def _normalized_term(value: str) -> str:
+    text = value.lower().replace("-", " ")
+    text = re.sub(r"[^a-z0-9]+", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
 
 
 def _is_permission_exception_evidence(row: dict[str, Any]) -> bool:
@@ -425,7 +534,7 @@ def _clean_grouped_statements(row: dict[str, Any]) -> list[str]:
         if statement not in seen and statement != TPO_GROUP_NAME:
             seen.add(statement)
             unique.append(statement)
-    return unique
+    return unique[:MAX_EVIDENCE_SNIPPETS_PER_ITEM]
 
 
 def _format_evidence(row: dict[str, Any], fallback: str) -> str:

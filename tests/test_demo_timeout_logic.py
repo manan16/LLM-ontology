@@ -55,17 +55,151 @@ def _run_policy_probe(expression: str) -> dict[str, object]:
     return json.loads(output)
 
 
-def test_demo_preset_uses_cache_when_cache_enabled() -> None:
+def test_demo_preset_calls_live_backend_by_default() -> None:
     result = _run_policy_probe(
         'api.buildRequestPolicy("What risks should be mitigated before deployment?")'
     )
 
     assert result["isDemoPreset"] is True
     assert result["cacheHit"] is True
-    assert result["cacheEnabled"] is True
+    assert result["cacheEnabled"] is False
+    assert result["fallbackEnabled"] is True
+    assert result["useCache"] is False
+    assert result["livePipelineCalled"] is True
+    assert result["timeoutMs"] == 8000
+
+
+def test_demo_preset_can_be_forced_to_use_cache_only_when_explicitly_enabled() -> None:
+    result = _run_policy_probe(
+        """api.buildRequestPolicy(
+          "What risks should be mitigated before deployment?",
+          {
+            EVENT_DEMO_MODE: true,
+            DEMO_CACHE_ENABLED: true,
+            DEMO_FALLBACK_ENABLED: true,
+            LIVE_CUSTOM_QUESTIONS_ENABLED: true,
+            DEMO_PRESET_TIMEOUT_MS: 8000,
+            CUSTOM_QUESTION_TIMEOUT_MS: 60000
+          }
+        )"""
+    )
+
     assert result["useCache"] is True
     assert result["livePipelineCalled"] is False
-    assert result["timeoutMs"] == 8000
+
+
+def test_demo_preset_submission_calls_ask_endpoint_in_default_live_mode() -> None:
+    script = dedent(
+        f"""
+        const fs = require("fs");
+        const vm = require("vm");
+        const elements = new Map();
+        function element(selector) {{
+          if (!elements.has(selector)) {{
+            elements.set(selector, {{
+              innerHTML: "",
+              textContent: "",
+              disabled: false,
+              dataset: {{}},
+              addEventListener() {{}},
+            }});
+          }}
+          return elements.get(selector);
+        }}
+        const fetchCalls = [];
+        const context = {{
+          console: {{ info() {{}}, log() {{}}, error() {{}} }},
+          window: {{}},
+          document: {{ querySelector: element, addEventListener() {{}} }},
+          localStorage: {{ getItem() {{ return "[]"; }}, setItem() {{}} }},
+          crypto: {{ randomUUID() {{ return "test-id"; }} }},
+          AbortController,
+          setTimeout,
+          clearTimeout,
+          fetch(url) {{
+            fetchCalls.push(url);
+            return Promise.resolve({{
+              ok: true,
+              json: () => Promise.resolve({{
+                answer: "Live answer",
+                evidence: [],
+                debug: {{}},
+                metrics: {{}},
+                error: null
+              }})
+            }});
+          }},
+        }};
+        vm.createContext(context);
+        vm.runInContext(fs.readFileSync({json.dumps(str(APP_JS))}, "utf8"), context);
+        context.window.__KEP_DEMO_TEST__
+          .askQuestionWithDemoPolicy("What risks should be mitigated before deployment?")
+          .then((result) => process.stdout.write(JSON.stringify({{ fetchCalls, source: result.responseSource }})))
+          .catch((error) => {{
+            console.error(error);
+            process.exit(1);
+          }});
+        """
+    )
+
+    output = subprocess.check_output(["node", "-e", script], cwd=ROOT, text=True)
+    result = json.loads(output)
+
+    assert result["fetchCalls"] == ["/ask"]
+    assert result["source"] == "live"
+
+
+def test_demo_preset_failure_uses_clearly_labelled_cached_fallback() -> None:
+    script = dedent(
+        f"""
+        const fs = require("fs");
+        const vm = require("vm");
+        const elements = new Map();
+        function element(selector) {{
+          if (!elements.has(selector)) {{
+            elements.set(selector, {{
+              innerHTML: "",
+              textContent: "",
+              disabled: false,
+              dataset: {{}},
+              addEventListener() {{}},
+            }});
+          }}
+          return elements.get(selector);
+        }}
+        const context = {{
+          console: {{ info() {{}}, log() {{}}, error() {{}} }},
+          window: {{}},
+          document: {{ querySelector: element, addEventListener() {{}} }},
+          localStorage: {{ getItem() {{ return "[]"; }}, setItem() {{}} }},
+          crypto: {{ randomUUID() {{ return "test-id"; }} }},
+          AbortController,
+          setTimeout,
+          clearTimeout,
+          fetch() {{ return Promise.reject(new Error("backend unavailable")); }},
+        }};
+        vm.createContext(context);
+        vm.runInContext(fs.readFileSync({json.dumps(str(APP_JS))}, "utf8"), context);
+        context.window.__KEP_DEMO_TEST__
+          .askQuestionWithDemoPolicy("What risks should be mitigated before deployment?")
+          .then((result) => process.stdout.write(JSON.stringify({{
+            source: result.responseSource,
+            label: context.window.__KEP_DEMO_TEST__.responseSourceLabel(result),
+            timings: result.metrics
+          }})))
+          .catch((error) => {{
+            console.error(error);
+            process.exit(1);
+          }});
+        """
+    )
+
+    output = subprocess.check_output(["node", "-e", script], cwd=ROOT, text=True)
+    result = json.loads(output)
+
+    assert result["source"] == "cached_fallback"
+    assert result["label"] == "Pre-loaded demo response — not live retrieval"
+    assert result["timings"] == {}
 
 
 def test_custom_question_never_uses_cache_and_calls_live_backend() -> None:
@@ -101,20 +235,98 @@ def test_timeout_values_are_milliseconds_and_seconds_are_normalized() -> None:
 def test_response_source_labels_cover_live_and_cache_states() -> None:
     result = _run_policy_probe(
         """({
-          cached: api.responseSourceLabel({ responseSource: "cached_demo" }),
-          live: api.responseSourceLabel({ responseSource: "live_pipeline" }),
-          failed: api.responseSourceLabel({ responseSource: "live_failed" }),
-          timeout: api.responseSourceLabel({ responseSource: "live_timeout" }),
-          fallback: api.responseSourceLabel({ responseSource: "fallback_cache" })
+          cached: api.responseSourceLabel({ responseSource: "cached_fallback" }),
+          live: api.responseSourceLabel({ responseSource: "live" }),
+          failed: api.responseSourceLabel({ responseSource: "error" }),
+          timeout: api.responseSourceLabel({ responseSource: "timeout" })
         })"""
     )
 
     assert result == {
-        "cached": "Cached demo response",
-        "live": "Live pipeline run",
+        "cached": "Pre-loaded demo response — not live retrieval",
+        "live": "Live retrieval completed",
         "failed": "Live retrieval failed",
         "timeout": "Live retrieval timed out",
-        "fallback": "Fallback cache shown",
+    }
+
+
+def test_answer_markdown_is_rendered_not_displayed_raw() -> None:
+    result = _run_policy_probe(
+        'api.renderMarkdown("below: ### **GDPR Obligations**\\n1. Run a DPIA\\n- Keep **records**")'
+    )
+
+    assert "<h5><strong>GDPR Obligations</strong></h5>" in result
+    assert "<ol><li>Run a DPIA</li></ol>" in result
+    assert "<ul><li>Keep <strong>records</strong></li></ul>" in result
+    assert "below:" not in result
+    assert "###" not in result
+
+
+def test_source_card_keeps_document_citation_title_and_snippet_separate() -> None:
+    result = _run_policy_probe(
+        """api.renderEvidenceCard({
+          regulation: "GDPR",
+          sourceDocument: "gdpr.pdf",
+          reference: "Article 35",
+          statementTitle: "Data protection impact assessment",
+          concept: "DPIA",
+          passage: "A DPIA is required where processing is likely to result in high risk.",
+          explanation: "The question asks when a DPIA is required."
+        })"""
+    )
+
+    assert "gdpr.pdf" in result
+    assert "Article 35" in result
+    assert "Data protection impact assessment" in result
+    assert "A DPIA is required" in result
+    assert "The question asks when a DPIA is required." in result
+
+
+def test_graph_labeling_and_regulation_split_are_demo_safe() -> None:
+    result = _run_policy_probe(
+        """(() => {
+          const nodes = api.normalizeGraphNodes([
+            { id: "privacy", label: "Privacy Controls GDPR", type: "control" },
+            { id: "article", label: "Article 35 GDPR", type: "evidence" }
+          ]);
+          const graph = api.splitOverloadedRegulationNodes(nodes, api.normalizeGraphEdges([
+            { source: "privacy", target: "article", label: "supported by evidence" }
+          ]));
+          return {
+            illustrative: api.graphModeLabel({ meta: { source: "illustrative_demo_graph" } }, false),
+            retrieved: api.graphModeLabel({ meta: { source: "live_retrieval_rows" } }, false),
+            labels: graph.nodes.map((node) => `${node.type}:${node.label}`).sort(),
+            edgeLabels: graph.edges.map((edge) => edge.label).sort()
+          };
+        })()"""
+    )
+
+    assert result["illustrative"] == "Illustrative graph"
+    assert result["retrieved"] == "Retrieved evidence graph"
+    assert "regulation:GDPR" in result["labels"]
+    assert "control:Privacy Controls" in result["labels"]
+    assert "evidence:Article 35" in result["labels"]
+    assert "requires" in result["edgeLabels"]
+    assert "cites" in result["edgeLabels"]
+
+
+def test_dense_graph_hides_secondary_edge_labels_by_default() -> None:
+    result = _run_policy_probe(
+        """({
+          requires: api.visibleEdgeLabel({ label: "requires" }, { type: "regulation" }, { type: "control" }, false),
+          regulated: api.visibleEdgeLabel({ label: "regulated by" }, { type: "concept" }, { type: "regulation" }, false),
+          cites: api.visibleEdgeLabel({ label: "cites" }, { type: "evidence" }, { type: "regulation" }, false),
+          supported: api.visibleEdgeLabel({ label: "supported by" }, { type: "control" }, { type: "evidence" }, false),
+          ranked: api.visibleEdgeLabel({ label: "ranked_for_question" }, { type: "question" }, { type: "statement" }, false)
+        })"""
+    )
+
+    assert result == {
+        "requires": "requires",
+        "regulated": "regulated by",
+        "cites": "cites",
+        "supported": "",
+        "ranked": "",
     }
 
 

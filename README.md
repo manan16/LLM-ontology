@@ -96,6 +96,29 @@ Override the answer model:
 python ask.py "What obligations apply to providers?" --model qwen3:14b
 ```
 
+## Web Interface
+
+Run the lightweight Flask UI for the same Graph-RAG pipeline:
+
+```bash
+export FLASK_APP=web.app
+flask run --port 5001
+```
+
+You can also run it as a module:
+
+```bash
+WEB_PORT=5001 python -m web.app
+```
+
+Then open:
+
+```text
+http://127.0.0.1:5001
+```
+
+The web app wraps the existing RAG components used by `ask.py`; it does not modify KG extraction, rebuild the graph, or change the Neo4j schema.
+
 ## RAG Architecture
 
 The current retrieval flow is:
@@ -121,6 +144,7 @@ Key RAG files:
 - `rag/context_builder.py`: evidence grouping and context formatting
 - `rag/prompts.py`: answer-generation prompt
 - `rag/answer_generator.py`: Ollama-backed answer generation
+- `web/`: Flask web UI and reusable RAG service wrapper
 
 ## Retrieval Notes
 
@@ -161,6 +185,7 @@ graph/        Neo4j client, schema helpers, writer
 ingestion/    Document loading and chunking
 pipeline/     End-to-end KG construction pipeline
 rag/          Graph-RAG planner, retriever, context builder, prompt, answer generator
+web/          Flask UI and service wrapper for Graph-RAG questions
 tests/        Unit tests
 ```
 

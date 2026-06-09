@@ -7,12 +7,12 @@ const DEMO_QUESTIONS = [
 ];
 
 const PIPELINE_STEPS = [
-  "Question received",
-  "Domain detected",
-  "Regulations routed",
-  "Entities matched",
-  "Evidence searched",
-  "Answer generated",
+  "Question intake",
+  "Regulation routing",
+  "Graph traversal",
+  "Evidence ranking",
+  "Answer synthesis",
+  "Response ready",
 ];
 const TECHNICAL_TABS = [
   { id: "matched-entities", label: "Matched entities" },
@@ -24,7 +24,8 @@ const TECHNICAL_TABS = [
 
 const EVENT_DEMO_CONFIG = {
   EVENT_DEMO_MODE: true,
-  DEMO_CACHE_ENABLED: true,
+  DEMO_CACHE_ENABLED: false,
+  DEMO_FALLBACK_ENABLED: true,
   LIVE_CUSTOM_QUESTIONS_ENABLED: true,
   DEMO_PRESET_TIMEOUT_MS: 8000,
   CUSTOM_QUESTION_TIMEOUT_MS: 60000,
@@ -39,6 +40,10 @@ const DEFAULT_UI_PREFS = {
   rightWidth: 470,
   technicalDetailsOpen: false,
   technicalDetailsTab: "matched-entities",
+  collapsedSections: {
+    graph: false,
+    technical: true,
+  },
   graphMode: "demo",
   graphZoom: 1,
   graphFullscreen: false,
@@ -55,13 +60,13 @@ const els = {
   form: document.querySelector("#question-form"),
   input: document.querySelector("#question-input"),
   askButton: document.querySelector("#ask-button"),
+  composerSourceNote: document.querySelector("#composer-source-note"),
   charCount: document.querySelector("#char-count"),
   newSessionButton: document.querySelector("#new-session-button"),
   clearSessionButton: document.querySelector("#clear-session-button"),
   resetDemoButton: document.querySelector("#reset-demo-button"),
   demoGrid: document.querySelector("#demo-grid"),
   leftSidebar: document.querySelector("#left-sidebar"),
-  sidebarToggleButton: document.querySelector("#sidebar-toggle-button"),
   demoQuestionList: document.querySelector("#demo-question-list"),
   questionCards: document.querySelector("#question-cards"),
   questionCount: document.querySelector("#question-count"),
@@ -71,7 +76,6 @@ const els = {
   technicalDetailsDrawer: document.querySelector("#technical-details-drawer"),
   answerContent: document.querySelector("#answer-content"),
   evidenceContent: document.querySelector("#evidence-content"),
-  advancedGraphButton: document.querySelector("#advanced-graph-button"),
   copyAnswerButton: document.querySelector("#copy-answer-button"),
 };
 
@@ -90,7 +94,12 @@ els.form.addEventListener("submit", async (event) => {
 
 els.input.addEventListener("input", () => {
   const badge = document.querySelector("#composer-source-badge");
-  if (badge) badge.textContent = composerSourceText();
+  if (badge) {
+    const source = composerSourceState();
+    badge.textContent = source.label;
+    badge.className = `active-response-state source-${slug(source.key)}`;
+  }
+  if (els.composerSourceNote) els.composerSourceNote.textContent = composerSourceNote();
   updateCharacterCount();
 });
 
@@ -104,6 +113,7 @@ els.newSessionButton.addEventListener("click", () => {
 
 els.clearSessionButton?.addEventListener("click", (event) => {
   event.preventDefault();
+  event.stopPropagation();
   resetDemo();
 });
 
@@ -122,19 +132,6 @@ function resetDemo() {
   persistUiPrefs();
   render();
 }
-
-els.advancedGraphButton.addEventListener("click", () => {
-  state.ui.technicalDetailsOpen = !state.ui.technicalDetailsOpen;
-  persistUiPrefs();
-  render();
-});
-
-els.sidebarToggleButton.addEventListener("click", () => {
-  state.ui.sidebarCollapsed = !state.ui.sidebarCollapsed;
-  persistUiPrefs();
-  applyLayoutPrefs();
-  render();
-});
 
 els.copyAnswerButton.addEventListener("click", () => {
   const selected = getSelectedQuestion();
@@ -162,6 +159,12 @@ document.addEventListener("click", (event) => {
     state.ui.technicalDetailsTab = technicalTab.dataset.technicalTab;
     persistUiPrefs();
     renderTechnicalDetails();
+    return;
+  }
+
+  const sectionToggle = event.target.closest("[data-section-toggle]");
+  if (sectionToggle) {
+    toggleSection(sectionToggle.dataset.sectionToggle);
     return;
   }
 
@@ -194,10 +197,10 @@ async function submitQuestion(question) {
     obligations: [],
     verdict: buildVerdict(question, [], detectDomain(question)),
     evidence: [],
-    graph: buildGraphJourney(question, [], false),
+    graph: illustrativeDemoGraph(question, [], false),
     error: "",
     usedCache: false,
-    responseSource: "live_pipeline",
+    responseSource: "live",
   };
 
   state.questions = state.questions.map((entry) => ({ ...entry, expanded: false }));
@@ -219,13 +222,13 @@ async function submitQuestion(question) {
       error: "",
     });
   } catch (error) {
-    const responseSource = error.isTimeout ? "live_timeout" : "live_failed";
+    const responseSource = error.isTimeout ? "timeout" : "error";
     updateQuestion(item.id, {
       status: "error",
       pipelineStep: PIPELINE_STEPS.length - 1,
-      error: responseSource === "live_timeout" ? "Live retrieval timed out." : "Live retrieval failed.",
+      error: responseSource === "timeout" ? "Live retrieval timed out." : "Live retrieval failed.",
       responseSource,
-      graph: buildGraphJourney(question, [], true),
+      graph: errorGraph(question),
       evidence: [],
       answer: "",
     });
@@ -253,7 +256,7 @@ async function askQuestionWithDemoPolicy(question) {
 
   if (policy.useCache) {
     await wait(180);
-    return normalizeDemoResponse(question, true, "cached_demo");
+    return normalizeDemoResponse(question, true, "cached_fallback");
   }
 
   if (!policy.livePipelineCalled) {
@@ -262,10 +265,10 @@ async function askQuestionWithDemoPolicy(question) {
 
   try {
     const data = await fetchAnswer(question, policy.timeoutMs);
-    return normalizeBackendResponse(question, data, false, "live_pipeline");
+    return normalizeBackendResponse(question, data, false, "live");
   } catch (error) {
-    if (policy.cacheHit && policy.cacheEnabled && policy.isDemoPreset) {
-      return normalizeDemoResponse(question, true, "fallback_cache");
+    if (policy.cacheHit && policy.fallbackEnabled && policy.isDemoPreset) {
+      return normalizeDemoResponse(question, true, "cached_fallback");
     }
     throw error;
   }
@@ -303,36 +306,36 @@ async function fetchAnswer(question, timeoutMs) {
   return data;
 }
 
-function normalizeBackendResponse(question, data, usedCache, responseSource = "live_pipeline") {
+function normalizeBackendResponse(question, data, usedCache, responseSource = "live") {
   const evidence = (data.evidence || []).slice(0, 6).map((item, index) => {
-    const regulation = regulationFromText(`${item.source_group || ""} ${item.source_document || ""} ${item.statement || ""}`);
+    const sourceDocument = item.source_document || item.document || item.source || "Unknown source document";
+    const statementTitle = item.statement || item.statement_name || item.title || "Matched regulatory statement";
+    const regulation = regulationFromText(`${item.source_group || ""} ${sourceDocument} ${statementTitle}`);
     return {
       id: String(item.id || index + 1),
       regulation,
-      reference: item.citation || item.source_document || "Evidence passage",
-      concept: item.statement || "Matched compliance concept",
-      explanation: explainEvidenceUse(regulation, item.statement, question),
+      sourceDocument,
+      reference: item.citation || item.section || sourceDocument || "Evidence passage",
+      statementTitle,
+      concept: item.matched_concept || item.concept || statementTitle || "Matched compliance concept",
+      explanation: item.why_selected || explainEvidenceUse(regulation, statementTitle, question),
       passage: item.evidence_text || "",
       score: normalizeScore(item.score, 0.92 - index * 0.04),
     };
   });
 
-  const demo = findDemoResponse(question);
-  const fallback = demo ? normalizeDemoResponse(question, true) : null;
-  const activeEvidence = evidence.length ? evidence : fallback?.evidence || [];
-
   return {
-    answer: data.answer || fallback?.answer || `The system generated a compliance answer for: ${question}`,
-    summary: fallback?.summary || summarizeAnswer(data.answer, question),
-    obligations: fallback?.obligations || obligationsForQuestion(question),
-    evidence: activeEvidence,
-    graph: buildGraphJourney(question, activeEvidence, false),
+    answer: data.answer || `The live backend returned no answer text for: ${question}`,
+    summary: summarizeAnswer(data.answer, question),
+    obligations: obligationsForQuestion(question),
+    evidence,
+    graph: normalizeBackendGraphPayload(data.graph, question, evidence),
     debug: data.debug || {},
     domain: detectDomain(question, data.debug?.query_plan),
-    regulations: inferRegulations(question, activeEvidence),
-    verdict: buildVerdict(question, activeEvidence, detectDomain(question, data.debug?.query_plan)),
+    regulations: inferRegulations(question, evidence),
+    verdict: buildVerdict(question, evidence, detectDomain(question, data.debug?.query_plan)),
     metrics: {
-      evidencePassages: data.metrics?.evidence_items || activeEvidence.length,
+      evidencePassages: data.metrics?.evidence_items || evidence.length,
       searchTimeMs: data.metrics?.elapsed_ms || null,
       routingMs: data.metrics?.routing_ms || null,
       retrievalMs: data.metrics?.retrieval_ms || null,
@@ -346,7 +349,53 @@ function normalizeBackendResponse(question, data, usedCache, responseSource = "l
   };
 }
 
-function normalizeDemoResponse(question, usedCache, responseSource = usedCache ? "cached_demo" : "live_pipeline") {
+function normalizeBackendGraphPayload(graph, question, evidence = []) {
+  const rawNodes = Array.isArray(graph?.nodes) ? graph.nodes : [];
+  const rawEdges = Array.isArray(graph?.edges) ? graph.edges : [];
+  if (rawNodes.length) {
+    return {
+      nodes: normalizeGraphNodes(rawNodes),
+      edges: normalizeGraphEdges(rawEdges),
+      advancedNodes: [],
+      advancedEdges: [],
+      meta: {
+        ...(graph.meta || {}),
+        source: graph.meta?.source || "live_retrieval_rows",
+      },
+    };
+  }
+  return evidenceGraphFromRetrievedEvidence(question, evidence);
+}
+
+function evidenceGraphFromRetrievedEvidence(question, evidence = []) {
+  const nodes = [{ id: "question", label: question || "Question", type: "question" }];
+  const edges = [];
+  evidence.slice(0, 8).forEach((item, index) => {
+    const evidenceId = String(item.id || index + 1);
+    const regulationId = `reg:${slug(item.sourceDocument || item.regulation || "source")}`;
+    const statementId = `stmt:${slug(item.statementTitle || item.concept || evidenceId)}`;
+    const evidenceNodeId = `evidence:${evidenceId}`;
+    nodes.push(
+      { id: regulationId, label: item.sourceDocument || item.regulation || "Source document", type: "regulation", source_document: item.sourceDocument },
+      { id: statementId, label: item.statementTitle || item.concept || "Retrieved statement", type: "statement", source_document: item.sourceDocument, citation: item.reference },
+      { id: evidenceNodeId, label: item.reference || `Evidence ${evidenceId}`, type: "evidence", source_document: item.sourceDocument, citation: item.reference, evidence_id: evidenceId },
+    );
+    edges.push(
+      { source: "question", target: statementId, label: "ranked_for_question", relationship_type: "UI_RETRIEVAL", evidence_id: evidenceId },
+      { source: statementId, target: evidenceNodeId, label: "retrieved_as_evidence", relationship_type: "UI_RETRIEVAL", evidence_id: evidenceId },
+      { source: evidenceNodeId, target: regulationId, label: "source_document", relationship_type: "UI_RETRIEVAL", evidence_id: evidenceId },
+    );
+  });
+  return {
+    nodes: normalizeGraphNodes(nodes),
+    edges: normalizeGraphEdges(edges),
+    advancedNodes: [],
+    advancedEdges: [],
+    meta: { source: "retrieved_evidence_ui_graph" },
+  };
+}
+
+function normalizeDemoResponse(question, usedCache, responseSource = usedCache ? "cached_fallback" : "live") {
   const demo = findDemoResponse(question) || DEMO_CACHE.default;
   return {
     answer: demo.answer,
@@ -355,30 +404,24 @@ function normalizeDemoResponse(question, usedCache, responseSource = usedCache ?
     evidence: demo.evidence.map((item, index) => ({
       ...item,
       id: String(index + 1),
+      sourceDocument: item.sourceDocument || demoSourceDocument(item.regulation),
+      statementTitle: item.statementTitle || item.concept || "Regulatory evidence",
       score: item.score || Number((0.96 - index * 0.04).toFixed(2)),
     })),
-    graph: buildGraphJourney(question, demo.evidence, false, demo.path),
+    graph: illustrativeDemoGraph(question, demo.evidence, false, demo.path),
     debug: demo.debug || {},
     domain: demo.domain,
     regulations: demo.regulations,
     verdict: demo.verdict || buildVerdict(question, demo.evidence, demo.domain),
-    metrics: { evidencePassages: demo.evidence.length, searchTimeMs: 360, routingMs: 24, retrievalMs: 140, graphQueryMs: 80, rankingMs: 48, generationMs: 108, totalMs: 390 },
+    metrics: responseSource === "cached_fallback" ? {} : { evidencePassages: demo.evidence.length, searchTimeMs: 360, routingMs: 24, retrievalMs: 140, graphQueryMs: 80, rankingMs: 48, generationMs: 108, totalMs: 390 },
     usedCache,
     responseSource,
   };
 }
 
-function buildGraphJourney(question, evidence, failed, preferredPath) {
+function illustrativeDemoGraph(question, evidence, failed, preferredPath) {
   if (failed) {
-    return {
-      nodes: [
-        { id: "question", label: "Question", type: "Question" },
-        { id: "error", label: "Evidence search unavailable", type: "Risk" },
-      ],
-      edges: [{ source: "question", target: "error", label: "blocked by" }],
-      advancedNodes: [],
-      advancedEdges: [],
-    };
+    return errorGraph(question);
   }
 
   const path = normalizeGraphPath(preferredPath || inferPath(question, evidence));
@@ -400,7 +443,20 @@ function buildGraphJourney(question, evidence, failed, preferredPath) {
     label: "supported by",
   }));
 
-  return { nodes, edges, advancedNodes, advancedEdges };
+  return { nodes, edges, advancedNodes, advancedEdges, meta: { source: "illustrative_demo_graph" } };
+}
+
+function errorGraph(question) {
+  return {
+    nodes: [
+      { id: "question", label: question || "Question", type: "question" },
+      { id: "error", label: "Live retrieval unavailable", type: "risk" },
+    ],
+    edges: [{ source: "question", target: "error", label: "error", relationship_type: "UI_STATE" }],
+    advancedNodes: [],
+    advancedEdges: [],
+    meta: { source: "error_state" },
+  };
 }
 
 function isRiskGraphPath(question, path) {
@@ -409,37 +465,44 @@ function isRiskGraphPath(question, path) {
 }
 
 function buildRiskGraphJourney() {
-  const labels = [
-    "Mental Health AI",
-    "Risk Management",
-    "Clinical Safety",
-    "Bias",
-    "Privacy Controls",
-    "Cybersecurity",
-    "Monitoring",
-    "Human Oversight",
-    "Articles 9 and 15",
-    "Article 35 GDPR",
-    "Security Rule",
+  const nodeDefs = [
+    ["mental-health-ai", "Mental Health AI", "system"],
+    ["health-data", "Health Data", "concept"],
+    ["risk-score", "Risk Score", "concept"],
+    ["bias-risk", "Bias Risk", "risk"],
+    ["high-risk-ai", "High-Risk AI System", "concept"],
+    ["gdpr", "GDPR", "regulation"],
+    ["eu-ai-act", "EU AI Act", "regulation"],
+    ["privacy-controls", "Privacy Controls", "control"],
+    ["risk-management", "Risk Management", "control"],
+    ["human-oversight", "Human Oversight", "control"],
+    ["monitoring", "Monitoring", "control"],
+    ["cybersecurity", "Cybersecurity", "control"],
+    ["gdpr-article-35", "GDPR Article 35", "evidence"],
+    ["ai-act-articles-9-15", "AI Act Articles 9-15", "evidence"],
+    ["security-rule", "HIPAA Security Rule", "evidence"],
   ];
-  const nodes = labels.map((label, index) => ({
-    id: `n${index + 1}`,
+  const nodes = nodeDefs.map(([id, label, type]) => ({
+    id,
     label,
-    type: nodeTypeFor(label, index),
+    type,
   }));
-  const byLabel = Object.fromEntries(nodes.map((node) => [node.label, node.id]));
   const edges = [
-    ["Mental Health AI", "Risk Management", "applies to"],
-    ["Risk Management", "Clinical Safety", "involves"],
-    ["Clinical Safety", "Bias", ""],
-    ["Bias", "Privacy Controls", "requires"],
-    ["Cybersecurity", "Risk Management", ""],
-    ["Monitoring", "Clinical Safety", ""],
-    ["Risk Management", "Human Oversight", "supported by"],
-    ["Clinical Safety", "Articles 9 and 15", "supported by"],
-    ["Clinical Safety", "Article 35 GDPR", "supported by"],
-    ["Privacy Controls", "Security Rule", "supported by"],
-  ].map(([source, target, label]) => ({ source: byLabel[source], target: byLabel[target], label }));
+    ["mental-health-ai", "health-data", "processes"],
+    ["health-data", "gdpr", "regulated by"],
+    ["gdpr", "privacy-controls", "requires"],
+    ["privacy-controls", "gdpr-article-35", "supported by evidence"],
+    ["mental-health-ai", "risk-score", "generates"],
+    ["risk-score", "bias-risk", "introduces risk"],
+    ["bias-risk", "human-oversight", "mitigated by"],
+    ["mental-health-ai", "high-risk-ai", "classified as"],
+    ["high-risk-ai", "eu-ai-act", "regulated by"],
+    ["eu-ai-act", "risk-management", "requires"],
+    ["eu-ai-act", "monitoring", "requires"],
+    ["eu-ai-act", "cybersecurity", "requires"],
+    ["risk-management", "ai-act-articles-9-15", "supported by evidence"],
+    ["cybersecurity", "security-rule", "supported by evidence"],
+  ].map(([source, target, label]) => ({ source, target, label, relationship_type: "ILLUSTRATIVE" }));
   const advancedNodes = [
     { id: "a1", label: "Audit Logs", type: "Control" },
     { id: "a2", label: "Drift Testing", type: "Risk" },
@@ -447,24 +510,24 @@ function buildRiskGraphJourney() {
     { id: "a4", label: "Access Controls", type: "Control" },
   ];
   const advancedEdges = [
-    { source: byLabel["Privacy Controls"], target: "a4", label: "requires" },
-    { source: byLabel["Monitoring"], target: "a2", label: "requires" },
-    { source: byLabel["Article 35 GDPR"], target: "a3", label: "cites" },
-    { source: byLabel["Security Rule"], target: "a1", label: "supported by" },
+    { source: "privacy-controls", target: "a4", label: "requires", relationship_type: "ILLUSTRATIVE" },
+    { source: "monitoring", target: "a2", label: "requires", relationship_type: "ILLUSTRATIVE" },
+    { source: "gdpr-article-35", target: "a3", label: "cites", relationship_type: "ILLUSTRATIVE" },
+    { source: "security-rule", target: "a1", label: "supports", relationship_type: "ILLUSTRATIVE" },
   ];
-  return { nodes, edges, advancedNodes, advancedEdges };
+  return { nodes, edges, advancedNodes, advancedEdges, meta: { source: "illustrative_demo_graph" } };
 }
 
 function inferPath(question, evidence) {
   const regulations = inferRegulations(question, evidence);
   const concepts = evidence.map((item) => item.concept).filter(Boolean).slice(0, 3);
   return [
-    "Mental Health AI",
+    "User question",
     detectDomain(question),
     regulations.join(" + ") || "Healthcare regulation",
-    ...concepts,
-    "Sources Used",
-    "Compliance answer",
+    ...(concepts.length ? concepts : ["Relevant obligations"]),
+    "Evidence passages",
+    "Compliance assessment",
   ].filter(Boolean);
 }
 
@@ -483,16 +546,20 @@ function render() {
   renderStepper();
   renderGraph();
   renderTechnicalDetails();
+  applySectionStates();
   renderAnswer();
   els.askButton.disabled = state.isLoading;
   updateCharacterCount();
   els.questionCount.textContent = "5 suggested questions";
   els.sessionState.textContent = state.isLoading ? "Running pipeline" : state.questions.length ? "Session active" : "Ready";
-  els.advancedGraphButton.textContent = state.ui.technicalDetailsOpen ? "Hide technical details" : "Show technical details";
-  els.sidebarToggleButton.setAttribute?.("aria-label", state.ui.sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar");
-  els.sidebarToggleButton.textContent = state.ui.sidebarCollapsed ? "›" : "‹";
+  updateSectionToggles();
   els.composerSourceBadge = document.querySelector("#composer-source-badge");
-  if (els.composerSourceBadge) els.composerSourceBadge.textContent = composerSourceText();
+  if (els.composerSourceBadge) {
+    const source = composerSourceState();
+    els.composerSourceBadge.textContent = source.label;
+    els.composerSourceBadge.className = `active-response-state source-${slug(source.key)}`;
+  }
+  if (els.composerSourceNote) els.composerSourceNote.textContent = composerSourceNote();
 }
 
 function updateCharacterCount() {
@@ -513,10 +580,26 @@ function renderDemoButtons() {
   }).join("");
 }
 
-function composerSourceText() {
+function composerSourceState() {
+  if (state.isLoading) return { key: "live", label: "Live backend running" };
+  const selected = getSelectedQuestion();
+  if (selected?.status === "error") return { key: selected.responseSource || "error", label: responseSourceLabel(selected) };
+  if (selected?.status === "complete" && !els.input?.value?.trim()) return { key: selected.responseSource || "live", label: responseSourceLabel(selected) };
   const question = els.input?.value?.trim() || getSelectedQuestion()?.question || "";
   const policy = buildRequestPolicy(question || "custom");
-  return policy.useCache ? "Cached demo response" : "Live pipeline run";
+  return policy.useCache ? { key: "cached_fallback", label: "Pre-loaded demo response — not live retrieval" } : { key: "live", label: "Live backend request" };
+}
+
+function composerSourceText() {
+  return composerSourceState().label;
+}
+
+function composerSourceNote() {
+  const selected = getSelectedQuestion();
+  if (!selected) return "Ask a question to start";
+  if (selected.status === "complete") return selected.responseSource === "cached_fallback" ? "Fallback shown after live failure" : "Backend /ask completed";
+  if (selected.status === "error") return selected.responseSource === "timeout" ? "Timed out after configured limit" : "Backend run failed";
+  return "Current run only";
 }
 
 function renderQuestionCards() {
@@ -535,10 +618,10 @@ function renderQuestionCards() {
     const isExpanded = item.expanded || isSelected;
     const statusLabel = statusLabelForQuestion(item);
     return `
-      <article class="question-card ${isSelected ? "selected" : ""} ${item.status}" data-question-id="${item.id}">
+      <article class="question-card ${isSelected ? "selected" : ""} ${item.status}" data-question-id="${item.id}" ${titleIfTruncated(item.question, 72)}>
         <header>
           <span>Q${index + 1}</span>
-          <strong>${escapeHtml(truncate(item.question, 72))}</strong>
+          <strong ${titleIfTruncated(item.question, 72)}>${escapeHtml(truncate(item.question, 72))}</strong>
           <em>${statusLabel}</em>
         </header>
         ${isExpanded ? `
@@ -568,10 +651,12 @@ function renderStepper() {
         : index === selected.pipelineStep
           ? "active"
           : "pending";
+    const marker = status === "complete" ? "✓" : status === "error" ? "!" : index + 1;
     return `
       <div class="step ${status}">
-        <span>✓</span>
+        <span>${marker}</span>
         <strong>${escapeHtml(label)}</strong>
+        <small>${escapeHtml(stepDescription(label, selected))}</small>
       </div>
     `;
   }).join("");
@@ -589,10 +674,17 @@ function renderGraph() {
     return;
   }
 
-  const graph = selected.graph || buildGraphJourney(selected.question, selected.evidence || [], selected.status === "error");
-  const technicalGraph = state.ui.graphMode === "technical";
-  const nodes = normalizeGraphNodes(technicalGraph ? [...graph.nodes, ...graph.advancedNodes] : graph.nodes);
-  const edges = normalizeGraphEdges(technicalGraph ? [...graph.edges, ...graph.advancedEdges] : graph.edges);
+  const graph = selected.graph || evidenceGraphFromRetrievedEvidence(selected.question, selected.evidence || []);
+  const illustrative = isIllustrativeGraph(graph);
+  const technicalGraph = state.ui.graphMode === "technical" && !illustrative;
+  const rawNodes = normalizeGraphNodes(technicalGraph ? [...(graph.nodes || []), ...(graph.advancedNodes || [])] : graph.nodes || []);
+  const rawEdges = normalizeGraphEdges(technicalGraph ? [...(graph.edges || []), ...(graph.advancedEdges || [])] : graph.edges || []);
+  const expandedGraph = splitOverloadedRegulationNodes(rawNodes, rawEdges);
+  const allNodes = expandedGraph.nodes;
+  const allEdges = expandedGraph.edges;
+  const nodes = technicalGraph ? allNodes : highValueGraphNodes(allNodes, 15);
+  const visibleNodeIds = new Set(nodes.map((node) => node.id));
+  const edges = allEdges.filter((edge) => visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target));
   const layout = layoutGraph(nodes, selected);
   const byId = Object.fromEntries(layout.map((node) => [node.id, node]));
 
@@ -600,34 +692,43 @@ function renderGraph() {
     const source = byId[edge.source];
     const target = byId[edge.target];
     if (!source || !target) return "";
-    const midX = (source.x + target.x) / 2;
-    const midY = (source.y + target.y) / 2 - 10;
-    const edgeLabel = technicalGraph ? shortEdgeLabel(edge.label) : importantDemoEdgeLabel(edge.label);
-    const label = edgeLabel ? `<g class="edge-label"><rect x="${midX - 42}" y="${midY - 14}" width="84" height="20" rx="6"></rect><text x="${midX}" y="${midY}">${escapeHtml(edgeLabel)}</text></g>` : "";
+    const path = graphEdgePath(source, target);
+    const edgeLabel = visibleEdgeLabel(edge, source, target, technicalGraph);
+    const labelPoint = edgeLabelPoint(source, target, edgeLabel);
+    const labelWidth = Math.min(Math.max(edgeLabel.length * 7 + 18, 58), 132);
+    const label = edgeLabel ? `
+      <g class="edge-label">
+        <title>${escapeHtml(edgeTooltip(edge))}</title>
+        <rect x="${labelPoint.x - labelWidth / 2}" y="${labelPoint.y - 11}" width="${labelWidth}" height="19" rx="7"></rect>
+        <text x="${labelPoint.x}" y="${labelPoint.y - 1}">${escapeHtml(edgeLabel)}</text>
+      </g>` : "";
     return `
-      <path marker-end="url(#arrowhead)" d="M ${source.x + 70} ${source.y} C ${midX} ${source.y}, ${midX} ${target.y}, ${target.x - 70} ${target.y}"></path>
+      <path class="${edgeLabel ? "primary-edge" : "secondary-edge"}" marker-end="url(#arrowhead)" d="${path}"><title>${escapeHtml(edgeTooltip(edge))}</title></path>
       ${label}
     `;
   }).join("");
 
   const nodeSvg = layout.map((node, index) => {
     const isPrimary = isPrimaryGraphNode(selected, node, index, technicalGraph);
-    const step = isPrimary ? `<text class="node-step" x="-44" y="-16">${primaryStepNumber(layout, selected, index)}</text>` : "";
+    const width = graphNodeWidth(node);
+    const step = isPrimary ? `<text class="node-step" x="${-width / 2 + 16}" y="-18">${primaryStepNumber(layout, selected, index)}</text>` : "";
     return `
     <g class="graph-node graph-${slug(node.type)} ${isPrimary ? "primary" : "secondary"}" transform="translate(${node.x}, ${node.y})">
-      <rect x="-70" y="-34" width="140" height="68" rx="10"></rect>
-      <text text-anchor="middle">${svgLines(node.label)}</text>
+      <title>${escapeHtml(nodeTooltip(node, graph))}</title>
+      <rect x="${-width / 2}" y="-34" width="${width}" height="68" rx="10"></rect>
+      <text text-anchor="middle">${svgLines(node.label, width)}</text>
       ${step}
       <text class="node-type" y="55" text-anchor="middle">${escapeHtml(node.type)}</text>
     </g>
   `;
   }).join("");
+  const viewport = graphViewport(layout);
 
   els.graphStage.innerHTML = `
     <div class="graph-meta">
       <span>${nodes.length} highlighted nodes</span>
       <span>${edges.length} highlighted links</span>
-      <span>${technicalGraph ? "Technical graph" : "Demo graph"}</span>
+      <span>${graphModeLabel(graph, technicalGraph)}</span>
       <div class="graph-controls" aria-label="Graph controls">
         <button type="button" data-graph-action="fit">Fit graph</button>
         <button type="button" data-graph-action="zoom-in">Zoom in</button>
@@ -638,10 +739,11 @@ function renderGraph() {
     </div>
     <div class="graph-legend" aria-label="Graph legend">
       <span><i class="legend-blue"></i>Blue = system / concept</span>
+      <span><i class="legend-purple"></i>Purple = regulation / source</span>
       <span><i class="legend-orange"></i>Orange = risk</span>
       <span><i class="legend-green"></i>Green = control / evidence</span>
     </div>
-    <svg viewBox="0 0 1060 500" role="img" aria-label="Highlighted compliance knowledge graph">
+    <svg viewBox="${viewport.viewBox}" style="min-width: ${viewport.width}px; min-height: ${viewport.height}px;" role="img" aria-label="Highlighted compliance knowledge graph">
       <defs>
         <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
           <path d="M 0 0 L 10 5 L 0 10 z"></path>
@@ -657,77 +759,82 @@ function renderGraph() {
 
 function renderTechnicalDetails() {
   if (!state.ui.technicalDetailsOpen) {
-    els.technicalDetailsDrawer.hidden = false;
-    els.technicalDetailsDrawer.innerHTML = `
-      <button type="button" class="technical-drawer-handle" data-graph-action="toggle-details">
-        <span>⌄</span>
-        Show technical details
-        <span>⌄</span>
-      </button>
-    `;
+    els.technicalDetailsDrawer.hidden = true;
+    els.technicalDetailsDrawer.innerHTML = "";
     return;
   }
   const selected = getSelectedQuestion();
   els.technicalDetailsDrawer.hidden = false;
   if (!selected) {
-    els.technicalDetailsDrawer.innerHTML = `
-      <button type="button" class="technical-drawer-handle" data-graph-action="toggle-details">
-        <span>⌄</span>
-        Show technical details
-        <span>⌄</span>
-      </button>
-    `;
+    els.technicalDetailsDrawer.innerHTML = renderTechnicalEmpty("Ask or select a question to inspect matched entities, retrieval scores, evidence IDs, graph traversal, and timings.");
     return;
   }
   const activeTab = state.ui.technicalDetailsTab || "matched-entities";
   els.technicalDetailsDrawer.innerHTML = `
-    <header>
+    <header class="technical-content-header">
       <div>
-        <strong>Hide technical details</strong>
+        <strong>Pipeline run</strong>
         <span>${escapeHtml(responseSourceLabel(selected))}</span>
       </div>
       <div class="technical-actions">
-        <button type="button" data-graph-action="technical-mode">${state.ui.graphMode === "technical" ? "Use demo graph" : "Expand graph"}</button>
+        ${isCachedFallback(selected) ? "" : `<button type="button" data-graph-action="technical-mode">${state.ui.graphMode === "technical" ? "Use demo graph" : "Expand graph"}</button>`}
         <button type="button" data-graph-action="fit">Fit graph</button>
       </div>
     </header>
     <div class="technical-tabs">
-      ${TECHNICAL_TABS.map((tab) => `<button type="button" data-technical-tab="${tab.id}" class="${activeTab === tab.id ? "active" : ""}">${tab.label}</button>`).join("")}
+      ${TECHNICAL_TABS.map((tab) => `<button type="button" data-technical-tab="${tab.id}" class="${activeTab === tab.id ? "active" : ""}" title="${escapeHtml(tab.label)}">${tab.label}</button>`).join("")}
     </div>
     <div class="technical-tab-content">${renderTechnicalTabContent(selected, activeTab)}</div>
   `;
 }
 
 function renderTechnicalTabContent(selected, tabId) {
-  if (tabId === "matched-entities") return renderChipList(getMatchedEntities(selected), "No matched entities available for this response.");
+  if (isCachedFallback(selected)) {
+    if (tabId === "matched-entities") {
+      return `${renderTechnicalSummary("Pre-loaded fallback", "This answer was not produced by live retrieval. Matched entities are inferred from the demo preset only.")}${renderChipList(getMatchedEntities(selected), "No preset concepts available for this response.")}`;
+    }
+    if (tabId === "evidence-ids") {
+      return `${renderTechnicalSummary("Pre-loaded fallback sources", "These source labels come from the cached demo response, not live retrieval rows.")}${renderChipList(getEvidenceIds(selected), "No fallback source labels available for this response.")}`;
+    }
+    return `${renderTechnicalSummary("No live debug data", "The backend did not complete, so this cached fallback has no live retrieval scores, graph debug rows, or pipeline timings.")}${renderTechnicalEmpty("No live technical data available for this fallback response.")}`;
+  }
+  if (tabId === "matched-entities") {
+    return `${renderTechnicalSummary("Which regulation route was selected", `${(selected.regulations || []).join(" · ") || "Healthcare AI route"} for ${selected.domain || "this question"}.`)}${renderChipList(getMatchedEntities(selected), "No matched entities available for this response.")}`;
+  }
   if (tabId === "retrieval-scores") {
     const scores = getRetrievalScores(selected);
-    if (!scores.length) return renderTechnicalEmpty("No retrieval scores available for this response.");
-    return `<div class="technical-table">${scores.map((item) => `
+    if (!scores.length) return `${renderTechnicalSummary("Why this evidence was retrieved", "The backend did not expose ranked scores for this response.")}${renderTechnicalEmpty("No retrieval scores available for this response.")}`;
+    return `${renderTechnicalSummary("Why this evidence was retrieved", "Top passages were selected because they matched the routed regulation and compliance concepts.")}<div class="technical-table">${scores.map((item) => `
       <div><strong>${escapeHtml(item.reference)}</strong><span>${escapeHtml(item.regulation)}</span><em>${formatScore(item.score)}</em></div>
     `).join("")}</div>`;
   }
-  if (tabId === "evidence-ids") return renderChipList(getEvidenceIds(selected), "No evidence IDs available for this response.");
+  if (tabId === "evidence-ids") {
+    return `${renderTechnicalSummary("Which sources were included", `${selected.evidence?.length || 0} regulatory source${selected.evidence?.length === 1 ? "" : "s"} are attached to this answer.`)}${renderChipList(getEvidenceIds(selected), "No evidence IDs available for this response.")}`;
+  }
   if (tabId === "graph-traversal") {
     const details = getGraphTraversalDetails(selected);
-    if (!details.length) return renderTechnicalEmpty("No graph traversal details available for this response.");
-    return `<div class="technical-table traversal">${details.map((item) => `
+    if (!details.length) return `${renderTechnicalSummary("Knowledge graph path", "No traversal relationships were exposed for this response.")}${renderTechnicalEmpty("No graph traversal details available for this response.")}`;
+    return `${renderTechnicalSummary("Knowledge graph path", "The graph path links the question to regulations, concepts, controls, and evidence.")}<div class="technical-table traversal">${details.map((item) => `
       <div><strong>${escapeHtml(item.from)}</strong><span>${escapeHtml(item.relationship)}</span><strong>${escapeHtml(item.to)}</strong></div>
     `).join("")}</div>`;
   }
   if (tabId === "pipeline-timings") {
     const timings = getPipelineTimings(selected);
-    if (!timings.length) return renderTechnicalEmpty("No pipeline timings available for this response.");
-    return `<div class="technical-table timings">${timings.map((item) => `
+    if (!timings.length) return `${renderTechnicalSummary("Pipeline timings", "Timing metadata was not returned for this response.")}${renderTechnicalEmpty("No pipeline timings available for this response.")}`;
+    return `${renderTechnicalSummary("Pipeline timings", "Stage timings help explain backend latency without exposing raw debug output.")}<div class="technical-table timings">${timings.map((item) => `
       <div><strong>${escapeHtml(item.label)}</strong><em>${escapeHtml(item.value)}</em></div>
     `).join("")}</div>`;
   }
   return renderTechnicalEmpty("No technical detail available for this tab.");
 }
 
+function renderTechnicalSummary(title, body) {
+  return `<div class="technical-summary"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(body)}</span></div>`;
+}
+
 function renderChipList(items, emptyMessage) {
   if (!items.length) return renderTechnicalEmpty(emptyMessage);
-  return `<div class="entity-chips">${items.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div>`;
+  return `<div class="entity-chips">${items.map((item) => `<span title="${escapeHtml(item)}">${escapeHtml(item)}</span>`).join("")}</div>`;
 }
 
 function renderTechnicalEmpty(message) {
@@ -739,6 +846,7 @@ function getMatchedEntities(item) {
 }
 
 function getRetrievalScores(item) {
+  if (isCachedFallback(item)) return [];
   return (item.evidence || []).map((entry) => ({
     reference: entry.reference || entry.id || "Evidence passage",
     regulation: entry.regulation || "Regulation",
@@ -751,7 +859,8 @@ function getEvidenceIds(item) {
 }
 
 function getGraphTraversalDetails(item) {
-  const graph = item.graph || buildGraphJourney(item.question, item.evidence || [], item.status === "error");
+  if (isCachedFallback(item)) return [];
+  const graph = item.graph || evidenceGraphFromRetrievedEvidence(item.question, item.evidence || []);
   const byId = Object.fromEntries([...(graph.nodes || []), ...(graph.advancedNodes || [])].map((node) => [node.id, node.label || node.id]));
   return [...(graph.edges || []), ...(graph.advancedEdges || [])].map((edge) => ({
     from: byId[edge.source] || edge.source || "Source",
@@ -761,6 +870,7 @@ function getGraphTraversalDetails(item) {
 }
 
 function getPipelineTimings(item) {
+  if (isCachedFallback(item)) return [];
   const metrics = item.metrics || {};
   return [
     ["Routing", metrics.routingMs],
@@ -801,6 +911,7 @@ function renderAnswer() {
     els.evidenceContent.innerHTML = "";
     return;
   }
+  const selectedEvidence = selected.evidence || [];
 
   els.answerContent.innerHTML = `
     <article class="answer-card">
@@ -825,28 +936,36 @@ function renderAnswer() {
   els.evidenceContent.innerHTML = `
     <div class="section-title evidence-title">
       <h3>Sources used</h3>
-      <span>${selected.evidence.length} regulatory sources selected</span>
+      <span>${selectedEvidence.length} regulatory sources selected</span>
     </div>
     <div class="evidence-list">
-      ${selected.evidence.map(renderEvidenceCard).join("") || renderEmptyState("No evidence passages were returned.")}
+      ${selectedEvidence.map(renderEvidenceCard).join("") || renderEmptyState("No evidence passages were returned.")}
     </div>
   `;
 }
 
 function renderEvidenceCard(item) {
+  const sourceDocument = item.sourceDocument || demoSourceDocument(item.regulation);
+  const reference = item.reference || "Evidence passage";
+  const explanation = sourceShortExplanation(item);
+  const snippet = item.passage || "No snippet returned.";
   return `
     <details class="evidence-card">
       <summary>
         <span class="reg-badge ${slug(item.regulation)}">${escapeHtml(item.regulation)}</span>
         <span class="source-card-copy">
-          <strong>${escapeHtml(item.reference)}</strong>
-          <small>${escapeHtml(sourceShortExplanation(item))}</small>
+          <strong ${titleIfTruncated(sourceDocument, 42)}>${escapeHtml(truncate(sourceDocument, 42))}</strong>
+          <b ${titleIfTruncated(reference, 48)}>${escapeHtml(truncate(reference, 48))}</b>
+          <small ${titleIfTruncated(explanation, 86)}>${escapeHtml(truncate(explanation, 86))}</small>
         </span>
       </summary>
       <dl>
+        <div><dt>Source document</dt><dd>${escapeHtml(sourceDocument)}</dd></div>
         <div><dt>Regulation</dt><dd>${escapeHtml(item.regulation)}</dd></div>
-        <div><dt>Section or article</dt><dd>${escapeHtml(item.reference)}</dd></div>
+        <div><dt>Section or article</dt><dd>${escapeHtml(reference)}</dd></div>
+        <div><dt>Statement title</dt><dd>${escapeHtml(item.statementTitle || item.concept || "Regulatory evidence")}</dd></div>
         <div><dt>Matched concept</dt><dd>${escapeHtml(item.concept)}</dd></div>
+        <div><dt>Evidence snippet</dt><dd ${titleIfTruncated(snippet, 260)}>${escapeHtml(truncate(snippet, 260))}</dd></div>
         <div><dt>Why this was used</dt><dd>${escapeHtml(item.explanation)}</dd></div>
       </dl>
     </details>
@@ -927,18 +1046,73 @@ function renderFullAnswerToggle(selected) {
   return `
     <details class="full-answer">
       <summary>Show full answer</summary>
-      <div>${renderAnswerText(full)}</div>
+      <div class="rendered-markdown">${renderMarkdown(full)}</div>
     </details>
   `;
 }
 
 function renderAnswerText(text) {
-  const lines = String(text || "").split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
-  if (!lines.length) return "<p>No answer generated.</p>";
-  return lines.map((line) => {
-    const bullet = line.match(/^[-*]\s+(.+)/);
-    return bullet ? `<p class="answer-bullet">${inlineMarkdown(bullet[1])}</p>` : `<p>${inlineMarkdown(line)}</p>`;
-  }).join("");
+  return renderMarkdown(text);
+}
+
+function renderMarkdown(text) {
+  const cleaned = cleanAnswerMarkdown(text);
+  const lines = cleaned.split(/\r?\n/);
+  const html = [];
+  let listType = null;
+
+  const closeList = () => {
+    if (!listType) return;
+    html.push(`</${listType}>`);
+    listType = null;
+  };
+
+  lines.forEach((rawLine) => {
+    const line = rawLine.trim();
+    if (!line) {
+      closeList();
+      return;
+    }
+    const heading = line.match(/^(#{1,4})\s+(.+)$/);
+    if (heading) {
+      closeList();
+      const level = Math.min(heading[1].length + 2, 5);
+      html.push(`<h${level}>${inlineMarkdown(heading[2])}</h${level}>`);
+      return;
+    }
+    const bullet = line.match(/^[-*]\s+(.+)$/);
+    if (bullet) {
+      if (listType !== "ul") {
+        closeList();
+        html.push("<ul>");
+        listType = "ul";
+      }
+      html.push(`<li>${inlineMarkdown(bullet[1])}</li>`);
+      return;
+    }
+    const numbered = line.match(/^\d+[.)]\s+(.+)$/);
+    if (numbered) {
+      if (listType !== "ol") {
+        closeList();
+        html.push("<ol>");
+        listType = "ol";
+      }
+      html.push(`<li>${inlineMarkdown(numbered[1])}</li>`);
+      return;
+    }
+    closeList();
+    html.push(`<p>${inlineMarkdown(line)}</p>`);
+  });
+  closeList();
+  return html.join("") || "<p>No answer generated.</p>";
+}
+
+function cleanAnswerMarkdown(text) {
+  return String(text || "")
+    .replace(/\r/g, "")
+    .replace(/^\s*(?:below|answer|response)\s*:\s*(?=#{1,4}\s)/i, "")
+    .replace(/\n\s*(?:below|answer|response)\s*:\s*(?=#{1,4}\s)/gi, "\n")
+    .trim();
 }
 
 function renderEmptyState(message) {
@@ -947,12 +1121,12 @@ function renderEmptyState(message) {
 
 function stepDescription(label, item) {
   const descriptions = {
-    "Question received": truncate(item.question, 56),
-    "Domain detected": item.domain || "Healthcare AI",
-    "Regulations routed": (item.regulations || []).join(", ") || "GDPR, HIPAA, EU AI Act",
-    "Entities matched": relatedConcepts(item).slice(0, 2).join(", "),
-    "Evidence searched": `${item.evidence?.length || 0} sources selected`,
-    "Answer generated": item.status === "complete" ? "Visitor-ready assessment" : item.status === "error" ? "Error state shown" : "Preparing answer",
+    "Question intake": truncate(item.question, 34),
+    "Regulation routing": (item.regulations || []).join(", ") || "GDPR, HIPAA, EU AI Act",
+    "Graph traversal": relatedConcepts(item).slice(0, 2).join(", "),
+    "Evidence ranking": `${item.evidence?.length || 0} sources selected`,
+    "Answer synthesis": item.status === "complete" ? "Grounded controls drafted" : item.status === "error" ? "Generation skipped" : "Building grounded answer",
+    "Response ready": item.status === "complete" ? "Visitor-ready assessment" : item.status === "error" ? "Error state shown" : "Preparing response",
   };
   return descriptions[label] || "";
 }
@@ -970,18 +1144,36 @@ function formatQuestionMeta(item) {
 }
 
 function responseSourceLabel(item) {
-  const source = item.responseSource || (item.usedCache ? "cached_demo" : "live_pipeline");
-  if (source === "cached_demo") return "Cached demo response";
-  if (source === "fallback_cache") return "Fallback cache shown";
-  if (source === "live_failed") return "Live retrieval failed";
-  if (source === "live_timeout") return "Live retrieval timed out";
-  return "Live pipeline run";
+  const source = item.responseSource || (item.usedCache ? "cached_fallback" : "live");
+  if (source === "live" || source === "live_pipeline") return "Live retrieval completed";
+  if (source === "cached_fallback" || source === "cached_demo" || source === "fallback_cache") return "Pre-loaded demo response — not live retrieval";
+  if (source === "timeout" || source === "live_timeout") return "Live retrieval timed out";
+  if (source === "error" || source === "live_failed") return "Live retrieval failed";
+  return "Live backend request";
+}
+
+function highValueGraphNodes(nodes, limit) {
+  const priority = { question: 0, regulation: 1, statement: 2, evidence: 3, entity: 4, ontology: 5, control: 6, risk: 6 };
+  return [...nodes]
+    .sort((a, b) => (priority[String(a.type || "").toLowerCase()] ?? 9) - (priority[String(b.type || "").toLowerCase()] ?? 9))
+    .slice(0, limit);
+}
+
+function isIllustrativeGraph(graph) {
+  return String(graph?.meta?.source || "").includes("illustrative");
+}
+
+function graphModeLabel(graph, technicalGraph) {
+  if (isIllustrativeGraph(graph)) return "Illustrative graph";
+  if (technicalGraph) return "Technical graph";
+  return "Retrieved evidence graph";
 }
 
 function buildRequestPolicy(question, config = EVENT_DEMO_CONFIG) {
   const isDemoPreset = isDemoPresetQuestion(question);
   const cacheHit = Boolean(findDemoResponse(question));
   const cacheEnabled = Boolean(config.EVENT_DEMO_MODE && config.DEMO_CACHE_ENABLED);
+  const fallbackEnabled = Boolean(config.EVENT_DEMO_MODE && config.DEMO_FALLBACK_ENABLED);
   const useCache = Boolean(cacheEnabled && isDemoPreset && cacheHit);
   const livePipelineCalled = !useCache && (!isDemoPreset || Boolean(config.LIVE_CUSTOM_QUESTIONS_ENABLED));
   const timeoutMs = normalizeTimeoutMs(
@@ -992,6 +1184,7 @@ function buildRequestPolicy(question, config = EVENT_DEMO_CONFIG) {
     question,
     isDemoPreset,
     cacheEnabled,
+    fallbackEnabled,
     cacheHit,
     timeoutMs,
     useCache,
@@ -1016,11 +1209,17 @@ function logRequestPolicy(policy) {
     question: policy.question,
     isDemoPreset: policy.isDemoPreset,
     cacheEnabled: policy.cacheEnabled,
+    fallbackEnabled: policy.fallbackEnabled,
     cacheHit: policy.cacheHit,
     timeoutMs: policy.timeoutMs,
     useCache: policy.useCache,
     livePipelineCalled: policy.livePipelineCalled,
   });
+}
+
+function isCachedFallback(item) {
+  const source = item?.responseSource;
+  return source === "cached_fallback" || source === "cached_demo" || source === "fallback_cache";
 }
 
 function statusLabelForQuestion(item) {
@@ -1052,11 +1251,18 @@ function sourceShortExplanation(item) {
   return item.concept || "Regulatory evidence used for this assessment";
 }
 
+function demoSourceDocument(regulation) {
+  if (regulation === "GDPR") return "GDPR regulatory evidence";
+  if (regulation === "HIPAA") return "HIPAA regulatory evidence";
+  if (regulation === "EU AI Act") return "EU AI Act regulatory evidence";
+  return "Regulatory evidence";
+}
+
 function isPrimaryGraphNode(selected, node, index, advanced) {
   if (advanced && node.id?.startsWith("a")) return false;
   const text = selected.question.toLowerCase();
   if (text.includes("risk") || text.includes("deployment")) {
-    return ["Mental Health AI", "Risk Management", "Clinical Safety", "Bias", "Privacy Controls"].includes(node.label);
+    return ["Mental Health AI", "Health Data", "GDPR", "Privacy Controls", "High-Risk AI System", "EU AI Act", "Risk Management"].includes(node.label);
   }
   return index < 6;
 }
@@ -1074,11 +1280,77 @@ function graphTranslateY() {
   return 0;
 }
 
+function graphViewport(nodes) {
+  if (!nodes.length) return { viewBox: "0 0 1060 500", width: 1060, height: 500 };
+  const padding = 96;
+  const extents = nodes.reduce((acc, node) => {
+    const width = graphNodeWidth(node);
+    acc.minX = Math.min(acc.minX, node.x - width / 2);
+    acc.maxX = Math.max(acc.maxX, node.x + width / 2);
+    acc.minY = Math.min(acc.minY, node.y - 70);
+    acc.maxY = Math.max(acc.maxY, node.y + 86);
+    return acc;
+  }, { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity });
+  const width = Math.max(1060, Math.ceil(extents.maxX - extents.minX + padding * 2));
+  const height = Math.max(500, Math.ceil(extents.maxY - extents.minY + padding * 2));
+  const minX = Math.floor(extents.minX - padding);
+  const minY = Math.floor(extents.minY - padding);
+  return {
+    viewBox: `${minX} ${minY} ${width} ${height}`,
+    width: Math.ceil(width * state.ui.graphZoom),
+    height: Math.ceil(height * state.ui.graphZoom),
+  };
+}
+
+function toggleSection(section) {
+  if (!["graph", "technical"].includes(section)) return;
+  if (section === "technical") {
+    state.ui.technicalDetailsOpen = !state.ui.technicalDetailsOpen;
+  } else {
+    state.ui.collapsedSections = { ...DEFAULT_UI_PREFS.collapsedSections, ...(state.ui.collapsedSections || {}) };
+    state.ui.collapsedSections[section] = !state.ui.collapsedSections[section];
+    if (section === "graph" && state.ui.collapsedSections.graph) state.ui.graphFullscreen = false;
+  }
+  persistUiPrefs();
+  render();
+}
+
+function isSectionCollapsed(section) {
+  if (section === "technical") return !state.ui.technicalDetailsOpen;
+  if (section !== "graph") return false;
+  return Boolean(state.ui.collapsedSections?.[section]);
+}
+
+function applySectionStates() {
+  if (typeof document.querySelectorAll !== "function") return;
+  document.querySelectorAll("[data-section-block]").forEach((block) => {
+    const section = block.dataset.sectionBlock;
+    const collapsed = isSectionCollapsed(section);
+    block.classList.toggle("is-collapsed", collapsed);
+    block.classList.toggle("is-expanded", !collapsed);
+    block.querySelectorAll(".block-body").forEach((body) => {
+      body.hidden = collapsed;
+    });
+  });
+  els.graphStage?.classList?.toggle("is-fullscreen", state.ui.graphFullscreen);
+}
+
+function updateSectionToggles() {
+  if (typeof document.querySelectorAll !== "function") return;
+  document.querySelectorAll("[data-section-toggle]").forEach((button) => {
+    const section = button.dataset.sectionToggle;
+    const collapsed = isSectionCollapsed(section);
+    button.setAttribute("aria-expanded", String(!collapsed));
+    button.textContent = section === "technical"
+      ? collapsed ? "Show" : "Hide"
+      : collapsed ? "Expand" : "Collapse";
+    button.title = `${button.textContent} ${section.replace("-", " ")}`;
+  });
+}
+
 function handleGraphAction(action) {
   if (action === "toggle-details") {
-    state.ui.technicalDetailsOpen = !state.ui.technicalDetailsOpen;
-    persistUiPrefs();
-    render();
+    toggleSection("technical");
     return;
   }
   if (action === "fit") fitGraph();
@@ -1087,7 +1359,12 @@ function handleGraphAction(action) {
   if (action === "reset-layout") {
     state.ui.graphZoom = 1;
   }
-  if (action === "fullscreen") state.ui.graphFullscreen = !state.ui.graphFullscreen;
+  if (action === "fullscreen") {
+    state.ui.graphFullscreen = !state.ui.graphFullscreen;
+    if (state.ui.graphFullscreen) {
+      state.ui.collapsedSections = { ...DEFAULT_UI_PREFS.collapsedSections, ...(state.ui.collapsedSections || {}), graph: false };
+    }
+  }
   if (action === "technical-mode") {
     state.ui.graphMode = state.ui.graphMode === "technical" ? "demo" : "technical";
     state.ui.graphZoom = 1;
@@ -1126,7 +1403,7 @@ function setupResizeHandles() {
         const delta = moveEvent.clientX - startX;
         const bounds = els.demoGrid.getBoundingClientRect();
         const maxSide = Math.max(320, bounds.width - 650 - 48);
-        if (side === "left" && !state.ui.sidebarCollapsed) {
+        if (side === "left") {
           state.ui.leftWidth = clampNumber(startLeft + delta, 240, Math.min(520, maxSide));
         }
         if (side === "right") {
@@ -1155,25 +1432,26 @@ function applyLayoutPrefs() {
   const rightWidth = clampNumber(Number(state.ui.rightWidth) || DEFAULT_UI_PREFS.rightWidth, 320, 620);
   els.demoGrid?.style?.setProperty("--left-width", `${leftWidth}px`);
   els.demoGrid?.style?.setProperty("--right-width", `${rightWidth}px`);
-  els.leftSidebar?.classList?.toggle("is-collapsed", state.ui.sidebarCollapsed);
   els.graphStage?.classList?.toggle("is-fullscreen", state.ui.graphFullscreen);
 }
 
 function effectiveLeftWidth() {
-  return state.ui.sidebarCollapsed ? 76 : clampNumber(Number(state.ui.leftWidth) || DEFAULT_UI_PREFS.leftWidth, 260, 520);
+  return clampNumber(Number(state.ui.leftWidth) || DEFAULT_UI_PREFS.leftWidth, 260, 520);
 }
 
 function readUiPrefs() {
   try {
     const raw = { ...DEFAULT_UI_PREFS, ...JSON.parse(localStorage.getItem(UI_STORAGE_KEY) || "{}") };
     const tabIds = TECHNICAL_TABS.map((tab) => tab.id);
+    const collapsedSections = { ...DEFAULT_UI_PREFS.collapsedSections, ...(raw.collapsedSections || {}) };
     return {
       ...raw,
-      sidebarCollapsed: Boolean(raw.sidebarCollapsed),
+      sidebarCollapsed: false,
       leftWidth: clampNumber(Number(raw.leftWidth) || DEFAULT_UI_PREFS.leftWidth, 260, 520),
       rightWidth: clampNumber(Number(raw.rightWidth) || DEFAULT_UI_PREFS.rightWidth, 320, 620),
       technicalDetailsOpen: Boolean(raw.technicalDetailsOpen),
       technicalDetailsTab: tabIds.includes(raw.technicalDetailsTab) ? raw.technicalDetailsTab : "matched-entities",
+      collapsedSections,
       graphMode: raw.graphMode === "technical" ? "technical" : "demo",
       graphZoom: clampNumber(Number(raw.graphZoom) || 1, 0.72, 1.8),
       graphFullscreen: Boolean(raw.graphFullscreen),
@@ -1193,70 +1471,214 @@ function clampNumber(value, min, max) {
 
 function layoutGraph(nodes, selected) {
   if (state.ui.graphMode === "technical") {
-    const columns = Math.min(5, Math.max(3, Math.ceil(Math.sqrt(nodes.length))));
-    const xGap = 880 / Math.max(columns - 1, 1);
-    const rows = Math.ceil(nodes.length / columns);
-    const yGap = 360 / Math.max(rows - 1, 1);
-    return nodes.map((node, index) => ({
-      ...node,
-      x: 90 + (index % columns) * xGap,
-      y: 80 + Math.floor(index / columns) * yGap,
-    }));
+    return layeredGraphLayout(nodes, { width: 960, x0: 70, y0: 75, yGap: 108, regulationGap: 142 });
   }
-  const risk = `${selected?.question || ""} ${selected?.domain || ""}`.toLowerCase().includes("risk")
-    || `${selected?.question || ""}`.toLowerCase().includes("deployment");
-  if (risk) {
+  const illustrativeRisk = isIllustrativeGraph(selected?.graph) && (
+    `${selected?.question || ""} ${selected?.domain || ""}`.toLowerCase().includes("risk")
+    || `${selected?.question || ""}`.toLowerCase().includes("deployment")
+  );
+  if (illustrativeRisk) {
     const positions = {
-      "Mental Health AI": [105, 250],
-      "Risk Management": [300, 250],
-      "Clinical Safety": [500, 250],
-      "Bias": [700, 250],
-      "Privacy Controls": [900, 250],
-      "Cybersecurity": [300, 110],
-      "Monitoring": [700, 110],
-      "Human Oversight": [220, 390],
-      "Articles 9 and 15": [420, 390],
-      "Article 35 GDPR": [630, 390],
-      "Security Rule": [830, 390],
+      "Mental Health AI": [115, 240],
+      "Health Data": [245, 125],
+      "Risk Score": [245, 240],
+      "High-Risk AI System": [245, 370],
+      "Bias Risk": [425, 240],
+      "GDPR": [475, 110],
+      "EU AI Act": [455, 370],
+      "Privacy Controls": [710, 125],
+      "Human Oversight": [680, 240],
+      "Risk Management": [680, 370],
+      "Monitoring": [850, 305],
+      "Cybersecurity": [850, 435],
+      "GDPR Article 35": [950, 125],
+      "AI Act Articles 9-15": [920, 370],
+      "HIPAA Security Rule": [920, 435],
     };
     return nodes.map((node, index) => {
-      const fallback = [110 + (index % 5) * 205, 115 + Math.floor(index / 5) * 145];
+      const fallback = [90 + (index % 5) * 200, 110 + Math.floor(index / 5) * 150];
       const [x, y] = positions[node.label] || fallback;
       return { ...node, x, y };
     });
   }
-  const columns = Math.min(Math.max(nodes.length, 2), 5);
-  return nodes.map((node, index) => {
-    const col = index % columns;
-    const row = Math.floor(index / columns);
-    return {
-      ...node,
-      x: 105 + col * 205,
-      y: 125 + row * 150 + (col % 2 ? 18 : 0),
-    };
+  return layeredGraphLayout(nodes, { width: 930, x0: 75, y0: 100, yGap: 118, regulationGap: 150 });
+}
+
+function layeredGraphLayout(nodes, options) {
+  const layers = new Map();
+  nodes.forEach((node) => {
+    const layer = graphLayer(node);
+    if (!layers.has(layer)) layers.set(layer, []);
+    layers.get(layer).push(node);
   });
+  const sortedLayers = [...layers.keys()].sort((a, b) => a - b);
+  const xGap = options.width / Math.max(sortedLayers.length - 1, 1);
+  return sortedLayers.flatMap((layer, layerIndex) => {
+    const group = layers.get(layer);
+    const typeGap = group.some((node) => node.type === "regulation") ? (options.regulationGap || options.yGap) : options.yGap;
+    const centerOffset = (group.length - 1) * typeGap / 2;
+    return group.map((node, index) => ({
+      ...node,
+      x: options.x0 + layerIndex * xGap,
+      y: 250 - centerOffset + index * typeGap + (layerIndex % 2 ? 10 : 0),
+    }));
+  });
+}
+
+function graphLayer(node) {
+  const type = String(node.type || "").toLowerCase();
+  if (type === "question" || type === "system") return 0;
+  if (type === "concept" || type === "entity" || type === "ontology") return 1;
+  if (type === "risk") return 2;
+  if (type === "regulation") return 3;
+  if (type === "control" || type === "statement") return 4;
+  if (type === "evidence") return 5;
+  return 2;
+}
+
+function graphNodeWidth(node) {
+  const label = String(node.label || "");
+  const type = String(node.type || "").toLowerCase();
+  const base = type === "regulation" ? 132 : type === "evidence" ? 148 : 144;
+  return clampNumber(base + Math.min(label.length, 28) * 3.2, 128, 190);
+}
+
+function graphEdgePath(source, target) {
+  const sourceWidth = graphNodeWidth(source);
+  const targetWidth = graphNodeWidth(target);
+  const dx = target.x - source.x;
+  const dy = target.y - source.y;
+  const horizontal = Math.abs(dx) >= Math.abs(dy);
+  const startX = source.x + Math.sign(dx || 1) * sourceWidth / 2;
+  const endX = target.x - Math.sign(dx || 1) * targetWidth / 2;
+  const startY = source.y;
+  const endY = target.y;
+  if (horizontal && Math.abs(dy) < 44) {
+    return `M ${startX} ${startY} L ${endX} ${endY}`;
+  }
+  const touchesRegulation = source.type === "regulation" || target.type === "regulation";
+  const curve = Math.min(Math.abs(dx) * (touchesRegulation ? 0.14 : 0.2), touchesRegulation ? 44 : 64);
+  const c1x = startX + Math.sign(dx || 1) * curve;
+  const c2x = endX - Math.sign(dx || 1) * curve;
+  return `M ${startX} ${startY} C ${c1x} ${startY}, ${c2x} ${endY}, ${endX} ${endY}`;
+}
+
+function edgeLabelPoint(source, target, label = "") {
+  const midX = (source.x + target.x) / 2;
+  const midY = (source.y + target.y) / 2;
+  const dx = target.x - source.x;
+  const dy = target.y - source.y;
+  const length = Math.max(Math.hypot(dx, dy), 1);
+  const touchesRegulation = source.type === "regulation" || target.type === "regulation";
+  const offset = !label ? 0 : touchesRegulation ? (Math.abs(dy) < 40 ? -36 : 32) : (Math.abs(dy) < 40 ? -24 : 20);
+  const pullFromTarget = touchesRegulation && target.type === "regulation" ? 0.38 : 0.5;
+  return {
+    x: source.x + dx * pullFromTarget + (-dy / length) * offset,
+    y: source.y + dy * pullFromTarget + (dx / length) * offset,
+  };
+}
+
+function visibleEdgeLabel(edge, source, target, technicalGraph) {
+  const label = shortEdgeLabel(edge.label);
+  if (!label) return "";
+  const important = new Set(["regulated by", "requires", "cites", "mitigated by", "classified as"]);
+  if (important.has(label)) return label;
+  if (technicalGraph && important.has(shortEdgeLabel(edge.relationshipType))) return label;
+  return "";
+}
+
+function nodeTooltip(node, graph) {
+  const details = [
+    node.label,
+    `Type: ${node.type}`,
+    node.sourceDocument ? `Source: ${node.sourceDocument}` : "",
+    node.citation ? `Citation: ${node.citation}` : "",
+    node.evidenceId ? `Evidence ID: ${node.evidenceId}` : "",
+    isIllustrativeGraph(graph) ? "Graph source: illustrative fallback" : "Graph source: retrieved evidence",
+  ].filter(Boolean);
+  return details.join("\n");
+}
+
+function edgeTooltip(edge) {
+  return [
+    shortEdgeLabel(edge.label) || edge.label || "relationship",
+    edge.relationshipType ? `Relationship type: ${edge.relationshipType}` : "",
+    edge.evidenceId ? `Evidence ID: ${edge.evidenceId}` : "",
+  ].filter(Boolean).join("\n");
 }
 
 function shortEdgeLabel(label) {
   const text = String(label || "").toLowerCase();
+  if (text.includes("ranked_for_question")) return "ranked for question";
+  if (text.includes("retrieved_as_evidence")) return "retrieved evidence";
+  if (text.includes("supports_answer")) return "supports answer";
+  if (text.includes("source_document")) return "source document";
+  if (text.includes("processes")) return "processes";
+  if (text.includes("regulated by")) return "regulated by";
+  if (text.includes("mitigated")) return "mitigated by";
+  if (text.includes("generates")) return "generates";
+  if (text.includes("introduces")) return "introduces risk";
+  if (text.includes("controls")) return "controls";
+  if (text.includes("classified")) return "classified as";
+  if (text.includes("routes")) return "routes to";
+  if (text.includes("matches")) return "matches";
+  if (text.includes("retrieves")) return "retrieves";
+  if (text.includes("grounds")) return "grounds";
   if (text.includes("applies")) return "applies to";
   if (text.includes("involves")) return "involves";
   if (text.includes("requires")) return "requires";
+  if (text.includes("supported by evidence")) return "supported by evidence";
   if (text.includes("supported")) return "supported by";
   if (text.includes("cites")) return "cites";
+  if (text.includes("references")) return "REFERENCES";
+  if (text.includes("has_requirement")) return "HAS_REQUIREMENT";
+  if (text.includes("instance_of")) return "INSTANCE_OF";
+  if (text.includes("subclass_of")) return "SUBCLASS_OF";
+  if (text.includes("related_concept")) return "RELATED_CONCEPT";
+  if (text.includes("overlaps_with")) return "OVERLAPS_WITH";
   return "";
 }
 
 function importantDemoEdgeLabel(label) {
   const normalized = shortEdgeLabel(label);
-  return ["applies to", "involves", "requires", "supported by"].includes(normalized) ? normalized : "";
+  return [
+    "ranked for question",
+    "retrieved evidence",
+    "supports answer",
+    "source document",
+    "processes",
+    "regulated by",
+    "mitigated by",
+    "generates",
+    "introduces risk",
+    "controls",
+    "classified as",
+    "routes to",
+    "matches",
+    "retrieves",
+    "grounds",
+    "applies to",
+    "involves",
+    "requires",
+    "supported by evidence",
+    "supported by",
+    "REFERENCES",
+    "HAS_REQUIREMENT",
+    "INSTANCE_OF",
+    "SUBCLASS_OF",
+    "RELATED_CONCEPT",
+    "OVERLAPS_WITH",
+  ].includes(normalized) ? normalized : "";
 }
 
 function normalizeGraphNodes(nodes = []) {
   return nodes.map((node, index) => ({
     id: node.id || `node-${index + 1}`,
-    label: shortGraphLabel(node.label || node.name || node.type || `Node ${index + 1}`, index),
-    type: node.type || node.category || nodeTypeFor(node.label || "", index),
+    label: readableGraphLabel(node, index),
+    type: String(node.type || node.category || nodeTypeFor(node.label || "", index)).toLowerCase(),
+    sourceDocument: node.source_document || node.sourceDocument || "",
+    citation: node.citation || "",
+    evidenceId: node.evidence_id || node.evidenceId || "",
   })).filter((node) => node.id && node.label);
 }
 
@@ -1266,8 +1688,62 @@ function normalizeGraphEdges(edges = []) {
       source: edge.source,
       target: edge.target,
       label: shortEdgeLabel(edge.label || edge.relationship || ""),
+      relationshipType: edge.relationship_type || edge.relationshipType || "",
+      evidenceId: edge.evidence_id || edge.evidenceId || "",
     }))
     .filter((edge) => edge.source && edge.target);
+}
+
+function splitOverloadedRegulationNodes(nodes, edges) {
+  const outputNodes = [];
+  const outputEdges = [...edges];
+  const nodeIds = new Set(nodes.map((node) => node.id));
+  nodes.forEach((node) => {
+    const split = regulationSplitForLabel(node);
+    if (!split) {
+      outputNodes.push(node);
+      return;
+    }
+    const regulationId = `reg:${slug(split.regulation)}`;
+    if (!nodeIds.has(regulationId)) {
+      outputNodes.push({ id: regulationId, label: split.regulation, type: "regulation" });
+      nodeIds.add(regulationId);
+    }
+    outputNodes.push({ ...node, label: split.label, type: node.type === "regulation" ? nodeTypeFor(split.label, 0).toLowerCase() : node.type });
+    outputEdges.push({
+      source: regulationId,
+      target: node.id,
+      label: split.edgeLabel,
+      relationshipType: "UI_NORMALIZATION",
+    });
+  });
+  return { nodes: outputNodes, edges: outputEdges };
+}
+
+function regulationSplitForLabel(node) {
+  const label = String(node.label || "");
+  const type = String(node.type || "").toLowerCase();
+  if (type === "regulation" && /^(GDPR|HIPAA|EU AI Act|AI Act|.+\.pdf)$/i.test(label.trim())) return null;
+  const patterns = [
+    { re: /\bGDPR\b/i, regulation: "GDPR" },
+    { re: /\bEU AI Act\b|\bAI Act\b/i, regulation: "EU AI Act" },
+    { re: /\bHIPAA\b/i, regulation: "HIPAA" },
+  ];
+  for (const pattern of patterns) {
+    if (!pattern.re.test(label)) continue;
+    const cleaned = label
+      .replace(pattern.re, "")
+      .replace(/\s{2,}/g, " ")
+      .replace(/\s+[-–]\s+$/, "")
+      .trim();
+    if (!cleaned || cleaned === label) continue;
+    return {
+      regulation: pattern.regulation,
+      label: cleaned,
+      edgeLabel: type === "evidence" ? "cites" : "requires",
+    };
+  }
+  return null;
 }
 
 function formatScore(score) {
@@ -1293,6 +1769,9 @@ function technicalEntityChips(selected) {
 
 function nodeTypeFor(label, index) {
   const text = String(label).toLowerCase();
+  if (text.includes("question")) return "Question";
+  if (text.includes("assessment") || text.includes("answer")) return "Assessment";
+  if (text.includes("article") || text.includes("articles") || text.includes("security rule")) return "Evidence";
   if (text.includes("gdpr") || text.includes("hipaa") || text.includes("ai act")) return "Regulation";
   if (text.includes("evidence")) return "Evidence";
   if (text.includes("privacy") || text.includes("cyber") || text.includes("human") || text.includes("monitor") || text.includes("safeguard") || text.includes("technical")) return "Control";
@@ -1302,8 +1781,19 @@ function nodeTypeFor(label, index) {
   return "Concept";
 }
 
+function readableGraphLabel(node, index = 0) {
+  const raw = String(node.label || node.name || node.source_document || node.type || `Node ${index + 1}`).trim();
+  if (!raw) return `Node ${index + 1}`;
+  const type = String(node.type || node.category || "").toLowerCase();
+  if (/\b(GDPR|HIPAA|EU AI Act|AI Act)\b/i.test(raw) && raw.split(/\s+/).length > 1) return truncate(raw, 34);
+  if (type === "regulation" && (node.source_document || raw.includes(".pdf"))) return truncate(raw, 28);
+  if (type === "evidence") return truncate(raw, 30);
+  if (type === "statement") return truncate(raw, 34);
+  return shortGraphLabel(raw, index);
+}
+
 function edgeLabelFor(index) {
-  return ["applies to", "involves data", "", "requires", "supported by", "", "requires"][index] || "";
+  return ["classified as", "routes to", "matches", "retrieves", "grounds", "supported by", "requires"][index] || "";
 }
 
 function explainEvidenceUse(regulation, concept, question) {
@@ -1343,6 +1833,8 @@ function shortGraphLabel(label, index = 0) {
   const text = String(label || "").trim();
   const lower = text.toLowerCase();
   if (!text) return ["Mental Health AI", "Health Data", "High-Risk AI", "Provider"][index] || "Evidence";
+  if (lower.includes("user question") || lower === "question") return "Question";
+  if (lower.includes("compliance assessment") || lower.includes("answer")) return "Assessment";
   if (lower.includes("mental") || lower.includes("diagnostic")) return "Mental Health AI";
   if (lower.includes("health data") || lower.includes("special category") || lower.includes("patient health")) return "Health Data";
   if (lower.includes("high-risk") || lower.includes("high risk")) return "High-Risk AI";
@@ -1448,24 +1940,31 @@ function truncate(text, length) {
   return value.length > length ? `${value.slice(0, length - 1)}...` : value;
 }
 
+function titleIfTruncated(text, length) {
+  const value = String(text || "");
+  return value.length > length ? `title="${escapeHtml(value)}"` : "";
+}
+
 function slug(value) {
   return String(value || "other").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "other";
 }
 
-function svgLines(label) {
+function svgLines(label, width = 144) {
   const words = String(label || "").split(/\s+/);
   const lines = [];
+  const maxChars = Math.max(12, Math.floor(width / 9.5));
   words.forEach((word) => {
     if (!lines.length) {
       lines.push(word);
       return;
     }
     const current = lines.at(-1) || "";
-    if (`${current} ${word}`.trim().length > 15) lines.push(word);
+    if (`${current} ${word}`.trim().length > maxChars) lines.push(word);
     else lines[lines.length - 1] = `${current} ${word}`.trim();
   });
-  const visibleLines = lines.slice(0, 3);
-  return visibleLines.map((line, index) => `<tspan x="0" y="${(index - (visibleLines.length - 1) / 2) * 14}">${escapeHtml(line)}</tspan>`).join("");
+  const visibleLines = lines.slice(0, 2);
+  if (lines.length > visibleLines.length) visibleLines[visibleLines.length - 1] = truncate(visibleLines.at(-1), maxChars - 1);
+  return visibleLines.map((line, index) => `<tspan x="0" y="${(index - (visibleLines.length - 1) / 2) * 15}">${escapeHtml(line)}</tspan>`).join("");
 }
 
 function inlineMarkdown(value) {
@@ -1602,6 +2101,15 @@ if (typeof window !== "undefined") {
     isDemoPresetQuestion,
     normalizeTimeoutMs,
     responseSourceLabel,
+    renderMarkdown,
+    renderEvidenceCard,
+    normalizeBackendResponse,
+    normalizeGraphNodes,
+    normalizeGraphEdges,
+    splitOverloadedRegulationNodes,
+    graphModeLabel,
+    visibleEdgeLabel,
+    askQuestionWithDemoPolicy,
     fetchAnswer,
   };
 }

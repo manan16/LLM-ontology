@@ -92,11 +92,17 @@ Instructions:
 19. Include an “Evidence used” section at the end with the most relevant evidence item numbers and statement names.
 20. Do not provide legal advice. Present retrieved regulatory information only.
 21. Use the highest-ranked evidence first; lower-ranked evidence should not override a stronger, more complete concept match.
-22. If retrieved evidence comes from multiple regulations or source documents, separate the answer by source/regulation when that helps avoid mixing meanings.
-23. If the user uses an ambiguous term such as “provider” and multiple meanings are retrieved, mention the ambiguity briefly and separate meanings such as health care provider and AI system provider.
-24. Do not say a regulation is missing merely because its rows were ranked lower; say only what the retrieved evidence supports.
-25. For high-risk AI system questions, do not answer from unrelated HIPAA evidence that only matches the generic word “provider.”
-26. For high-risk AI risk-management questions, answer from evidence that mentions high-risk AI systems, AI systems, risk management, controls, safeguards, documentation, monitoring, human oversight, conformity assessment, accuracy, robustness, or cybersecurity. Do not let unrelated HIPAA authorization, PHI, or minimum-necessary evidence override those items.
+22. If retrieved evidence comes from multiple regulations or source documents, separate obligations by regulation/source so HIPAA, GDPR, and EU AI Act duties are not blended.
+23. Distinguish GDPR concepts from HIPAA and EU AI Act concepts. GDPR “controller”, “processor”, and “data subject” terminology must not be confused with HIPAA “covered entity”/“business associate” or EU AI Act “provider”/“deployer”.
+24. If the user uses an ambiguous term such as “provider” and multiple meanings are retrieved, mention the ambiguity briefly and separate meanings such as health care provider and AI system provider.
+25. Do not say a regulation is missing merely because its rows were ranked lower; say only what the retrieved evidence supports.
+26. For high-risk AI system questions, do not answer from unrelated HIPAA evidence that only matches the generic word “provider.”
+27. For high-risk AI risk-management questions, answer from evidence that mentions high-risk AI systems, AI systems, risk management, controls, safeguards, documentation, monitoring, human oversight, conformity assessment, accuracy, robustness, or cybersecurity. Do not let unrelated HIPAA authorization, PHI, or minimum-necessary evidence override those items.
+28. For concrete high-risk AI provider obligation questions, prefer specific operational duties over broad statements about regulation purpose, common rules, Union values, or general compliance.
+29. Group concrete high-risk AI obligations by duty area when supported: Risk management system; Technical documentation and record keeping; Human oversight; Cybersecurity, robustness, and resilience; Conformity assessment; Quality management and post-market monitoring.
+30. Do not present vague statements such as "common rules should be established" as top-level obligations when concrete evidence is available.
+31. If an AI Act evidence item is preamble-level or high-level, label it as high-level evidence rather than turning it into a concrete operational duty.
+32. Do not invent an obligation category or detail that is absent from the retrieved context.
 
 Answer format:
 

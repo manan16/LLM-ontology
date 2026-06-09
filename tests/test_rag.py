@@ -9,10 +9,17 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from ask import build_parser
 from rag.answer_generator import AnswerGenerator
-from rag.context_builder import build_context, get_semantic_group, is_suppressed_context_row
+from rag.context_builder import build_context, context_row_ids, get_semantic_group, is_suppressed_context_row
 from rag.prompts import RAG_PROMPT_TEMPLATE, build_rag_prompt
 from rag.query_planner import build_query_plan
-from rag.retriever import GraphRetriever, _COMMON_RETURN, _dedupe_rows, extract_query_terms
+from rag.retriever import (
+    GraphRetriever,
+    _COMMON_RETURN,
+    _dedupe_rows,
+    _is_evidence_expansion_seed,
+    _select_final_rows,
+    extract_query_terms,
+)
 
 
 class FakeNeo4jClient:
@@ -116,6 +123,53 @@ class FakeAiRiskExpansionClient:
         return []
 
 
+class FakeEntitySeedExpansionClient:
+    def __init__(self, seed_source_document: str | None = None) -> None:
+        self.seed_source_document = seed_source_document
+        self.calls: list[tuple[str, dict[str, Any]]] = []
+
+    def run_query(self, query: str, parameters: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+        params = parameters or {}
+        self.calls.append((query, params))
+        if "MATCH (seed:Entity)" in query:
+            return [
+                {
+                    "seed_id": 101,
+                    "seed_key": "right_to_data_portability",
+                    "seed_name": "Right To Data Portability",
+                    "seed_labels": ["Entity"],
+                    "related_name": "Right To Data Portability",
+                    "related_labels": ["Entity"],
+                    "statement_name": "Right To Data Portability",
+                    "statement_labels": ["Entity"],
+                    "source_document": self.seed_source_document,
+                    "score": 25,
+                }
+            ]
+        if "MATCH path = (seed)-[*1..2]-(statement)" in query:
+            return [
+                {
+                    "seed_id": 101,
+                    "seed_key": "right_to_data_portability",
+                    "seed_name": "Right To Data Portability",
+                    "seed_labels": ["Entity"],
+                    "relationship": "REFERENCES",
+                    "related_name": "Right to Data Portability Evidence",
+                    "related_labels": ["Statement", "Permission"],
+                    "statement_key": "gdpr-portability",
+                    "statement_name": "Right to Data Portability",
+                    "statement_labels": ["Statement", "Permission"],
+                    "evidence_text": "The data subject should have the right to have personal data transmitted directly from one controller to another.",
+                    "source_document": "gdpr.pdf",
+                    "expanded_from_entity_seed": True,
+                    "expanded_from_seed": "Right To Data Portability",
+                    "expansion_path": "RELATED_TO > REFERENCES",
+                    "score": 70,
+                }
+            ]
+        return []
+
+
 def test_extract_query_terms_keeps_domain_phrases_and_removes_stopwords() -> None:
     terms = extract_query_terms("When can a covered entity disclose PHI without authorization?")
 
@@ -154,6 +208,147 @@ def test_query_plan_extracts_concept_groups_for_high_risk_provider_query() -> No
     assert "ai system" in plan.concept_groups["object"]
     assert "obligation" in plan.concept_groups["modality"]
     assert "requirement" in plan.concept_groups["modality"]
+
+
+def test_query_plan_detects_gdpr_domain() -> None:
+    plan = build_query_plan("What obligations apply to controllers processing personal data under GDPR?")
+
+    assert "GDPR" in plan.detected_domains
+    assert "controller" in plan.detected_actors
+    assert "personal data" in plan.detected_objects
+    assert "gdpr" in plan.concept_groups["domain"]
+
+
+def test_query_plan_detects_explicit_target_regulations() -> None:
+    gdpr_plan = build_query_plan("What rights does a data subject have under GDPR?")
+    hipaa_plan = build_query_plan("What safeguards are required under HIPAA?")
+    eu_ai_plan = build_query_plan("What requirements apply under the EU AI Act?")
+
+    assert gdpr_plan.explicit_regulations == ["GDPR"]
+    assert gdpr_plan.target_source_documents == ["gdpr.pdf"]
+    assert gdpr_plan.explicit_single_regulation is True
+    assert hipaa_plan.target_source_documents == ["hipaa.pdf"]
+    assert eu_ai_plan.target_source_documents == ["eu_ai_act.pdf"]
+
+
+def test_query_plan_detects_article_9_special_category_data() -> None:
+    plan = build_query_plan("When can special category health data be processed under Article 9?")
+
+    assert "GDPR" in plan.detected_domains
+    assert "article 9" in plan.detected_objects
+    assert "special category data" in plan.detected_objects
+    assert "health data" in plan.detected_objects
+    assert "article 9" in plan.concept_groups["topic"]
+
+
+def test_query_plan_detects_data_subject_rights() -> None:
+    plan = build_query_plan("What rights of access, rectification, erasure, and data portability does a data subject have?")
+
+    assert "GDPR" in plan.detected_domains
+    assert "data subject" in plan.detected_actors
+    assert "right of access" in plan.detected_objects
+    assert "right to rectification" in plan.detected_objects
+    assert "right to erasure" in plan.detected_objects
+    assert "right to data portability" in plan.detected_objects
+    assert "human intervention" in plan.expansion_terms
+    assert "meaningful information" in plan.expansion_terms
+
+
+def test_gdpr_health_data_query_routes_to_gdpr() -> None:
+    plan = build_query_plan("What obligations apply when a controller processes health data?")
+
+    assert "GDPR" in plan.detected_domains
+    assert "controller" in plan.detected_actors
+    assert "health data" in plan.detected_objects
+    assert "gdpr" in plan.concept_groups["domain"]
+
+
+def test_cross_regulation_health_ai_question_includes_gdpr_terms() -> None:
+    plan = build_query_plan("What obligations apply when a mental health AI system processes patient data?")
+
+    assert {"GDPR", "HIPAA", "EU AI Act"}.issubset(set(plan.detected_domains))
+    assert "ai system" in plan.detected_objects
+    assert "patient data" in plan.detected_objects
+    assert "personal data" in plan.concept_groups["object"]
+    assert "protected health information" in plan.concept_groups["object"]
+    assert "gdpr" in plan.concept_groups["domain"]
+
+
+def test_mental_health_human_oversight_routes_to_eu_ai_act_and_gdpr() -> None:
+    plan = build_query_plan("What human oversight is required for AI-supported mental health diagnosis?")
+
+    assert plan.is_mental_health_query is True
+    assert "human_oversight" in plan.mental_health_intent_labels
+    assert plan.explicit_regulations == []
+    assert plan.inferred_regulations == ["EU AI Act", "GDPR"]
+    assert plan.target_source_documents == ["eu_ai_act.pdf", "gdpr.pdf"]
+
+
+def test_mental_health_screening_data_routes_to_gdpr_and_hipaa() -> None:
+    plan = build_query_plan("What data protection risks arise from using mental health screening data?")
+
+    assert "screening_data_risks" in plan.mental_health_intent_labels
+    assert plan.inferred_regulations == ["GDPR", "HIPAA"]
+    assert plan.target_source_documents == ["gdpr.pdf", "hipaa.pdf"]
+
+
+def test_mental_health_risk_score_safeguards_routes_to_all_three() -> None:
+    plan = build_query_plan("What safeguards are needed when an AI system generates mental health risk scores?")
+
+    assert "risk_score_safeguards" in plan.mental_health_intent_labels
+    assert plan.inferred_regulations == ["GDPR", "HIPAA", "EU AI Act"]
+    assert plan.target_source_documents == ["gdpr.pdf", "hipaa.pdf", "eu_ai_act.pdf"]
+
+
+def test_mental_health_transparency_explainability_routes_to_gdpr_and_eu_ai_act() -> None:
+    plan = build_query_plan("How should a mental health diagnostic AI system handle transparency and explainability?")
+
+    assert "transparency_explainability" in plan.mental_health_intent_labels
+    assert set(plan.inferred_regulations) == {"GDPR", "EU AI Act"}
+    assert set(plan.target_source_documents) == {"gdpr.pdf", "eu_ai_act.pdf"}
+
+
+def test_explicit_gdpr_overrides_mental_health_cross_routing() -> None:
+    plan = build_query_plan("What GDPR obligations apply when processing mental health data?")
+
+    assert plan.is_mental_health_query is True
+    assert plan.explicit_regulations == ["GDPR"]
+    assert plan.inferred_regulations == []
+    assert plan.target_source_documents == ["gdpr.pdf"]
+    assert plan.explicit_single_regulation is True
+
+
+def test_explicit_hipaa_overrides_mental_health_cross_routing() -> None:
+    plan = build_query_plan("What HIPAA obligations apply to mental health patient data?")
+
+    assert plan.explicit_regulations == ["HIPAA"]
+    assert plan.inferred_regulations == []
+    assert plan.target_source_documents == ["hipaa.pdf"]
+    assert plan.explicit_single_regulation is True
+
+
+def test_explicit_eu_ai_act_overrides_mental_health_cross_routing() -> None:
+    plan = build_query_plan("What EU AI Act requirements apply to a clinical diagnostic AI system?")
+
+    assert plan.explicit_regulations == ["EU AI Act"]
+    assert plan.inferred_regulations == []
+    assert plan.target_source_documents == ["eu_ai_act.pdf"]
+    assert plan.explicit_single_regulation is True
+
+
+def test_mental_health_query_expansion_adds_use_case_terms() -> None:
+    plan = build_query_plan("What human oversight is required for AI-supported mental health diagnosis?")
+
+    assert "mentalhealthdiagnosticsystem" in plan.mental_health_expansion_terms
+    assert "humanoversightrequirement" in plan.expansion_terms
+    assert "human intervention" in plan.expansion_terms
+
+
+def test_mental_health_routing_does_not_treat_apms_as_regulation() -> None:
+    plan = build_query_plan("How should APMS support mental health diagnostic AI safeguards?")
+
+    assert "APMS" not in plan.inferred_regulations
+    assert "apms.pdf" not in plan.target_source_documents
 
 
 def test_query_plan_rewrites_follow_up_when_history_is_available() -> None:
@@ -759,6 +954,447 @@ def test_debug_metadata_includes_concepts_terms_penalties_and_source() -> None:
     assert ranked[0]["source_group"] == "hipaa"
     assert "actor:provider" in ranked[0]["matched_concept_groups"]
     assert "generic_provider_only" in ranked[0]["penalties"]
+
+
+def test_concrete_ai_obligation_outranks_broad_preamble_row() -> None:
+    plan = build_query_plan(
+        "What concrete obligations do providers have for high-risk AI systems, including documentation, "
+        "risk management, conformity assessment, monitoring, and cybersecurity?"
+    )
+    rows = [
+        {
+            "statement_name": "High-Risk AI System Rules",
+            "statement_labels": ["Statement", "Requirement"],
+            "evidence_text": "Common rules for high-risk AI systems should be established.",
+            "source_document": "eu_ai_act.pdf",
+            "score": 40,
+        },
+        {
+            "statement_name": "Risk Management System Process",
+            "statement_labels": ["Statement", "Requirement"],
+            "evidence_text": "The risk-management system should consist of a continuous, iterative process throughout the lifecycle of a high-risk AI system.",
+            "source_document": "eu_ai_act.pdf",
+            "score": 0,
+        },
+    ]
+
+    ranked = _dedupe_rows(rows, plan)
+
+    assert ranked[0]["statement_name"] == "Risk Management System Process"
+    assert "concrete_obligation" in ranked[0]["boosts"]
+    assert "risk_management" in ranked[0]["matched_topic_groups"]
+    assert "broad_preamble" in ranked[-1]["penalties"]
+
+
+def test_concrete_ai_topic_boosts_cover_documentation_conformity_and_cybersecurity() -> None:
+    plan = build_query_plan(
+        "What concrete obligations apply to high-risk AI systems for documentation, conformity assessment, and cybersecurity?"
+    )
+    rows = [
+        {
+            "statement_name": "Technical Documentation",
+            "evidence_text": "Technical documentation must describe testing, validation, and the risk-management system for the high-risk AI system.",
+            "source_document": "eu_ai_act.pdf",
+        },
+        {
+            "statement_name": "Conformity Assessment Prior to Market Placement",
+            "evidence_text": "A high-risk AI system is subject to conformity assessment prior to market placement.",
+            "source_document": "eu_ai_act.pdf",
+        },
+        {
+            "statement_name": "Cybersecurity Measures",
+            "evidence_text": "The high-risk AI system requires cybersecurity measures against data poisoning and adversarial attacks.",
+            "source_document": "eu_ai_act.pdf",
+        },
+        {
+            "statement_name": "High-Risk AI System Rules",
+            "evidence_text": "Common rules for high-risk AI systems should be established.",
+            "source_document": "eu_ai_act.pdf",
+            "score": 50,
+        },
+    ]
+
+    ranked = _dedupe_rows(rows, plan)
+
+    assert {row["statement_name"] for row in ranked[:3]} == {
+        "Technical Documentation",
+        "Conformity Assessment Prior to Market Placement",
+        "Cybersecurity Measures",
+    }
+    assert all("concrete_obligation" in row["boosts"] for row in ranked[:3])
+
+
+def test_final_selection_excludes_broad_ai_rows_when_enough_concrete_rows_exist() -> None:
+    plan = build_query_plan("What concrete obligations apply to providers of high-risk AI systems?")
+    concrete_rows = [
+        {
+            "statement_name": f"Concrete Duty {index}",
+            "evidence_text": f"Providers of high-risk AI systems must maintain a risk management system duty {index}.",
+            "source_document": "eu_ai_act.pdf",
+        }
+        for index in range(6)
+    ]
+    broad_row = {
+        "statement_name": "High-Risk AI System Rules",
+        "evidence_text": "Common rules for high-risk AI systems should be established.",
+        "source_document": "eu_ai_act.pdf",
+    }
+    ranked = _dedupe_rows([broad_row, *concrete_rows], plan)
+
+    selected, excluded = _select_final_rows(ranked, plan, 10)
+
+    assert broad_row["statement_name"] not in [row["statement_name"] for row in selected]
+    assert "broad_row_excluded_concrete_available" in excluded[0]["penalties"]
+
+
+def test_final_selection_keeps_concrete_eu_ai_row_without_repeated_ai_object_text() -> None:
+    plan = build_query_plan("What concrete obligations apply to providers of high-risk AI systems?")
+    rows = [
+        {
+            "statement_name": "Technical Documentation Update",
+            "evidence_text": "Providers shall keep the technical documentation up to date.",
+            "source_document": "eu_ai_act.pdf",
+        },
+        {
+            "statement_name": "Risk Management System Process",
+            "evidence_text": "A continuous risk management process applies throughout the lifecycle of a high-risk AI system.",
+            "source_document": "eu_ai_act.pdf",
+        },
+    ]
+    ranked = _dedupe_rows(rows, plan)
+
+    selected, excluded = _select_final_rows(ranked, plan, 10)
+
+    assert "Technical Documentation Update" in [row["statement_name"] for row in selected]
+    assert "Technical Documentation Update" not in [row["statement_name"] for row in excluded]
+
+
+def test_context_builder_groups_concrete_ai_obligations_by_duty_area() -> None:
+    rows = [
+        {"statement_name": "Risk Management System Process", "evidence_text": "A continuous risk management process applies throughout the lifecycle of a high-risk AI system.", "source_document": "eu_ai_act.pdf", "score": 60},
+        {"statement_name": "Technical Documentation", "evidence_text": "Providers must keep technical documentation for the high-risk AI system.", "source_document": "eu_ai_act.pdf", "score": 59},
+        {"statement_name": "Human Oversight Design", "evidence_text": "The high-risk AI system must support human oversight by natural persons.", "source_document": "eu_ai_act.pdf", "score": 58},
+        {"statement_name": "Cybersecurity Measures", "evidence_text": "The high-risk AI system requires cybersecurity and robustness measures.", "source_document": "eu_ai_act.pdf", "score": 57},
+        {"statement_name": "Conformity Assessment", "evidence_text": "The high-risk AI system requires conformity assessment prior to market placement.", "source_document": "eu_ai_act.pdf", "score": 56},
+        {"statement_name": "Establish Post-Market Monitoring System", "evidence_text": "Providers must establish post-market monitoring for the high-risk AI system.", "source_document": "eu_ai_act.pdf", "score": 55},
+    ]
+
+    context = build_context(rows)
+
+    expected_groups = [
+        "Risk management system",
+        "Technical documentation and record keeping",
+        "Human oversight",
+        "Cybersecurity, robustness, and resilience",
+        "Conformity assessment",
+        "Quality management and post-market monitoring",
+    ]
+    for group in expected_groups:
+        assert f"Statement: {group}" in context
+    assert [context.index(f"Statement: {group}") for group in expected_groups] == sorted(
+        context.index(f"Statement: {group}") for group in expected_groups
+    )
+
+
+def test_hipaa_safeguards_query_keeps_hipaa_rows_above_ai_rows() -> None:
+    plan = build_query_plan("What safeguards or policies are required under HIPAA?")
+    rows = [
+        {"statement_name": "HIPAA Safeguards and Policies", "evidence_text": "Covered entities must implement safeguards, policies, procedures, and training under HIPAA.", "source_document": "hipaa.pdf"},
+        {"statement_name": "Cybersecurity Measures", "evidence_text": "High-risk AI systems require cybersecurity safeguards.", "source_document": "eu_ai_act.pdf"},
+    ]
+
+    ranked = _dedupe_rows(rows, plan)
+
+    assert ranked[0]["statement_name"] == "HIPAA Safeguards and Policies"
+    assert "hipaa_noise" not in ranked[0]["penalties"]
+
+
+def test_gdpr_only_question_prefers_gdpr_source_document() -> None:
+    plan = build_query_plan("What rights does a data subject have under GDPR?")
+    rows = [
+        {"statement_name": "Right of Access", "evidence_text": "The data subject has the right of access to personal data.", "source_document": "gdpr.pdf"},
+        {"statement_name": "Right to Rectification", "evidence_text": "The data subject has the right to rectification.", "source_document": "gdpr.pdf"},
+        {"statement_name": "Right to Erasure", "evidence_text": "The data subject has the right to erasure.", "source_document": "gdpr.pdf"},
+        {"statement_name": "EU AI Act GDPR Reference", "evidence_text": "This Regulation references GDPR data subject rights.", "source_document": "eu_ai_act.pdf"},
+        {"statement_name": "HIPAA Individual Access", "evidence_text": "HIPAA gives individuals access to PHI.", "source_document": "hipaa.pdf"},
+    ]
+    ranked = _dedupe_rows(rows, plan)
+    selected, excluded = _select_final_rows(ranked, plan, 5)
+
+    assert selected
+    assert {row["source_document"] for row in selected} == {"gdpr.pdf"}
+    assert selected[0]["source_document"] == "gdpr.pdf"
+    assert any("wrong_source_for_explicit_regulation" in row["penalties"] for row in excluded)
+
+
+def test_hipaa_only_question_prefers_hipaa_source_document() -> None:
+    plan = build_query_plan("What safeguards are required under HIPAA?")
+    rows = [
+        {"statement_name": "HIPAA Safeguards", "evidence_text": "Covered entities must implement safeguards.", "source_document": "hipaa.pdf"},
+        {"statement_name": "HIPAA Policies", "evidence_text": "Covered entities must maintain policies and procedures.", "source_document": "hipaa.pdf"},
+        {"statement_name": "HIPAA Training", "evidence_text": "Covered entities must train workforce members.", "source_document": "hipaa.pdf"},
+        {"statement_name": "AI Cybersecurity", "evidence_text": "High-risk AI systems require cybersecurity safeguards.", "source_document": "eu_ai_act.pdf"},
+    ]
+    ranked = _dedupe_rows(rows, plan)
+    selected, _ = _select_final_rows(ranked, plan, 5)
+
+    assert {row["source_document"] for row in selected} == {"hipaa.pdf"}
+
+
+def test_eu_ai_act_only_question_prefers_eu_ai_act_source_document() -> None:
+    plan = build_query_plan("What requirements apply under the EU AI Act?")
+    rows = [
+        {"statement_name": "Risk Management", "evidence_text": "High-risk AI systems require a risk management system.", "source_document": "eu_ai_act.pdf"},
+        {"statement_name": "Human Oversight", "evidence_text": "High-risk AI systems require human oversight.", "source_document": "eu_ai_act.pdf"},
+        {"statement_name": "Technical Documentation", "evidence_text": "Providers must keep technical documentation.", "source_document": "eu_ai_act.pdf"},
+        {"statement_name": "GDPR DPIA", "evidence_text": "Controllers may need a data protection impact assessment.", "source_document": "gdpr.pdf"},
+    ]
+    ranked = _dedupe_rows(rows, plan)
+    selected, _ = _select_final_rows(ranked, plan, 5)
+
+    assert {row["source_document"] for row in selected} == {"eu_ai_act.pdf"}
+
+
+def test_gdpr_data_subject_rights_uses_rights_expansion_terms() -> None:
+    plan = build_query_plan("What rights does a data subject have under GDPR?")
+    rows = [
+        {"statement_name": "Generic Personal Data", "evidence_text": "Personal data relates to a data subject.", "source_document": "gdpr.pdf", "score": 10},
+        {"statement_name": "Right to Data Portability", "evidence_text": "The data subject has the right to data portability.", "source_document": "gdpr.pdf", "score": 0},
+        {"statement_name": "Automated Decision-Making", "evidence_text": "The data subject may obtain human intervention and meaningful information.", "source_document": "gdpr.pdf", "score": 0},
+    ]
+    ranked = _dedupe_rows(rows, plan)
+
+    assert ranked[0]["statement_name"] in {"Right to Data Portability", "Automated Decision-Making"}
+    assert any(term in ranked[0]["matched_terms"] for term in ("right to data portability", "human intervention", "meaningful information"))
+
+
+def test_exact_entity_matches_are_preserved_as_seeds_when_missing_evidence() -> None:
+    plan = build_query_plan("What rights does a data subject have under GDPR?")
+    rows = [
+        {
+            "seed_id": 101,
+            "seed_name": "Right To Data Portability",
+            "seed_labels": ["Entity"],
+            "statement_name": "Right To Data Portability",
+            "statement_labels": ["Entity"],
+            "score": 25,
+        }
+    ]
+    ranked = _dedupe_rows(rows, plan)
+
+    assert _is_evidence_expansion_seed(ranked[0], plan) is True
+    assert "missing_evidence" in ranked[0]["penalties"]
+
+
+def test_entity_seed_expands_to_connected_evidence_statement() -> None:
+    client = FakeEntitySeedExpansionClient()
+    retriever = GraphRetriever(neo4j_client=client)  # type: ignore[arg-type]
+
+    rows = retriever.retrieve("What rights does a data subject have under GDPR?", limit=5)
+
+    assert rows[0]["statement_name"] == "Right to Data Portability"
+    assert rows[0]["source_document"] == "gdpr.pdf"
+    assert rows[0]["expanded_from_entity_seed"] is True
+    assert "expanded_from_entity_seed" in rows[0]["boosts"]
+    assert retriever.last_expansion_debug["seeds"]
+    assert retriever.last_expansion_debug["expanded"][0]["expanded_from_entity_seed"] is True
+
+
+def test_entity_seed_expansion_respects_explicit_source_document() -> None:
+    client = FakeEntitySeedExpansionClient()
+    retriever = GraphRetriever(neo4j_client=client)  # type: ignore[arg-type]
+
+    retriever.retrieve("What rights does a data subject have under GDPR?", limit=5)
+    expansion_params = [params for query, params in client.calls if "MATCH path = (seed)-[*1..2]-(statement)" in query][0]
+
+    assert expansion_params["target_source_documents"] == ["gdpr.pdf"]
+
+
+def test_gdpr_rights_question_expands_to_specific_rights_terms() -> None:
+    plan = build_query_plan("What rights does a data subject have under GDPR?")
+
+    for term in [
+        "right of access",
+        "right to rectification",
+        "right to erasure",
+        "restriction of processing",
+        "right to data portability",
+        "right to object",
+        "profiling",
+        "human intervention",
+        "meaningful information",
+        "legal effects",
+    ]:
+        assert term in plan.expansion_terms
+
+
+def test_gdpr_rights_question_selects_access_erasure_portability_object_when_available() -> None:
+    plan = build_query_plan("What rights does a data subject have under GDPR?")
+    rows = [
+        {"statement_name": "Generic Data Subject Information", "evidence_text": "The controller should inform the data subject.", "source_document": "gdpr.pdf", "score": 200},
+        {"statement_name": "Right of Access", "evidence_text": "A data subject has the right of access.", "source_document": "gdpr.pdf", "score": 1, "expanded_from_entity_seed": True, "expanded_from_seed": "Data Subject Access Right"},
+        {"statement_name": "Right to Erasure", "evidence_text": "The data subject has the right to erasure.", "source_document": "gdpr.pdf", "score": 1, "expanded_from_entity_seed": True, "expanded_from_seed": "Right To Erasure"},
+        {"statement_name": "Right to Data Portability", "evidence_text": "The data subject may transmit those data to another controller.", "source_document": "gdpr.pdf", "score": 1, "expanded_from_entity_seed": True, "expanded_from_seed": "Right To Data Portability"},
+        {"statement_name": "Right to Object", "evidence_text": "The data subject has the right to object to processing.", "source_document": "gdpr.pdf", "score": 1, "expanded_from_entity_seed": True, "expanded_from_seed": "Right To Object"},
+    ]
+    ranked = _dedupe_rows(rows, plan)
+    selected, _ = _select_final_rows(ranked, plan, 5)
+
+    selected_names = [row["statement_name"] for row in selected[:4]]
+    assert selected_names == ["Right of Access", "Right to Erasure", "Right to Data Portability", "Right to Object"]
+
+
+def test_wrong_source_entity_seed_does_not_reintroduce_eu_ai_act_for_gdpr_question() -> None:
+    client = FakeEntitySeedExpansionClient(seed_source_document="eu_ai_act.pdf")
+    retriever = GraphRetriever(neo4j_client=client)  # type: ignore[arg-type]
+
+    rows = retriever.retrieve("What rights does a data subject have under GDPR?", limit=5)
+
+    assert rows == []
+    assert not any("MATCH path = (seed)-[*1..2]-(statement)" in query for query, _ in client.calls)
+
+
+def test_context_includes_expanded_evidence_rows_from_entity_seeds() -> None:
+    row = {
+        "statement_name": "Right to Data Portability",
+        "evidence_text": "The data subject should have personal data transmitted directly from one controller to another.",
+        "source_document": "gdpr.pdf",
+        "expanded_from_entity_seed": True,
+        "_retriever_ranked": True,
+    }
+
+    context = build_context([row])
+
+    assert "Right to Data Portability" in context
+    assert "transmitted directly" in context
+
+
+def test_diversity_prevents_only_generic_data_subject_rows() -> None:
+    plan = build_query_plan("What rights does a data subject have under GDPR?")
+    rows = [
+        {"statement_name": f"Generic Data Subject Row {index}", "evidence_text": "The controller should provide information to the data subject.", "source_document": "gdpr.pdf", "score": 100 - index}
+        for index in range(5)
+    ]
+    rows.extend(
+        [
+            {"statement_name": "Right of Access", "evidence_text": "The data subject has the right of access.", "source_document": "gdpr.pdf", "score": 1},
+            {"statement_name": "Right to Rectification", "evidence_text": "The data subject may rectify inaccurate personal data.", "source_document": "gdpr.pdf", "score": 1},
+            {"statement_name": "Right to Erasure", "evidence_text": "The data subject has the right to erasure.", "source_document": "gdpr.pdf", "score": 1},
+        ]
+    )
+    ranked = _dedupe_rows(rows, plan)
+    selected, _ = _select_final_rows(ranked, plan, 5)
+
+    assert {"Right of Access", "Right to Rectification", "Right to Erasure"}.issubset(
+        {row["statement_name"] for row in selected}
+    )
+
+
+def test_gdpr_article_9_question_prefers_gdpr_over_eu_ai_act_references() -> None:
+    plan = build_query_plan("When can special category health data be processed under GDPR Article 9?")
+    rows = [
+        {"statement_name": "Article 9 Explicit Consent", "evidence_text": "Article 9 permits processing special category health data with explicit consent.", "source_document": "gdpr.pdf"},
+        {"statement_name": "Article 9 Health Care", "evidence_text": "Article 9 permits processing health data for health care conditions.", "source_document": "gdpr.pdf"},
+        {"statement_name": "Article 9 Public Interest", "evidence_text": "Article 9 includes public interest processing conditions.", "source_document": "gdpr.pdf"},
+        {"statement_name": "EU AI GDPR Reference", "evidence_text": "The EU AI Act references GDPR Article 9 and health data.", "source_document": "eu_ai_act.pdf"},
+    ]
+    ranked = _dedupe_rows(rows, plan)
+    selected, _ = _select_final_rows(ranked, plan, 5)
+
+    assert {row["source_document"] for row in selected} == {"gdpr.pdf"}
+
+
+def test_cross_regulation_question_retrieves_all_requested_sources() -> None:
+    plan = build_query_plan("How do GDPR, HIPAA, and the EU AI Act apply to a mental health diagnostic AI system?")
+    rows = [
+        {"statement_name": "GDPR Health Data", "evidence_text": "GDPR applies to health data.", "source_document": "gdpr.pdf"},
+        {"statement_name": "HIPAA PHI", "evidence_text": "HIPAA applies to protected health information.", "source_document": "hipaa.pdf"},
+        {"statement_name": "EU AI High Risk", "evidence_text": "The EU AI Act applies to high-risk AI systems.", "source_document": "eu_ai_act.pdf"},
+    ]
+    ranked = _dedupe_rows(rows, plan)
+    selected, _ = _select_final_rows(ranked, plan, 10)
+
+    assert {"gdpr.pdf", "hipaa.pdf", "eu_ai_act.pdf"}.issubset({row["source_document"] for row in selected})
+
+
+def test_cross_regulation_retrieval_selects_at_least_one_row_per_target_source() -> None:
+    plan = build_query_plan("What safeguards are needed when an AI system generates mental health risk scores?")
+    rows = [
+        {"statement_name": "EU AI Risk Management", "evidence_text": "High-risk AI systems require risk management safeguards.", "source_document": "eu_ai_act.pdf", "score": 100},
+        {"statement_name": "EU AI Human Oversight", "evidence_text": "High-risk AI systems require human oversight.", "source_document": "eu_ai_act.pdf", "score": 95},
+        {"statement_name": "GDPR Security", "evidence_text": "GDPR requires security for special category health data.", "source_document": "gdpr.pdf", "score": 20},
+        {"statement_name": "HIPAA Safeguards", "evidence_text": "HIPAA requires safeguards for protected health information.", "source_document": "hipaa.pdf", "score": 10},
+    ]
+    ranked = _dedupe_rows(rows, plan)
+    selected, _ = _select_final_rows(ranked, plan, 3)
+
+    assert {row["source_document"] for row in selected} == {"gdpr.pdf", "hipaa.pdf", "eu_ai_act.pdf"}
+
+
+def test_mental_health_gdpr_question_prefers_gdpr_source() -> None:
+    plan = build_query_plan("What GDPR obligations apply when processing mental health data?")
+    rows = [
+        {"statement_name": "GDPR Special Category Data", "evidence_text": "Mental health data is health data and special category data.", "source_document": "gdpr.pdf"},
+        {"statement_name": "GDPR DPIA", "evidence_text": "Controllers may need a data protection impact assessment.", "source_document": "gdpr.pdf"},
+        {"statement_name": "GDPR Controller Duties", "evidence_text": "Controllers must comply with GDPR processing principles.", "source_document": "gdpr.pdf"},
+        {"statement_name": "HIPAA Mental Health PHI", "evidence_text": "HIPAA protects mental health patient information.", "source_document": "hipaa.pdf"},
+    ]
+    ranked = _dedupe_rows(rows, plan)
+    selected, _ = _select_final_rows(ranked, plan, 5)
+
+    assert {row["source_document"] for row in selected} == {"gdpr.pdf"}
+
+
+def test_mental_health_cross_regulation_question_includes_gdpr_hipaa_eu_ai_act() -> None:
+    plan = build_query_plan("What obligations apply to a mental health diagnostic AI system processing patient data?")
+    rows = [
+        {"statement_name": "GDPR Controller Duties", "evidence_text": "Controllers process health data under GDPR.", "source_document": "gdpr.pdf"},
+        {"statement_name": "HIPAA Covered Entity Duties", "evidence_text": "Covered entities protect patient PHI under HIPAA.", "source_document": "hipaa.pdf"},
+        {"statement_name": "EU AI Human Oversight", "evidence_text": "High-risk AI systems require human oversight.", "source_document": "eu_ai_act.pdf"},
+    ]
+    ranked = _dedupe_rows(rows, plan)
+    selected, _ = _select_final_rows(ranked, plan, 10)
+
+    assert plan.cross_regulation is True
+    assert {"gdpr.pdf", "hipaa.pdf", "eu_ai_act.pdf"}.issubset({row["source_document"] for row in selected})
+
+
+def test_context_rows_match_debug_selected_rows() -> None:
+    rows = [
+        {"statement_name": "Right of Access", "evidence_text": "Access evidence.", "source_document": "gdpr.pdf", "score": 90},
+        {"statement_name": "Right to Erasure", "evidence_text": "Erasure evidence.", "source_document": "gdpr.pdf", "score": 80},
+    ]
+
+    assert context_row_ids(rows) == ["gdpr.pdf|Right of Access|", "gdpr.pdf|Right to Erasure|"]
+
+
+def test_secondary_references_do_not_override_primary_source() -> None:
+    plan = build_query_plan("What rights does a data subject have under GDPR?")
+    rows = [
+        {"statement_name": "EU AI Act Exercise of Data Subject Rights", "evidence_text": "This Regulation refers to GDPR data subject rights.", "source_document": "eu_ai_act.pdf", "score": 100},
+        {"statement_name": "Right of Access", "evidence_text": "The data subject has the right of access.", "source_document": "gdpr.pdf", "score": 0},
+        {"statement_name": "Right to Rectification", "evidence_text": "The data subject has the right to rectification.", "source_document": "gdpr.pdf", "score": 0},
+        {"statement_name": "Right to Object", "evidence_text": "The data subject has the right to object.", "source_document": "gdpr.pdf", "score": 0},
+    ]
+    ranked = _dedupe_rows(rows, plan)
+    selected, _ = _select_final_rows(ranked, plan, 4)
+
+    assert selected[0]["source_document"] == "gdpr.pdf"
+    assert "secondary_reference_for_explicit_regulation" in next(row for row in ranked if row["source_document"] == "eu_ai_act.pdf")["penalties"]
+
+
+def test_cross_regulation_query_keeps_hipaa_and_eu_ai_act_rows() -> None:
+    plan = build_query_plan("Compare HIPAA and the EU AI Act on safeguards for sensitive data.")
+    rows = [
+        {"statement_name": "HIPAA Safeguards", "evidence_text": "Covered entities must implement safeguards for protected health information.", "source_document": "hipaa.pdf"},
+        {"statement_name": "AI Cybersecurity Measures", "evidence_text": "High-risk AI systems require cybersecurity safeguards and robustness.", "source_document": "eu_ai_act.pdf"},
+    ]
+    ranked = _dedupe_rows(rows, plan)
+    selected, _ = _select_final_rows(ranked, plan, 10)
+
+    assert {row["source_group"] for row in selected} == {"hipaa", "eu_ai_act"}
+    hipaa_row = next(row for row in selected if row["source_group"] == "hipaa")
+    assert "unrelated_hipaa_for_ai_query" not in hipaa_row["penalties"]
 
 
 def test_context_builder_does_not_group_unrelated_rows_into_tpo() -> None:

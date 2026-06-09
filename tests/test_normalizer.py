@@ -156,6 +156,66 @@ def test_normalize_chunk_results_applies_compliance_aliases() -> None:
     assert statements[0].source_document == "hipaa.txt"
 
 
+def test_normalizer_canonicalizes_gdpr_actors() -> None:
+    assert canonicalize_compliance_term("Actor", "data controller") == ("Actor", "Controller")
+    assert canonicalize_compliance_term("Actor", "processor") == ("Actor", "Processor")
+    assert canonicalize_compliance_term("Actor", "data subject") == ("Actor", "Data Subject")
+    assert canonicalize_compliance_term("Actor", "DPA") == ("Regulator", "Supervisory Authority")
+    assert canonicalize_compliance_term("Role", "DPO") == ("Role", "Data Protection Officer")
+    assert canonicalize_compliance_term("DataCategory", "special categories of personal data") == (
+        "SensitiveDataCategory",
+        "Special Category Data",
+    )
+    assert canonicalize_compliance_term("DataCategory", "data concerning health") == (
+        "SensitiveDataCategory",
+        "Health Data",
+    )
+
+
+def test_normalizer_canonicalizes_gdpr_source_document_name() -> None:
+    chunk = DocumentChunk(
+        chunk_id="GDPR:sec-0000:0:abc",
+        regulation_name="GDPR",
+        section_id="sec-0000",
+        section_title="Article 9",
+        chunk_index=0,
+        text="Controllers must protect personal data.",
+        start_char=0,
+        end_char=39,
+    )
+    result = ChunkExtractionResult(
+        chunk_summary="summary",
+        statements=[
+            ExtractedStatement(
+                statement_id="stmt-1",
+                statement_type="obligation",
+                canonical_name="Protect personal data",
+                raw_text="must protect personal data",
+                actor="controller",
+                action="protect",
+                object="personal data",
+                confidence=0.95,
+                evidence_text="Controllers must protect personal data.",
+                source_document="gdpr.pdf",
+                nodes=[
+                    ExtractedNode(
+                        node_type="Actor",
+                        canonical_name="controller",
+                        raw_text="Controllers",
+                        confidence=0.95,
+                        source_document="gdpr.pdf",
+                    )
+                ],
+            )
+        ],
+    )
+
+    nodes, _, statements = normalize_chunk_results([(chunk, result)])
+
+    assert statements[0].source_document == "GDPR"
+    assert nodes[0].source_documents == ["GDPR"]
+
+
 def test_chunk_extraction_result_normalizes_percentage_confidence() -> None:
     result = ChunkExtractionResult.model_validate(
         {

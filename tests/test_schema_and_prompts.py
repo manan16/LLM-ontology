@@ -76,3 +76,26 @@ def test_extraction_prompt_contains_compliance_guidance() -> None:
     assert "Provider, Deployer, AI System, High-Risk AI System" in prompt
     assert "REQUIRES_HUMAN_OVERSIGHT" in prompt
     assert "compliance-aware ontology extraction engine" in SYSTEM_PROMPT
+
+
+def test_extraction_prompt_contains_gdpr_guidance() -> None:
+    chunk = DocumentChunk(
+        chunk_id="GDPR:sec-0000:0:abc",
+        regulation_name="GDPR",
+        section_id="sec-0000",
+        section_title="Article 9",
+        chunk_index=0,
+        text="Processing of data concerning health is prohibited unless a condition applies.",
+        start_char=0,
+        end_char=75,
+    )
+
+    prompt = build_extraction_prompt(chunk)
+
+    assert "GDPR" in SYSTEM_PROMPT
+    assert "Controller, Processor, Data Subject" in prompt
+    assert "Special Category Data, Health Data, Article 9 processing conditions" in prompt
+    assert "DPIA / Data Protection Impact Assessment" in prompt
+    assert "Right of Access" in prompt
+    assert "Privacy by Design and Default" in prompt
+    assert "Do not confuse GDPR Controller/Processor/Data Subject" in prompt
