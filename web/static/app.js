@@ -758,22 +758,20 @@ function renderGraph() {
 }
 
 function renderTechnicalDetails() {
-  if (!state.ui.technicalDetailsOpen) {
-    els.technicalDetailsDrawer.hidden = true;
-    els.technicalDetailsDrawer.innerHTML = "";
-    return;
-  }
   const selected = getSelectedQuestion();
   els.technicalDetailsDrawer.hidden = false;
   if (!selected) {
-    els.technicalDetailsDrawer.innerHTML = renderTechnicalEmpty("Ask or select a question to inspect matched entities, retrieval scores, evidence IDs, graph traversal, and timings.");
+    els.technicalDetailsDrawer.innerHTML = `
+      ${renderInspectorOverview(null)}
+      ${renderTechnicalEmpty("Ask or select a question to inspect routing, matched entities, retrieval scores, evidence IDs, graph traversal, and timings.")}
+    `;
     return;
   }
   const activeTab = state.ui.technicalDetailsTab || "matched-entities";
   els.technicalDetailsDrawer.innerHTML = `
     <header class="technical-content-header">
       <div>
-        <strong>Pipeline run</strong>
+        <strong>Response state</strong>
         <span>${escapeHtml(responseSourceLabel(selected))}</span>
       </div>
       <div class="technical-actions">
@@ -781,10 +779,31 @@ function renderTechnicalDetails() {
         <button type="button" data-graph-action="fit">Fit graph</button>
       </div>
     </header>
+    ${renderInspectorOverview(selected)}
     <div class="technical-tabs">
       ${TECHNICAL_TABS.map((tab) => `<button type="button" data-technical-tab="${tab.id}" class="${activeTab === tab.id ? "active" : ""}" title="${escapeHtml(tab.label)}">${tab.label}</button>`).join("")}
     </div>
     <div class="technical-tab-content">${renderTechnicalTabContent(selected, activeTab)}</div>
+  `;
+}
+
+function renderInspectorOverview(selected) {
+  if (!selected) {
+    return `
+      <section class="inspector-overview">
+        <div><dt>Status</dt><dd>Ready for a live or preset question</dd></div>
+        <div><dt>Route</dt><dd>Awaiting question</dd></div>
+        <div><dt>Sources</dt><dd>0 selected</dd></div>
+      </section>
+    `;
+  }
+  return `
+    <section class="inspector-overview">
+      <div><dt>Status</dt><dd>${escapeHtml(responseSourceLabel(selected))}</dd></div>
+      <div><dt>Route</dt><dd>${escapeHtml(selected.domain || "Healthcare AI compliance")}</dd></div>
+      <div><dt>Laws</dt><dd>${escapeHtml((selected.regulations || inferRegulations(selected.question, selected.evidence || [])).join(" · "))}</dd></div>
+      <div><dt>Sources</dt><dd>${selected.evidence?.length || 0} regulatory source${selected.evidence?.length === 1 ? "" : "s"}</dd></div>
+    </section>
   `;
 }
 

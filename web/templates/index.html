@@ -90,6 +90,22 @@
             <div id="stepper" class="stepper block-body"></div>
           </section>
 
+          <section class="answer-section middle-card" aria-label="Evidence-backed answer">
+            <div class="panel-heading block-header">
+              <div>
+                <p>Compliance Assessment</p>
+                <h2>Evidence-backed answer</h2>
+              </div>
+              <button id="copy-answer-button" type="button" class="secondary-button">Copy</button>
+            </div>
+            <div id="answer-content" class="answer-content"></div>
+            <p class="answer-disclaimer">Responses are generated from retrieved regulatory text and are not legal advice.</p>
+          </section>
+
+          <section class="sources-section middle-card" aria-label="Sources used">
+            <div id="evidence-content" class="evidence-content"></div>
+          </section>
+
           <section class="graph-card collapsible-block" data-section-block="graph">
             <div class="graph-card-heading block-header">
               <div>
@@ -98,14 +114,6 @@
               <button type="button" class="section-toggle-button" data-section-toggle="graph" aria-expanded="true">Collapse</button>
             </div>
             <div id="graph-stage" class="graph-stage block-body"></div>
-          </section>
-
-          <section class="technical-details-card collapsible-block" data-section-block="technical">
-            <div class="block-header">
-              <h2>Technical details</h2>
-              <button type="button" class="section-toggle-button" data-section-toggle="technical" aria-expanded="false">Show</button>
-            </div>
-            <section id="technical-details-drawer" class="technical-details-drawer block-body" aria-label="Technical details"></section>
           </section>
 
           <div class="panel-heading legacy-heading">
@@ -118,18 +126,14 @@
 
         <div class="resize-handle" data-resize-handle="right" role="separator" aria-label="Resize assessment panel"></div>
 
-        <aside class="panel answer-panel" aria-label="Compliance answer and evidence">
+        <aside class="panel inspector-panel" aria-label="Retrieval Inspector">
           <div class="panel-heading">
             <div>
-              <p>Compliance Assessment</p>
-              <h2>Evidence-backed answer</h2>
+              <p>Evidence Inspector</p>
+              <h2>Retrieval Inspector</h2>
             </div>
-            <button id="copy-answer-button" type="button" class="secondary-button">Copy</button>
           </div>
-
-          <div id="answer-content" class="answer-content"></div>
-          <p class="answer-disclaimer">Responses are generated from retrieved regulatory text and are not legal advice.</p>
-          <div id="evidence-content" class="evidence-content"></div>
+          <section id="technical-details-drawer" class="technical-details-drawer" aria-label="Retrieval Inspector details"></section>
         </aside>
       </main>
 
