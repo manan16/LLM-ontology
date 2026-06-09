@@ -198,7 +198,7 @@ def test_demo_preset_failure_uses_clearly_labelled_cached_fallback() -> None:
     result = json.loads(output)
 
     assert result["source"] == "cached_fallback"
-    assert result["label"] == "Pre-loaded demo response — not live retrieval"
+    assert result["label"] == "Pre-loaded demo response"
     assert result["timings"] == {}
 
 
@@ -243,10 +243,10 @@ def test_response_source_labels_cover_live_and_cache_states() -> None:
     )
 
     assert result == {
-        "cached": "Pre-loaded demo response — not live retrieval",
+        "cached": "Pre-loaded demo response",
         "live": "Live retrieval completed",
         "failed": "Live retrieval failed",
-        "timeout": "Live retrieval timed out",
+        "timeout": "Fallback response after timeout",
     }
 
 
@@ -346,6 +346,76 @@ def test_graph_labeling_and_regulation_split_are_demo_safe() -> None:
     assert "evidence:Article 35" in result["labels"]
     assert "requires" in result["edgeLabels"]
     assert "cites" in result["edgeLabels"]
+
+
+def test_graph_semantics_type_citations_and_sources_defensibly() -> None:
+    result = _run_policy_probe(
+        """(() => {
+          const nodes = api.normalizeGraphNodes([
+            { id: "article", label: "Art. 9", type: "system" },
+            { id: "gdpr", label: "gdpr.pdf", type: "concept" },
+            { id: "ai", label: "Mental Health AI", type: "system" }
+          ]);
+          return Object.fromEntries(nodes.map((node) => [node.id, `${node.type}:${node.label}`]));
+        })()"""
+    )
+
+    assert result["article"] == "evidence:Art. 9"
+    assert result["gdpr"] == "regulation:GDPR"
+    assert result["ai"] == "system:Mental Health AI"
+
+
+def test_graph_relationship_labels_are_cleaned_for_demo_story() -> None:
+    result = _run_policy_probe(
+        """({
+          requiresGdpr: api.visibleEdgeLabel({ label: "requires GDPR" }, { type: "regulation" }, { type: "control" }, false),
+          supportsBias: api.visibleEdgeLabel({ label: "supports Bias" }, { type: "control" }, { type: "risk" }, true),
+          classifiedArticle: api.visibleEdgeLabel({ label: "classified as Art. 9" }, { type: "system" }, { type: "evidence" }, false),
+          cites: api.visibleEdgeLabel({ label: "cites" }, { type: "regulation" }, { type: "evidence" }, false)
+        })"""
+    )
+
+    assert result == {
+        "requiresGdpr": "requires",
+        "supportsBias": "",
+        "classifiedArticle": "classified as",
+        "cites": "cites",
+    }
+
+
+def test_fullscreen_graph_layout_uses_available_canvas_space() -> None:
+    result = _run_policy_probe(
+        """(() => {
+          const nodes = api.normalizeGraphNodes([
+            { id: "ai", label: "Mental Health AI", type: "system" },
+            { id: "data", label: "Health Data", type: "concept" },
+            { id: "high", label: "High-Risk AI System", type: "concept" },
+            { id: "gdpr", label: "GDPR", type: "regulation" },
+            { id: "ai-act", label: "EU AI Act", type: "regulation" },
+            { id: "risk", label: "Risk Management", type: "control" },
+            { id: "oversight", label: "Human Oversight", type: "control" },
+            { id: "docs", label: "Technical Documentation", type: "control" },
+            { id: "art9", label: "Article 9", type: "evidence" }
+          ]);
+          const layout = api.layoutGraph(nodes, {
+            question: "What safeguards are needed when an AI system generates mental health risk scores?",
+            graph: { meta: { source: "illustrative_demo_graph" } }
+          }, { width: 1600, height: 900, topPadding: 120, bottomPadding: 120, sidePadding: 160 });
+          const xs = layout.map((node) => node.x);
+          const ys = layout.map((node) => node.y);
+          return {
+            xSpread: Math.max(...xs) - Math.min(...xs),
+            ySpread: Math.max(...ys) - Math.min(...ys),
+            minX: Math.min(...xs),
+            maxX: Math.max(...xs)
+          };
+        })()"""
+    )
+
+    assert result["xSpread"] >= 1100
+    assert result["ySpread"] >= 300
+    assert result["minX"] >= 140
+    assert result["maxX"] <= 1460
 
 
 def test_dense_graph_hides_secondary_edge_labels_by_default() -> None:

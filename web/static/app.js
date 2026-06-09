@@ -481,19 +481,16 @@ function buildRiskGraphJourney() {
   const nodeDefs = [
     ["mental-health-ai", "Mental Health AI", "system"],
     ["health-data", "Health Data", "concept"],
-    ["risk-score", "Risk Score", "concept"],
-    ["bias-risk", "Bias Risk", "risk"],
     ["high-risk-ai", "High-Risk AI System", "concept"],
     ["gdpr", "GDPR", "regulation"],
     ["eu-ai-act", "EU AI Act", "regulation"],
+    ["article-9", "Article 9", "evidence"],
     ["privacy-controls", "Privacy Controls", "control"],
     ["risk-management", "Risk Management", "control"],
     ["human-oversight", "Human Oversight", "control"],
-    ["monitoring", "Monitoring", "control"],
-    ["cybersecurity", "Cybersecurity", "control"],
+    ["technical-documentation", "Technical Documentation", "control"],
     ["gdpr-article-35", "GDPR Article 35", "evidence"],
     ["ai-act-articles-9-15", "AI Act Articles 9-15", "evidence"],
-    ["security-rule", "HIPAA Security Rule", "evidence"],
   ];
   const nodes = nodeDefs.map(([id, label, type]) => ({
     id,
@@ -503,18 +500,15 @@ function buildRiskGraphJourney() {
   const edges = [
     ["mental-health-ai", "health-data", "processes"],
     ["health-data", "gdpr", "regulated by"],
+    ["gdpr", "article-9", "cites"],
     ["gdpr", "privacy-controls", "requires"],
-    ["privacy-controls", "gdpr-article-35", "supported by evidence"],
-    ["mental-health-ai", "risk-score", "generates"],
-    ["risk-score", "bias-risk", "introduces risk"],
-    ["bias-risk", "human-oversight", "mitigated by"],
+    ["privacy-controls", "gdpr-article-35", "cites"],
     ["mental-health-ai", "high-risk-ai", "classified as"],
     ["high-risk-ai", "eu-ai-act", "regulated by"],
     ["eu-ai-act", "risk-management", "requires"],
-    ["eu-ai-act", "monitoring", "requires"],
-    ["eu-ai-act", "cybersecurity", "requires"],
-    ["risk-management", "ai-act-articles-9-15", "supported by evidence"],
-    ["cybersecurity", "security-rule", "supported by evidence"],
+    ["eu-ai-act", "human-oversight", "requires"],
+    ["eu-ai-act", "technical-documentation", "requires"],
+    ["risk-management", "ai-act-articles-9-15", "cites"],
   ].map(([source, target, label]) => ({ source, target, label, relationship_type: "ILLUSTRATIVE" }));
   const advancedNodes = [
     { id: "a1", label: "Audit Logs", type: "Control" },
@@ -526,7 +520,7 @@ function buildRiskGraphJourney() {
     { source: "privacy-controls", target: "a4", label: "requires", relationship_type: "ILLUSTRATIVE" },
     { source: "monitoring", target: "a2", label: "requires", relationship_type: "ILLUSTRATIVE" },
     { source: "gdpr-article-35", target: "a3", label: "cites", relationship_type: "ILLUSTRATIVE" },
-    { source: "security-rule", target: "a1", label: "supports", relationship_type: "ILLUSTRATIVE" },
+    { source: "technical-documentation", target: "a1", label: "supports", relationship_type: "ILLUSTRATIVE" },
   ];
   return { nodes, edges, advancedNodes, advancedEdges, meta: { source: "illustrative_demo_graph" } };
 }
@@ -698,7 +692,8 @@ function renderGraph() {
   const nodes = technicalGraph ? allNodes : highValueGraphNodes(allNodes, 15);
   const visibleNodeIds = new Set(nodes.map((node) => node.id));
   const edges = allEdges.filter((edge) => visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target));
-  const layout = layoutGraph(nodes, selected);
+  const canvas = graphCanvasSize();
+  const layout = layoutGraph(nodes, selected, canvas);
   const byId = Object.fromEntries(layout.map((node) => [node.id, node]));
 
   const edgeSvg = edges.map((edge) => {
@@ -735,7 +730,7 @@ function renderGraph() {
     </g>
   `;
   }).join("");
-  const viewport = graphViewport(layout);
+  const viewport = graphViewport(layout, canvas);
 
   els.graphStage.innerHTML = `
     <div class="graph-meta">
@@ -785,7 +780,8 @@ function renderTechnicalDetails() {
     <header class="technical-content-header">
       <div>
         <strong>Response state</strong>
-        <span>${escapeHtml(responseSourceLabel(selected))}</span>
+        <span>${escapeHtml(responseSourceDetailedLabel(selected))}</span>
+        ${isCachedFallback(selected) ? `<small>This answer was not produced by live retrieval.</small>` : ""}
       </div>
       <div class="technical-actions">
         ${isCachedFallback(selected) ? "" : `<button type="button" data-graph-action="technical-mode">${state.ui.graphMode === "technical" ? "Use demo graph" : "Expand graph"}</button>`}
@@ -812,7 +808,7 @@ function renderInspectorOverview(selected) {
   }
   return `
     <section class="inspector-overview">
-      <div><dt>Status</dt><dd>${escapeHtml(responseSourceLabel(selected))}</dd></div>
+      <div><dt>Status</dt><dd>${escapeHtml(responseSourceDetailedLabel(selected))}${isCachedFallback(selected) ? `<small>This answer was not produced by live retrieval.</small>` : ""}</dd></div>
       <div><dt>Route</dt><dd>${escapeHtml(selected.domain || "Healthcare AI compliance")}</dd></div>
       <div><dt>Laws</dt><dd>${escapeHtml((selected.regulations || inferRegulations(selected.question, selected.evidence || [])).join(" · "))}</dd></div>
       <div><dt>Sources</dt><dd>${selected.evidence?.length || 0} regulatory source${selected.evidence?.length === 1 ? "" : "s"}</dd></div>
@@ -954,7 +950,7 @@ function renderAnswer() {
     <article class="answer-card">
       <div class="answer-topline">
         ${renderRegulationBadges(selected.regulations)}
-        <span class="cache-badge source-${slug(selected.responseSource || "live_pipeline")}">${escapeHtml(responseSourceLabel(selected))}</span>
+        <span class="cache-badge source-${slug(selected.responseSource || "live_pipeline")}">${escapeHtml(responseSourceCompactLabel(selected))}</span>
       </div>
       <section class="deployment-verdict">
         <span>Can this be deployed as-is?</span>
@@ -1215,10 +1211,23 @@ function formatQuestionMeta(item) {
 }
 
 function responseSourceLabel(item) {
+  return responseSourceDetailedLabel(item);
+}
+
+function responseSourceCompactLabel(item) {
   const source = item.responseSource || (item.usedCache ? "cached_fallback" : "live");
   if (source === "live" || source === "live_pipeline") return "Live retrieval completed";
-  if (source === "cached_fallback" || source === "cached_demo" || source === "fallback_cache") return "Pre-loaded demo response — not live retrieval";
-  if (source === "timeout" || source === "live_timeout") return "Live retrieval timed out";
+  if (source === "cached_fallback" || source === "cached_demo" || source === "fallback_cache") return "Pre-loaded demo response";
+  if (source === "timeout" || source === "live_timeout") return "Fallback response after timeout";
+  if (source === "error" || source === "live_failed") return "Live retrieval failed";
+  return "Live backend request";
+}
+
+function responseSourceDetailedLabel(item) {
+  const source = item.responseSource || (item.usedCache ? "cached_fallback" : "live");
+  if (source === "live" || source === "live_pipeline") return "Live retrieval completed";
+  if (source === "cached_fallback" || source === "cached_demo" || source === "fallback_cache") return "Pre-loaded demo response";
+  if (source === "timeout" || source === "live_timeout") return "Fallback response after timeout";
   if (source === "error" || source === "live_failed") return "Live retrieval failed";
   return "Live backend request";
 }
@@ -1351,9 +1360,21 @@ function graphTranslateY() {
   return 0;
 }
 
-function graphViewport(nodes) {
-  if (!nodes.length) return { viewBox: "0 0 1060 500", width: 1060, height: 500 };
-  const padding = 96;
+function graphCanvasSize() {
+  const width = Math.max(els.graphStage?.clientWidth || 0, state.ui.graphFullscreen ? 1280 : 1060);
+  const height = Math.max(els.graphStage?.clientHeight || 0, state.ui.graphFullscreen ? 760 : 500);
+  return {
+    width,
+    height,
+    topPadding: state.ui.graphFullscreen ? 120 : 92,
+    bottomPadding: state.ui.graphFullscreen ? 120 : 88,
+    sidePadding: state.ui.graphFullscreen ? Math.max(96, width * 0.1) : 76,
+  };
+}
+
+function graphViewport(nodes, canvas = graphCanvasSize()) {
+  if (!nodes.length) return { viewBox: `0 0 ${canvas.width} ${canvas.height}`, width: canvas.width, height: canvas.height };
+  const padding = state.ui.graphFullscreen ? 120 : 96;
   const extents = nodes.reduce((acc, node) => {
     const width = graphNodeWidth(node);
     acc.minX = Math.min(acc.minX, node.x - width / 2);
@@ -1362,10 +1383,10 @@ function graphViewport(nodes) {
     acc.maxY = Math.max(acc.maxY, node.y + 86);
     return acc;
   }, { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity });
-  const width = Math.max(1060, Math.ceil(extents.maxX - extents.minX + padding * 2));
-  const height = Math.max(500, Math.ceil(extents.maxY - extents.minY + padding * 2));
-  const minX = Math.floor(extents.minX - padding);
-  const minY = Math.floor(extents.minY - padding);
+  const width = Math.max(canvas.width, Math.ceil(extents.maxX - extents.minX + padding * 2));
+  const height = Math.max(canvas.height, Math.ceil(extents.maxY - extents.minY + padding * 2));
+  const minX = Math.min(0, Math.floor(extents.minX - padding));
+  const minY = Math.min(0, Math.floor(extents.minY - padding));
   return {
     viewBox: `${minX} ${minY} ${width} ${height}`,
     width: Math.ceil(width * state.ui.graphZoom),
@@ -1540,58 +1561,60 @@ function clampNumber(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
-function layoutGraph(nodes, selected) {
-  if (state.ui.graphMode === "technical") {
-    return layeredGraphLayout(nodes, { width: 960, x0: 70, y0: 75, yGap: 108, regulationGap: 142 });
-  }
+function layoutGraph(nodes, selected, canvas = graphCanvasSize()) {
   const illustrativeRisk = isIllustrativeGraph(selected?.graph) && (
     `${selected?.question || ""} ${selected?.domain || ""}`.toLowerCase().includes("risk")
     || `${selected?.question || ""}`.toLowerCase().includes("deployment")
   );
   if (illustrativeRisk) {
-    const positions = {
-      "Mental Health AI": [115, 240],
-      "Health Data": [245, 125],
-      "Risk Score": [245, 240],
-      "High-Risk AI System": [245, 370],
-      "Bias Risk": [425, 240],
-      "GDPR": [475, 110],
-      "EU AI Act": [455, 370],
-      "Privacy Controls": [710, 125],
-      "Human Oversight": [680, 240],
-      "Risk Management": [680, 370],
-      "Monitoring": [850, 305],
-      "Cybersecurity": [850, 435],
-      "GDPR Article 35": [950, 125],
-      "AI Act Articles 9-15": [920, 370],
-      "HIPAA Security Rule": [920, 435],
-    };
-    return nodes.map((node, index) => {
-      const fallback = [90 + (index % 5) * 200, 110 + Math.floor(index / 5) * 150];
-      const [x, y] = positions[node.label] || fallback;
-      return { ...node, x, y };
-    });
+    return storyGraphLayout(nodes, canvas);
   }
-  return layeredGraphLayout(nodes, { width: 930, x0: 75, y0: 100, yGap: 118, regulationGap: 150 });
+  return layeredGraphLayout(nodes, canvas);
 }
 
-function layeredGraphLayout(nodes, options) {
+function storyGraphLayout(nodes, canvas) {
+  const layerByLabel = {
+    "Mental Health AI": 0,
+    "Health Data": 1,
+    "High-Risk AI System": 1,
+    GDPR: 2,
+    "EU AI Act": 2,
+    "Article 9": 3,
+    "Privacy Controls": 3,
+    "Human Oversight": 3,
+    "Risk Management": 3,
+    "Technical Documentation": 3,
+    "GDPR Article 35": 4,
+    "AI Act Articles 9-15": 4,
+  };
+  return layeredGraphLayout(nodes.map((node) => ({ ...node, preferredLayer: layerByLabel[node.label] ?? graphLayer(node) })), canvas);
+}
+
+function layeredGraphLayout(nodes, canvas) {
   const layers = new Map();
   nodes.forEach((node) => {
-    const layer = graphLayer(node);
+    const layer = Number.isFinite(node.preferredLayer) ? node.preferredLayer : graphLayer(node);
     if (!layers.has(layer)) layers.set(layer, []);
     layers.get(layer).push(node);
   });
   const sortedLayers = [...layers.keys()].sort((a, b) => a - b);
-  const xGap = options.width / Math.max(sortedLayers.length - 1, 1);
+  const left = canvas.sidePadding;
+  const right = Math.max(left + 1, canvas.width - canvas.sidePadding);
+  const top = canvas.topPadding;
+  const maxGroupSize = Math.max(...[...layers.values()].map((group) => group.length), 1);
+  const requiredLayerHeight = (maxGroupSize + 1) * 104;
+  const bottom = Math.max(top + requiredLayerHeight, canvas.height - canvas.bottomPadding);
+  const xGap = (right - left) / Math.max(sortedLayers.length - 1, 1);
   return sortedLayers.flatMap((layer, layerIndex) => {
     const group = layers.get(layer);
-    const typeGap = group.some((node) => node.type === "regulation") ? (options.regulationGap || options.yGap) : options.yGap;
-    const centerOffset = (group.length - 1) * typeGap / 2;
+    const minGap = group.some((node) => node.type === "regulation") ? 128 : 104;
+    const yGap = Math.max(minGap, (bottom - top) / Math.max(group.length + 1, 2));
+    const groupHeight = (group.length - 1) * yGap;
+    const firstY = Math.max(top + yGap, (top + bottom) / 2 - groupHeight / 2);
     return group.map((node, index) => ({
       ...node,
-      x: options.x0 + layerIndex * xGap,
-      y: 250 - centerOffset + index * typeGap + (layerIndex % 2 ? 10 : 0),
+      x: left + layerIndex * xGap,
+      y: clampNumber(firstY + index * yGap + (group.length > 1 && layerIndex % 2 ? yGap * 0.08 : 0), top + 54, bottom - 54),
     }));
   });
 }
@@ -1600,10 +1623,9 @@ function graphLayer(node) {
   const type = String(node.type || "").toLowerCase();
   if (type === "question" || type === "system") return 0;
   if (type === "concept" || type === "entity" || type === "ontology") return 1;
-  if (type === "risk") return 2;
-  if (type === "regulation") return 3;
-  if (type === "control" || type === "statement") return 4;
-  if (type === "evidence") return 5;
+  if (type === "regulation") return 2;
+  if (type === "risk" || type === "statement") return 3;
+  if (type === "control" || type === "evidence") return 4;
   return 2;
 }
 
@@ -1659,13 +1681,14 @@ function visibleEdgeLabel(edge, source, target, technicalGraph) {
 }
 
 function nodeTooltip(node, graph) {
+  const illustrative = isIllustrativeGraph(graph);
   const details = [
     node.label,
     `Type: ${node.type}`,
     node.sourceDocument ? `Source: ${node.sourceDocument}` : "",
     node.citation ? `Citation: ${node.citation}` : "",
     node.evidenceId ? `Evidence ID: ${node.evidenceId}` : "",
-    isIllustrativeGraph(graph) ? "Graph source: illustrative fallback" : "Graph source: retrieved evidence",
+    illustrative ? "Origin: illustrative fallback graph" : "Origin: retrieved evidence graph",
   ].filter(Boolean);
   return details.join("\n");
 }
@@ -1680,6 +1703,9 @@ function edgeTooltip(edge) {
 
 function shortEdgeLabel(label) {
   const text = String(label || "").toLowerCase();
+  if (/requires\s+(gdpr|hipaa|eu ai act|ai act|art\.?\s*\d+|article\s*\d+)/i.test(String(label || ""))) return "requires";
+  if (/supports\s+(bias|risk|gdpr|hipaa|eu ai act|ai act)/i.test(String(label || ""))) return "supports";
+  if (/classified\s+as\s+(art\.?\s*\d+|article\s*\d+)/i.test(String(label || ""))) return "classified as";
   if (text.includes("ranked_for_question")) return "ranked for question";
   if (text.includes("retrieved_as_evidence")) return "retrieved evidence";
   if (text.includes("supports_answer")) return "supports answer";
@@ -1698,8 +1724,8 @@ function shortEdgeLabel(label) {
   if (text.includes("applies")) return "applies to";
   if (text.includes("involves")) return "involves";
   if (text.includes("requires")) return "requires";
-  if (text.includes("supported by evidence")) return "supported by evidence";
-  if (text.includes("supported")) return "supported by";
+  if (text.includes("supported by evidence")) return "supports";
+  if (text.includes("supported") || text.includes("supports")) return "supports";
   if (text.includes("cites")) return "cites";
   if (text.includes("references")) return "REFERENCES";
   if (text.includes("has_requirement")) return "HAS_REQUIREMENT";
@@ -1731,8 +1757,7 @@ function importantDemoEdgeLabel(label) {
     "applies to",
     "involves",
     "requires",
-    "supported by evidence",
-    "supported by",
+    "supports",
     "REFERENCES",
     "HAS_REQUIREMENT",
     "INSTANCE_OF",
@@ -1743,14 +1768,19 @@ function importantDemoEdgeLabel(label) {
 }
 
 function normalizeGraphNodes(nodes = []) {
-  return nodes.map((node, index) => ({
-    id: node.id || `node-${index + 1}`,
-    label: readableGraphLabel(node, index),
-    type: String(node.type || node.category || nodeTypeFor(node.label || "", index)).toLowerCase(),
-    sourceDocument: node.source_document || node.sourceDocument || "",
-    citation: node.citation || "",
-    evidenceId: node.evidence_id || node.evidenceId || "",
-  })).filter((node) => node.id && node.label);
+  return nodes.map((node, index) => {
+    const label = readableGraphLabel(node, index);
+    const sourceDocument = node.source_document || node.sourceDocument || "";
+    const citation = node.citation || "";
+    return {
+      id: node.id || `node-${index + 1}`,
+      label,
+      type: semanticGraphNodeType(node, label, sourceDocument, citation, index),
+      sourceDocument,
+      citation,
+      evidenceId: node.evidence_id || node.evidenceId || "",
+    };
+  }).filter((node) => node.id && node.label);
 }
 
 function normalizeGraphEdges(edges = []) {
@@ -1815,6 +1845,32 @@ function regulationSplitForLabel(node) {
     };
   }
   return null;
+}
+
+function semanticGraphNodeType(node, label, sourceDocument, citation, index) {
+  const explicit = String(node.type || node.category || "").toLowerCase();
+  if (isRegulationOrSourceLabel(label) || isRegulationOrSourceLabel(sourceDocument)) return "regulation";
+  if (isCitationLabel(label) || isCitationLabel(citation)) return "evidence";
+  if (explicit === "source") return "regulation";
+  if (["evidence", "statement", "regulation", "question", "risk", "control", "concept", "entity", "ontology", "system"].includes(explicit)) {
+    if (explicit === "statement" && isCitationLabel(label)) return "evidence";
+    return explicit;
+  }
+  return nodeTypeFor(label || "", index).toLowerCase();
+}
+
+function isCitationLabel(value) {
+  const text = String(value || "").trim();
+  return /^(art\.?|article|articles|annex|recital)\s+[ivx\d]/i.test(text)
+    || /^45\s+CFR\b/i.test(text)
+    || /^§\s*\d/i.test(text)
+    || /\b\d+\s*CFR\s+\d/i.test(text);
+}
+
+function isRegulationOrSourceLabel(value) {
+  const text = String(value || "").trim();
+  return /^(GDPR|HIPAA|EU AI Act|AI Act)$/i.test(text)
+    || /^(gdpr|hipaa|eu_ai_act|eu-ai-act|ai_act|ai-act)\.pdf$/i.test(text);
 }
 
 function formatScore(score) {
@@ -2193,6 +2249,7 @@ if (typeof window !== "undefined") {
     splitOverloadedRegulationNodes,
     graphModeLabel,
     visibleEdgeLabel,
+    layoutGraph,
     formatScore,
     safeEvidenceReference,
     askQuestionWithDemoPolicy,
