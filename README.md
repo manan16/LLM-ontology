@@ -119,6 +119,55 @@ http://127.0.0.1:5001
 
 The web app wraps the existing RAG components used by `ask.py`; it does not modify KG extraction, rebuild the graph, or change the Neo4j schema.
 
+## Docker Demo Setup
+
+For a reproducible local demo, you can run the Flask app and Neo4j with Docker Compose. Ollama is intentionally not containerized; keep it running on the host machine.
+
+Start Ollama on the host:
+
+```bash
+ollama serve
+```
+
+Then start the app and Neo4j:
+
+```bash
+docker compose up --build
+```
+
+Open:
+
+```text
+http://localhost:5001
+http://localhost:7474
+```
+
+Useful commands:
+
+```bash
+docker compose logs -f app
+docker compose logs -f neo4j
+docker compose down
+curl -I http://localhost:5001/
+```
+
+Inside Docker, the app uses:
+
+```bash
+NEO4J_URI=bolt://neo4j:7687
+OLLAMA_BASE_URL=http://host.docker.internal:11434
+```
+
+Set local credentials in `.env` before starting Compose if you do not want the demo defaults:
+
+```bash
+NEO4J_PASSWORD=please-change-me
+```
+
+The Docker Neo4j service uses the local `neo4j` user and `neo4j` database. This keeps the Compose demo independent from any Aura or external Neo4j username/database you may use in `.env` for non-Docker runs.
+
+The Compose setup does not rebuild or seed the knowledge graph on container start. Build or import the graph separately, then use the web app for the RAG/KG demo.
+
 ## RAG Architecture
 
 The current retrieval flow is:

@@ -14,6 +14,7 @@ from rag.query_planner import QueryPlan
 LOGGER = logging.getLogger(__name__)
 _retriever: GraphRetriever | None = None
 _retriever_lock = Lock()
+NO_EVIDENCE_MESSAGE = "No sufficient regulatory evidence was found in the knowledge graph for this question."
 
 
 def answer_question(
@@ -52,6 +53,26 @@ def answer_question(
     graph = _build_graph_payload(cleaned_question, rows, evidence)
     timings["ranking_ms"] = _elapsed_ms(ranking_started)
 
+    if not evidence:
+        elapsed_ms = _elapsed_ms(started_at)
+        timings["generation_ms"] = 0
+        timings["total_ms"] = elapsed_ms
+        _log_stage("generation_skipped", reason="no_evidence")
+        _log_stage("pipeline_completed", **timings)
+        return {
+            "question": cleaned_question,
+            "answer": NO_EVIDENCE_MESSAGE,
+            "evidence": [],
+            "graph": _build_no_evidence_graph(cleaned_question),
+            "context": context if show_context else "",
+            "debug": _build_debug(retriever, rows) if debug else {},
+            "metrics": {
+                **_build_metrics(rows, evidence, safe_limit, elapsed_ms, model, timings),
+                "no_evidence": True,
+            },
+            "response_source": "no_evidence",
+        }
+
     generation_started = perf_counter()
     _log_stage("generation_started", evidence_items=len(evidence))
     answer = AnswerGenerator(model=model).generate(cleaned_question, context)
@@ -68,6 +89,7 @@ def answer_question(
         "context": context if show_context else "",
         "debug": _build_debug(retriever, rows) if debug else {},
         "metrics": _build_metrics(rows, evidence, safe_limit, elapsed_ms, model, timings),
+        "response_source": "live",
     }
 
 
@@ -248,6 +270,23 @@ def _build_graph_payload(question: str, rows: list[dict[str, Any]], evidence: li
                     if edge.get("relationship_type") not in {"UI_RETRIEVAL"}
                 }
             ),
+        },
+    }
+
+
+def _build_no_evidence_graph(question: str) -> dict[str, Any]:
+    return {
+        "nodes": [
+            {
+                "id": "question",
+                "label": _graph_label(question) or "Question",
+                "type": "question",
+            }
+        ],
+        "edges": [],
+        "meta": {
+            "source": "no_evidence",
+            "message": NO_EVIDENCE_MESSAGE,
         },
     }
 

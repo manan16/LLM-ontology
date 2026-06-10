@@ -895,6 +895,11 @@ body.is-resizing * { cursor: col-resize !important; }
   color: var(--muted);
 }
 
+.graph-welcome-card.evidence-missing {
+  border-color: rgba(216, 137, 18, 0.32);
+  background: #fffdf8;
+}
+
 .graph-stage.is-fullscreen {
   position: fixed;
   inset: 18px;
@@ -1523,6 +1528,12 @@ body.is-resizing * { cursor: col-resize !important; }
   color: #16794a;
 }
 
+.cache-badge.source-no-evidence {
+  border-color: rgba(216, 137, 18, 0.28);
+  background: var(--warning-bg);
+  color: #8a5100;
+}
+
 .cache-badge.source-cached-fallback,
 .cache-badge.source-cached-demo,
 .cache-badge.source-fallback-cache {
@@ -1885,13 +1896,15 @@ body.is-resizing * { cursor: col-resize !important; }
 .active-response-state.source-error,
 .active-response-state.source-live-timeout,
 .active-response-state.source-live-failed,
+.active-response-state.source-no-evidence,
 .cache-badge.source-timeout,
 .cache-badge.source-error,
 .cache-badge.source-live-failed,
-.cache-badge.source-live-timeout {
-  border-color: rgba(208, 68, 68, 0.28);
-  background: #fff0f0;
-  color: #a52f2f;
+.cache-badge.source-live-timeout,
+.cache-badge.source-no-evidence {
+  border-color: rgba(216, 137, 18, 0.28);
+  background: var(--warning-bg);
+  color: #8a5100;
 }
 
 @media (max-width: 1280px) {
