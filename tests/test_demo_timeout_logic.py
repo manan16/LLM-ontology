@@ -122,9 +122,17 @@ def test_demo_preset_submission_calls_ask_endpoint_in_default_live_mode() -> Non
               ok: true,
               json: () => Promise.resolve({{
                 answer: "Live answer",
-                evidence: [],
+                evidence: [{{
+                  id: 1,
+                  statement: "Risk management",
+                  source_document: "eu_ai_act.pdf",
+                  evidence_text: "High-risk AI systems require risk management.",
+                  citation: "Article 9",
+                  score: 42,
+                  source_group: "eu_ai_act"
+                }}],
                 debug: {{}},
-                metrics: {{}},
+                metrics: {{ evidence_items: 1 }},
                 error: null
               }})
             }});
@@ -237,6 +245,7 @@ def test_response_source_labels_cover_live_and_cache_states() -> None:
         """({
           cached: api.responseSourceLabel({ responseSource: "cached_fallback" }),
           live: api.responseSourceLabel({ responseSource: "live" }),
+          noEvidence: api.responseSourceLabel({ responseSource: "no_evidence" }),
           failed: api.responseSourceLabel({ responseSource: "error" }),
           timeout: api.responseSourceLabel({ responseSource: "timeout" })
         })"""
@@ -245,8 +254,50 @@ def test_response_source_labels_cover_live_and_cache_states() -> None:
     assert result == {
         "cached": "Pre-loaded demo response",
         "live": "Live retrieval completed",
+        "noEvidence": "No evidence found",
         "failed": "Live retrieval failed",
         "timeout": "Fallback response after timeout",
+    }
+
+
+def test_zero_evidence_backend_response_is_not_treated_as_live_answer() -> None:
+    result = _run_policy_probe(
+        """(() => {
+          const response = api.normalizeBackendResponse(
+            "What safeguards are needed when an AI system generates mental health risk scores?",
+            {
+              answer: "No sufficient regulatory evidence was found in the knowledge graph for this question.",
+              evidence: [],
+              graph: {
+                nodes: [{ id: "question", label: "Question", type: "question" }],
+                edges: [],
+                meta: { source: "no_evidence" }
+              },
+              debug: {},
+              metrics: { evidence_items: 0, no_evidence: true, generation_ms: 0 },
+              response_source: "no_evidence"
+            },
+            false,
+            "live"
+          );
+          return {
+            source: response.responseSource,
+            evidence: response.evidence.length,
+            regulations: response.regulations,
+            obligations: response.obligations,
+            graphSource: response.graph.meta.source,
+            assessment: response.verdict.assessment
+          };
+        })()"""
+    )
+
+    assert result == {
+        "source": "no_evidence",
+        "evidence": 0,
+        "regulations": [],
+        "obligations": [],
+        "graphSource": "no_evidence",
+        "assessment": "No evidence found",
     }
 
 

@@ -336,6 +336,10 @@ function normalizeBackendResponse(question, data, usedCache, responseSource = "l
       score: normalizeScore(item.score, 0.92 - index * 0.04),
     };
   });
+  const noEvidence = evidence.length === 0 || data.response_source === "no_evidence" || data.metrics?.no_evidence === true;
+  if (noEvidence) {
+    return normalizeNoEvidenceResponse(question, data, usedCache);
+  }
 
   return {
     answer: data.answer || `The live backend returned no answer text for: ${question}`,
@@ -358,13 +362,49 @@ function normalizeBackendResponse(question, data, usedCache, responseSource = "l
       totalMs: data.metrics?.total_ms || data.metrics?.elapsed_ms || null,
     },
     usedCache,
-    responseSource,
+    responseSource: data.response_source || responseSource,
+  };
+}
+
+function normalizeNoEvidenceResponse(question, data = {}, usedCache = false) {
+  const message = data.answer || "No sufficient regulatory evidence was found in the knowledge graph for this question.";
+  const domain = detectDomain(question, data.debug?.query_plan);
+  return {
+    answer: message,
+    summary: message,
+    obligations: [],
+    evidence: [],
+    graph: normalizeBackendGraphPayload(data.graph, question, []),
+    debug: data.debug || {},
+    domain,
+    regulations: [],
+    verdict: {
+      assessment: "No evidence found",
+      concern: "The knowledge graph did not return regulatory sources for this question.",
+      laws: [],
+    },
+    metrics: {
+      evidencePassages: 0,
+      searchTimeMs: data.metrics?.elapsed_ms || null,
+      routingMs: data.metrics?.routing_ms || null,
+      retrievalMs: data.metrics?.retrieval_ms || null,
+      graphQueryMs: data.metrics?.graph_query_ms || null,
+      rankingMs: data.metrics?.ranking_ms || null,
+      generationMs: data.metrics?.generation_ms || 0,
+      totalMs: data.metrics?.total_ms || data.metrics?.elapsed_ms || null,
+      noEvidence: true,
+    },
+    usedCache,
+    responseSource: "no_evidence",
   };
 }
 
 function normalizeBackendGraphPayload(graph, question, evidence = []) {
   const rawNodes = Array.isArray(graph?.nodes) ? graph.nodes : [];
   const rawEdges = Array.isArray(graph?.edges) ? graph.edges : [];
+  if (graph?.meta?.source === "no_evidence" || (!evidence.length && rawNodes.length <= 1 && rawEdges.length === 0)) {
+    return noEvidenceGraph(question, graph?.meta?.message);
+  }
   if (rawNodes.length) {
     return {
       nodes: normalizeGraphNodes(rawNodes),
@@ -378,6 +418,16 @@ function normalizeBackendGraphPayload(graph, question, evidence = []) {
     };
   }
   return evidenceGraphFromRetrievedEvidence(question, evidence);
+}
+
+function noEvidenceGraph(question, message = "No sufficient regulatory evidence was found in the knowledge graph for this question.") {
+  return {
+    nodes: normalizeGraphNodes([{ id: "question", label: question || "Question", type: "question" }]),
+    edges: [],
+    advancedNodes: [],
+    advancedEdges: [],
+    meta: { source: "no_evidence", message },
+  };
 }
 
 function evidenceGraphFromRetrievedEvidence(question, evidence = []) {
@@ -682,6 +732,20 @@ function renderGraph() {
   }
 
   const graph = selected.graph || evidenceGraphFromRetrievedEvidence(selected.question, selected.evidence || []);
+  if (isNoEvidenceResponse(selected) || graph?.meta?.source === "no_evidence") {
+    els.graphStage.innerHTML = `
+      <div class="graph-meta">
+        <span>0 highlighted nodes</span>
+        <span>0 highlighted links</span>
+        <span>Evidence missing</span>
+      </div>
+      <div class="graph-welcome-card evidence-missing">
+        <strong>No evidence graph available</strong>
+        <p>${escapeHtml(graph?.meta?.message || "No sufficient regulatory evidence was found in the knowledge graph for this question.")}</p>
+      </div>
+    `;
+    return;
+  }
   const illustrative = isIllustrativeGraph(graph);
   const technicalGraph = state.ui.graphMode === "technical" && !illustrative;
   const rawNodes = normalizeGraphNodes(technicalGraph ? [...(graph.nodes || []), ...(graph.advancedNodes || [])] : graph.nodes || []);
@@ -782,9 +846,10 @@ function renderTechnicalDetails() {
         <strong>Response state</strong>
         <span>${escapeHtml(responseSourceDetailedLabel(selected))}</span>
         ${isCachedFallback(selected) ? `<small>This answer was not produced by live retrieval.</small>` : ""}
+        ${isNoEvidenceResponse(selected) ? `<small>No evidence-backed answer was generated because the graph returned 0 regulatory sources.</small>` : ""}
       </div>
       <div class="technical-actions">
-        ${isCachedFallback(selected) ? "" : `<button type="button" data-graph-action="technical-mode">${state.ui.graphMode === "technical" ? "Use demo graph" : "Expand graph"}</button>`}
+        ${isCachedFallback(selected) || isNoEvidenceResponse(selected) ? "" : `<button type="button" data-graph-action="technical-mode">${state.ui.graphMode === "technical" ? "Use demo graph" : "Expand graph"}</button>`}
         <button type="button" data-graph-action="fit">Fit graph</button>
       </div>
     </header>
@@ -806,17 +871,30 @@ function renderInspectorOverview(selected) {
       </section>
     `;
   }
+  const laws = isNoEvidenceResponse(selected)
+    ? []
+    : (selected.regulations || inferRegulations(selected.question, selected.evidence || []));
   return `
     <section class="inspector-overview">
-      <div><dt>Status</dt><dd>${escapeHtml(responseSourceDetailedLabel(selected))}${isCachedFallback(selected) ? `<small>This answer was not produced by live retrieval.</small>` : ""}</dd></div>
+      <div><dt>Status</dt><dd>${escapeHtml(responseSourceDetailedLabel(selected))}${isCachedFallback(selected) ? `<small>This answer was not produced by live retrieval.</small>` : ""}${isNoEvidenceResponse(selected) ? `<small>No evidence-backed answer was generated.</small>` : ""}</dd></div>
       <div><dt>Route</dt><dd>${escapeHtml(selected.domain || "Healthcare AI compliance")}</dd></div>
-      <div><dt>Laws</dt><dd>${escapeHtml((selected.regulations || inferRegulations(selected.question, selected.evidence || [])).join(" · "))}</dd></div>
+      <div><dt>Laws</dt><dd>${laws.length ? escapeHtml(laws.join(" · ")) : "No retrieved laws"}</dd></div>
       <div><dt>Sources</dt><dd>${selected.evidence?.length || 0} regulatory source${selected.evidence?.length === 1 ? "" : "s"}</dd></div>
     </section>
   `;
 }
 
 function renderTechnicalTabContent(selected, tabId) {
+  if (isNoEvidenceResponse(selected)) {
+    if (tabId === "pipeline-timings") {
+      const timings = getPipelineTimings(selected);
+      if (!timings.length) return `${renderTechnicalSummary("No evidence found", "The backend completed retrieval but found 0 regulatory sources. Answer generation was skipped.")}${renderTechnicalEmpty("No pipeline timings available for this response.")}`;
+      return `${renderTechnicalSummary("No evidence found", "The backend completed retrieval but found 0 regulatory sources. Answer generation was skipped.")}<div class="technical-table timings">${timings.map((item) => `
+        <div><strong>${escapeHtml(item.label)}</strong><em>${escapeHtml(item.value)}</em></div>
+      `).join("")}</div>`;
+    }
+    return `${renderTechnicalSummary("No evidence found", "The knowledge graph returned 0 regulatory sources for this question.")}${renderTechnicalEmpty("No live evidence rows are available for this tab.")}`;
+  }
   if (isCachedFallback(selected)) {
     if (tabId === "matched-entities") {
       return `${renderTechnicalSummary("Pre-loaded fallback", "This answer was not produced by live retrieval. Matched entities are inferred from the demo preset only.")}${renderChipList(getMatchedEntities(selected), "No preset concepts available for this response.")}`;
@@ -945,6 +1023,37 @@ function renderAnswer() {
   }
   const selectedEvidence = selected.evidence || [];
   const sourcesCollapsed = Boolean(selected.sourcesCollapsed);
+  const noEvidence = isNoEvidenceResponse(selected) || selectedEvidence.length === 0;
+
+  if (noEvidence) {
+    els.answerContent.innerHTML = `
+      <article class="answer-card no-evidence-answer">
+        <div class="answer-topline">
+          <span class="cache-badge source-no-evidence">${escapeHtml(responseSourceCompactLabel(selected))}</span>
+        </div>
+        <section class="deployment-verdict evidence-missing">
+          <span>Evidence-backed answer unavailable</span>
+          <strong>No sufficient regulatory evidence was found in the knowledge graph for this question.</strong>
+        </section>
+        <div class="answer-copy">
+          <p>${escapeHtml(selected.summary || selected.answer || "No sufficient regulatory evidence was found in the knowledge graph for this question.")}</p>
+        </div>
+      </article>
+    `;
+    els.evidenceContent.innerHTML = `
+      <div class="section-title evidence-title">
+        <div>
+          <h3>Sources used</h3>
+          <span>0 regulatory sources selected</span>
+        </div>
+        <button type="button" class="section-toggle-button" data-sources-toggle aria-expanded="${String(!sourcesCollapsed)}">${sourcesCollapsed ? "Show" : "Collapse"}</button>
+      </div>
+      <div class="evidence-list ${sourcesCollapsed ? "is-collapsed" : ""}" ${sourcesCollapsed ? "hidden" : ""}>
+        ${renderEmptyState("No regulatory source passages were retrieved. Check the question wording or verify that Neo4j contains Regulation, Statement, and SourceChunk nodes.")}
+      </div>
+    `;
+    return;
+  }
 
   els.answerContent.innerHTML = `
     <article class="answer-card">
@@ -1189,16 +1298,17 @@ function renderEmptyState(message) {
 function stepDescription(label, item) {
   const descriptions = {
     "Question intake": truncate(item.question, 34),
-    "Regulation routing": (item.regulations || []).join(", ") || "GDPR, HIPAA, EU AI Act",
+    "Regulation routing": isNoEvidenceResponse(item) ? "No retrieved route" : ((item.regulations || []).join(", ") || "GDPR, HIPAA, EU AI Act"),
     "Graph traversal": relatedConcepts(item).slice(0, 2).join(", "),
     "Evidence ranking": `${item.evidence?.length || 0} sources selected`,
-    "Answer synthesis": item.status === "complete" ? "Grounded controls drafted" : item.status === "error" ? "Generation skipped" : "Building grounded answer",
-    "Response ready": item.status === "complete" ? "Visitor-ready assessment" : item.status === "error" ? "Error state shown" : "Preparing response",
+    "Answer synthesis": isNoEvidenceResponse(item) ? "Skipped without evidence" : item.status === "complete" ? "Grounded controls drafted" : item.status === "error" ? "Generation skipped" : "Building grounded answer",
+    "Response ready": isNoEvidenceResponse(item) ? "Evidence-missing state" : item.status === "complete" ? "Visitor-ready assessment" : item.status === "error" ? "Error state shown" : "Preparing response",
   };
   return descriptions[label] || "";
 }
 
 function relatedConcepts(item) {
+  if (isNoEvidenceResponse(item)) return ["no evidence found"];
   const concepts = (item.evidence || []).map((entry) => entry.concept).filter(Boolean).slice(0, 3);
   return concepts.length ? concepts : ["health data", "high-risk AI", "patient safeguards"];
 }
@@ -1206,6 +1316,7 @@ function relatedConcepts(item) {
 function formatQuestionMeta(item) {
   if (item.status === "loading") return `Running: ${PIPELINE_STEPS[item.pipelineStep]}`;
   if (item.status === "error") return item.error;
+  if (isNoEvidenceResponse(item)) return "0 regulatory sources selected";
   const time = item.metrics?.searchTimeMs ? `${item.metrics.searchTimeMs} ms` : "live backend";
   return `${item.evidence.length} regulatory sources selected · ${time}`;
 }
@@ -1217,6 +1328,7 @@ function responseSourceLabel(item) {
 function responseSourceCompactLabel(item) {
   const source = item.responseSource || (item.usedCache ? "cached_fallback" : "live");
   if (source === "live" || source === "live_pipeline") return "Live retrieval completed";
+  if (source === "no_evidence") return "No evidence found";
   if (source === "cached_fallback" || source === "cached_demo" || source === "fallback_cache") return "Pre-loaded demo response";
   if (source === "timeout" || source === "live_timeout") return "Fallback response after timeout";
   if (source === "error" || source === "live_failed") return "Live retrieval failed";
@@ -1226,6 +1338,7 @@ function responseSourceCompactLabel(item) {
 function responseSourceDetailedLabel(item) {
   const source = item.responseSource || (item.usedCache ? "cached_fallback" : "live");
   if (source === "live" || source === "live_pipeline") return "Live retrieval completed";
+  if (source === "no_evidence") return "No evidence found";
   if (source === "cached_fallback" || source === "cached_demo" || source === "fallback_cache") return "Pre-loaded demo response";
   if (source === "timeout" || source === "live_timeout") return "Fallback response after timeout";
   if (source === "error" || source === "live_failed") return "Live retrieval failed";
@@ -1244,6 +1357,7 @@ function isIllustrativeGraph(graph) {
 }
 
 function graphModeLabel(graph, technicalGraph) {
+  if (graph?.meta?.source === "no_evidence") return "Evidence missing";
   if (isIllustrativeGraph(graph)) return "Illustrative graph";
   if (technicalGraph) return "Technical graph";
   return "Retrieved evidence graph";
@@ -1302,9 +1416,14 @@ function isCachedFallback(item) {
   return source === "cached_fallback" || source === "cached_demo" || source === "fallback_cache";
 }
 
+function isNoEvidenceResponse(item) {
+  return item?.responseSource === "no_evidence" || item?.metrics?.noEvidence === true || item?.metrics?.no_evidence === true;
+}
+
 function statusLabelForQuestion(item) {
   if (item.status === "loading") return "Running";
   if (item.status === "error") return "Review needed";
+  if (isNoEvidenceResponse(item)) return "No evidence";
   const text = item.question.toLowerCase();
   if (text.includes("risk") || text.includes("deployment")) return "Risk flagged";
   if (text.includes("mental") || text.includes("diagnostic")) return "High sensitivity";

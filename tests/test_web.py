@@ -54,10 +54,13 @@ class FakeRetriever:
 
 
 class FakeAnswerGenerator:
+    calls = 0
+
     def __init__(self, model: str | None = None) -> None:
         self.model = model
 
     def generate(self, question: str, context: str) -> str:
+        type(self).calls += 1
         return "Grounded answer"
 
 
@@ -112,6 +115,32 @@ def test_answer_question_reuses_single_graph_retriever(monkeypatch: Any) -> None
     assert rag_service._get_retriever() is rag_service._get_retriever()
 
 
+def test_answer_question_returns_no_evidence_state_without_generation(monkeypatch: Any) -> None:
+    class EmptyRetriever(FakeRetriever):
+        def retrieve(self, question: str, limit: int = 30) -> list[dict[str, Any]]:
+            return []
+
+    class CountingAnswerGenerator(FakeAnswerGenerator):
+        calls = 0
+
+    monkeypatch.setattr(rag_service, "_retriever", None)
+    monkeypatch.setattr(rag_service, "GraphRetriever", EmptyRetriever)
+    monkeypatch.setattr(rag_service, "AnswerGenerator", CountingAnswerGenerator)
+
+    result = rag_service.answer_question("What safeguards are needed for a new concept?", debug=True)
+
+    assert result["answer"] == rag_service.NO_EVIDENCE_MESSAGE
+    assert result["evidence"] == []
+    assert result["response_source"] == "no_evidence"
+    assert result["metrics"]["evidence_items"] == 0
+    assert result["metrics"]["no_evidence"] is True
+    assert result["metrics"]["generation_ms"] == 0
+    assert result["graph"]["meta"]["source"] == "no_evidence"
+    assert len(result["graph"]["nodes"]) == 1
+    assert result["graph"]["edges"] == []
+    assert CountingAnswerGenerator.calls == 0
+
+
 def test_answer_question_rejects_empty_question() -> None:
     try:
         rag_service.answer_question("")
@@ -132,6 +161,7 @@ def test_flask_ask_route_returns_clean_json(monkeypatch: Any) -> None:
             "context": "",
             "debug": {},
             "metrics": {"top_k": 30},
+            "response_source": "live",
         },
     )
 
@@ -143,6 +173,7 @@ def test_flask_ask_route_returns_clean_json(monkeypatch: Any) -> None:
     assert data["answer"] == "Grounded answer"
     assert data["graph"] == {"nodes": [], "edges": []}
     assert data["metrics"]["top_k"] == 30
+    assert data["response_source"] == "live"
     assert data["error"] is None
 
 
@@ -169,3 +200,54 @@ def test_flask_ask_route_handles_empty_question() -> None:
     assert data["answer"] == ""
     assert data["graph"] == {"nodes": [], "edges": []}
     assert data["metrics"] == {}
+
+
+def test_health_route_reports_neo4j_content_counts(monkeypatch: Any) -> None:
+    class FakeRecord(dict):
+        pass
+
+    class FakeSession:
+        def __enter__(self) -> "FakeSession":
+            return self
+
+        def __exit__(self, *_args: Any) -> None:
+            return None
+
+        def run(self, query: str) -> Any:
+            counts = {
+                "MATCH (n:Regulation) RETURN count(n) AS count": 3,
+                "MATCH (n:Statement) RETURN count(n) AS count": 12,
+                "MATCH (n:SourceChunk) RETURN count(n) AS count": 40,
+            }
+
+            class Result:
+                def single(self) -> FakeRecord:
+                    return FakeRecord({"count": counts.get(query, 1)})
+
+            return Result()
+
+    class FakeDriver:
+        def session(self, database: str) -> FakeSession:
+            return FakeSession()
+
+        def close(self) -> None:
+            return None
+
+    class FakeGraphDatabase:
+        @staticmethod
+        def driver(*_args: Any, **_kwargs: Any) -> FakeDriver:
+            return FakeDriver()
+
+    monkeypatch.setattr("web.app.GraphDatabase", FakeGraphDatabase)
+
+    client = app.test_client()
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["neo4j"]["status"] == "ok"
+    assert data["neo4j"]["counts"] == {
+        "regulations": 3,
+        "statements": 12,
+        "source_chunks": 40,
+    }
