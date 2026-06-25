@@ -182,9 +182,9 @@ def test_flask_index_renders_dashboard() -> None:
     response = client.get("/")
 
     assert response.status_code == 200
-    assert b"Complaince Aware RAG Assistant" in response.data
-    assert b"Live backend mode" in response.data
-    assert b"Preset cache disabled" in response.data
+    assert b"Compliance-Aware RAG Assistant" in response.data
+    assert b"Live backend" in response.data
+    assert b"Research demo" in response.data
     assert b"Responses are generated from retrieved regulatory text and are not legal advice." in response.data
     assert b"rail-icon" not in response.data
     assert b"Workspace navigation" not in response.data

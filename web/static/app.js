@@ -67,9 +67,7 @@ const els = {
   resetDemoButton: document.querySelector("#reset-demo-button"),
   demoGrid: document.querySelector("#demo-grid"),
   leftSidebar: document.querySelector("#left-sidebar"),
-  demoQuestionList: document.querySelector("#demo-question-list"),
   questionCards: document.querySelector("#question-cards"),
-  questionCount: document.querySelector("#question-count"),
   sessionState: document.querySelector("#session-state"),
   stepper: document.querySelector("#stepper"),
   graphStage: document.querySelector("#graph-stage"),
@@ -139,14 +137,6 @@ els.copyAnswerButton.addEventListener("click", () => {
 });
 
 document.addEventListener("click", (event) => {
-  const demoButton = event.target.closest("[data-demo-question]");
-  if (demoButton) {
-    if (state.isLoading) return;
-    els.input.value = demoButton.dataset.demoQuestion;
-    submitQuestion(demoButton.dataset.demoQuestion);
-    return;
-  }
-
   const questionCard = event.target.closest("[data-question-id]");
   if (questionCard) {
     state.selectedId = questionCard.dataset.questionId;
@@ -598,7 +588,6 @@ function buildAdvancedNodes(evidence) {
 
 function render() {
   applyLayoutPrefs();
-  renderDemoButtons();
   renderQuestionCards();
   renderStepper();
   renderGraph();
@@ -607,7 +596,6 @@ function render() {
   renderAnswer();
   els.askButton.disabled = state.isLoading;
   updateCharacterCount();
-  els.questionCount.textContent = "5 suggested questions";
   els.sessionState.textContent = state.isLoading ? "Running pipeline" : state.questions.length ? "Session active" : "Ready";
   updateSectionToggles();
   els.composerSourceBadge = document.querySelector("#composer-source-badge");
@@ -622,19 +610,6 @@ function render() {
 function updateCharacterCount() {
   if (!els.charCount) return;
   els.charCount.textContent = `${els.input?.value?.length || 0} / 500`;
-}
-
-function renderDemoButtons() {
-  const selected = getSelectedQuestion();
-  els.demoQuestionList.innerHTML = DEMO_QUESTIONS.map((question, index) => {
-    const isSelected = normalizeQuestion(selected?.question || "") === normalizeQuestion(question);
-    return `
-    <button type="button" data-demo-question="${escapeHtml(question)}" class="${isSelected ? "selected" : ""}" title="${escapeHtml(question)}">
-      <span>${index + 1}</span>
-      <strong>${escapeHtml(question)}</strong>
-    </button>
-  `;
-  }).join("");
 }
 
 function composerSourceState() {
@@ -751,11 +726,12 @@ function renderGraph() {
   const rawNodes = normalizeGraphNodes(technicalGraph ? [...(graph.nodes || []), ...(graph.advancedNodes || [])] : graph.nodes || []);
   const rawEdges = normalizeGraphEdges(technicalGraph ? [...(graph.edges || []), ...(graph.advancedEdges || [])] : graph.edges || []);
   const expandedGraph = splitOverloadedRegulationNodes(rawNodes, rawEdges);
-  const allNodes = expandedGraph.nodes;
-  const allEdges = expandedGraph.edges;
-  const nodes = technicalGraph ? allNodes : highValueGraphNodes(allNodes, 15);
+  const allNodes = dedupeGraphNodes(expandedGraph.nodes).map((node) => ({ ...node, preferredLayer: graphLayer(node) }));
+  const allEdges = dedupeGraphEdges(expandedGraph.edges);
+  const journey = visibleJourneyGraph(allNodes, allEdges, technicalGraph);
+  const nodes = journey.nodes;
   const visibleNodeIds = new Set(nodes.map((node) => node.id));
-  const edges = allEdges.filter((edge) => visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target));
+  const edges = journey.edges.filter((edge) => visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target));
   const canvas = graphCanvasSize();
   const layout = layoutGraph(nodes, selected, canvas);
   const byId = Object.fromEntries(layout.map((node) => [node.id, node]));
@@ -775,22 +751,25 @@ function renderGraph() {
         <text x="${labelPoint.x}" y="${labelPoint.y - 1}">${escapeHtml(edgeLabel)}</text>
       </g>` : "";
     return `
-      <path class="${edgeLabel ? "primary-edge" : "secondary-edge"}" marker-end="url(#arrowhead)" d="${path}"><title>${escapeHtml(edgeTooltip(edge))}</title></path>
+      <g class="graph-edge ${edgeLabel ? "primary-edge" : "secondary-edge"}" data-edge-source="${escapeHtml(edge.source)}" data-edge-target="${escapeHtml(edge.target)}">
+      <path marker-end="url(#arrowhead)" d="${path}"><title>${escapeHtml(edgeTooltip(edge))}</title></path>
       ${label}
+      </g>
     `;
   }).join("");
 
   const nodeSvg = layout.map((node, index) => {
     const isPrimary = isPrimaryGraphNode(selected, node, index, technicalGraph);
     const width = graphNodeWidth(node);
+    const height = graphNodeHeight(node);
     const step = isPrimary ? `<text class="node-step" x="${-width / 2 + 16}" y="-18">${primaryStepNumber(layout, selected, index)}</text>` : "";
     return `
-    <g class="graph-node graph-${slug(node.type)} ${isPrimary ? "primary" : "secondary"}" transform="translate(${node.x}, ${node.y})">
+    <g class="graph-node graph-${slug(node.type)} ${isPrimary ? "primary" : "secondary"}" data-node-id="${escapeHtml(node.id)}" transform="translate(${node.x}, ${node.y})">
       <title>${escapeHtml(nodeTooltip(node, graph))}</title>
-      <rect x="${-width / 2}" y="-34" width="${width}" height="68" rx="10"></rect>
+      <rect x="${-width / 2}" y="${-height / 2}" width="${width}" height="${height}" rx="12"></rect>
       <text text-anchor="middle">${svgLines(node.label, width)}</text>
       ${step}
-      <text class="node-type" y="55" text-anchor="middle">${escapeHtml(node.type)}</text>
+      <text class="node-type" y="${height / 2 + 17}" text-anchor="middle">${escapeHtml(node.type)}</text>
     </g>
   `;
   }).join("");
@@ -798,8 +777,8 @@ function renderGraph() {
 
   els.graphStage.innerHTML = `
     <div class="graph-meta">
-      <span>${nodes.length} highlighted nodes</span>
-      <span>${edges.length} highlighted links</span>
+      <span>${allNodes.length} retrieved nodes${nodes.length < allNodes.length ? ` · ${nodes.length} shown` : ""}</span>
+      <span>${allEdges.length} retrieved links${edges.length < allEdges.length ? ` · ${edges.length} shown` : ""}</span>
       <span>${graphModeLabel(graph, technicalGraph)}</span>
       <div class="graph-controls" aria-label="Graph controls">
         <button type="button" data-graph-action="fit">Fit graph</button>
@@ -827,6 +806,61 @@ function renderGraph() {
       </g>
     </svg>
   `;
+  initializeGraphHover();
+}
+
+function initializeGraphHover() {
+  if (!els.graphStage?.querySelectorAll) return;
+  const nodes = [...els.graphStage.querySelectorAll(".graph-node[data-node-id]")];
+  const edges = [...els.graphStage.querySelectorAll(".graph-edge[data-edge-source][data-edge-target]")];
+  const clear = () => {
+    els.graphStage.classList.remove("is-hovering-graph");
+    nodes.forEach((node) => node.classList.remove("is-dimmed", "is-highlighted"));
+    edges.forEach((edge) => edge.classList.remove("is-dimmed", "is-highlighted"));
+  };
+
+  nodes.forEach((node) => {
+    node.addEventListener("mouseenter", () => {
+      const id = node.dataset.nodeId;
+      const connected = new Set([id]);
+      edges.forEach((edge) => {
+        if (edge.dataset.edgeSource === id || edge.dataset.edgeTarget === id) {
+          connected.add(edge.dataset.edgeSource);
+          connected.add(edge.dataset.edgeTarget);
+        }
+      });
+      els.graphStage.classList.add("is-hovering-graph");
+      nodes.forEach((candidate) => {
+        const active = connected.has(candidate.dataset.nodeId);
+        candidate.classList.toggle("is-highlighted", active);
+        candidate.classList.toggle("is-dimmed", !active);
+      });
+      edges.forEach((edge) => {
+        const active = edge.dataset.edgeSource === id || edge.dataset.edgeTarget === id;
+        edge.classList.toggle("is-highlighted", active);
+        edge.classList.toggle("is-dimmed", !active);
+      });
+    });
+    node.addEventListener("mouseleave", clear);
+  });
+
+  edges.forEach((edge) => {
+    edge.addEventListener("mouseenter", () => {
+      const connected = new Set([edge.dataset.edgeSource, edge.dataset.edgeTarget]);
+      els.graphStage.classList.add("is-hovering-graph");
+      edges.forEach((candidate) => {
+        const active = candidate === edge;
+        candidate.classList.toggle("is-highlighted", active);
+        candidate.classList.toggle("is-dimmed", !active);
+      });
+      nodes.forEach((candidate) => {
+        const active = connected.has(candidate.dataset.nodeId);
+        candidate.classList.toggle("is-highlighted", active);
+        candidate.classList.toggle("is-dimmed", !active);
+      });
+    });
+    edge.addEventListener("mouseleave", clear);
+  });
 }
 
 function renderTechnicalDetails() {
@@ -1352,6 +1386,86 @@ function highValueGraphNodes(nodes, limit) {
     .slice(0, limit);
 }
 
+function dedupeGraphNodes(nodes = []) {
+  const byId = new Map();
+  nodes.forEach((node, index) => {
+    const id = String(node.id || `node-${index + 1}`);
+    const existing = byId.get(id) || {};
+    byId.set(id, { ...existing, ...node, id, label: node.label || existing.label || `Node ${index + 1}` });
+  });
+  return [...byId.values()];
+}
+
+function dedupeGraphEdges(edges = []) {
+  const seen = new Set();
+  return edges.filter((edge) => {
+    const label = shortEdgeLabel(edge.label || edge.relationshipType || "");
+    const key = `${edge.source}::${edge.target}::${label}`;
+    if (!edge.source || !edge.target || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function visibleJourneyGraph(allNodes, allEdges, technicalGraph) {
+  const degree = new Map();
+  allEdges.forEach((edge) => {
+    degree.set(edge.source, (degree.get(edge.source) || 0) + 1);
+    degree.set(edge.target, (degree.get(edge.target) || 0) + 1);
+  });
+  const layerCaps = technicalGraph ? { 0: 2, 1: 8, 2: 9, 3: 9, 4: 6 } : { 0: 1, 1: 5, 2: 6, 3: 6, 4: 4 };
+  const visibleNodes = [];
+  const hiddenGroups = [];
+  const layers = new Map();
+
+  allNodes.forEach((node) => {
+    const layer = graphLayer(node);
+    if (!layers.has(layer)) layers.set(layer, []);
+    layers.get(layer).push({ ...node, preferredLayer: layer });
+  });
+
+  [...layers.keys()].sort((a, b) => a - b).forEach((layer) => {
+    const group = layers.get(layer)
+      .sort((a, b) => graphNodeRank(a, degree) - graphNodeRank(b, degree) || String(a.label).localeCompare(String(b.label)));
+    const cap = layerCaps[layer] || (technicalGraph ? 7 : 5);
+    const shown = group.slice(0, cap);
+    const hidden = group.slice(cap);
+    visibleNodes.push(...shown);
+    if (hidden.length) {
+      hiddenGroups.push({
+        id: `group:${layer}`,
+        label: `+ ${hidden.length} more ${journeyLayerName(layer)} node${hidden.length === 1 ? "" : "s"}`,
+        type: "group",
+        preferredLayer: layer,
+        hiddenLabels: hidden.map((node) => node.label).join("\n"),
+      });
+    }
+  });
+
+  const nodes = [...visibleNodes, ...hiddenGroups];
+  const visibleIds = new Set(nodes.map((node) => node.id));
+  const edges = allEdges.filter((edge) => visibleIds.has(edge.source) && visibleIds.has(edge.target));
+  return { nodes, edges };
+}
+
+function graphNodeRank(node, degree) {
+  const type = String(node.type || "").toLowerCase();
+  const priority = { question: 0, entity: 1, concept: 1, system: 1, ontology: 2, statement: 3, risk: 3, control: 3, evidence: 4, regulation: 5, group: 9 };
+  const degreeScore = -(degree.get(node.id) || 0);
+  const evidenceScore = Number(node.evidenceId || 9999);
+  return (priority[type] ?? 6) * 1000 + degreeScore * 20 + Math.min(evidenceScore, 999);
+}
+
+function journeyLayerName(layer) {
+  return {
+    0: "question",
+    1: "concept",
+    2: "requirement",
+    3: "evidence",
+    4: "source",
+  }[layer] || "graph";
+}
+
 function isIllustrativeGraph(graph) {
   return String(graph?.meta?.source || "").includes("illustrative");
 }
@@ -1480,26 +1594,33 @@ function graphTranslateY() {
 }
 
 function graphCanvasSize() {
-  const width = Math.max(els.graphStage?.clientWidth || 0, state.ui.graphFullscreen ? 1280 : 1060);
-  const height = Math.max(els.graphStage?.clientHeight || 0, state.ui.graphFullscreen ? 760 : 500);
+  const stageWidth = els.graphStage?.clientWidth || 0;
+  const stageHeight = els.graphStage?.clientHeight || 0;
+  const width = state.ui.graphFullscreen
+    ? Math.max(window.innerWidth - 72, 1280)
+    : Math.max(stageWidth, 1060);
+  const height = state.ui.graphFullscreen
+    ? Math.max(window.innerHeight - 170, 760)
+    : Math.max(stageHeight - 98, 520);
   return {
     width,
     height,
-    topPadding: state.ui.graphFullscreen ? 120 : 92,
-    bottomPadding: state.ui.graphFullscreen ? 120 : 88,
-    sidePadding: state.ui.graphFullscreen ? Math.max(96, width * 0.1) : 76,
+    topPadding: state.ui.graphFullscreen ? 96 : 72,
+    bottomPadding: state.ui.graphFullscreen ? 110 : 88,
+    sidePadding: state.ui.graphFullscreen ? 92 : 70,
   };
 }
 
 function graphViewport(nodes, canvas = graphCanvasSize()) {
   if (!nodes.length) return { viewBox: `0 0 ${canvas.width} ${canvas.height}`, width: canvas.width, height: canvas.height };
-  const padding = state.ui.graphFullscreen ? 120 : 96;
+  const padding = state.ui.graphFullscreen ? 96 : 76;
   const extents = nodes.reduce((acc, node) => {
     const width = graphNodeWidth(node);
+    const height = graphNodeHeight(node);
     acc.minX = Math.min(acc.minX, node.x - width / 2);
     acc.maxX = Math.max(acc.maxX, node.x + width / 2);
-    acc.minY = Math.min(acc.minY, node.y - 70);
-    acc.maxY = Math.max(acc.maxY, node.y + 86);
+    acc.minY = Math.min(acc.minY, node.y - height / 2 - 28);
+    acc.maxY = Math.max(acc.maxY, node.y + height / 2 + 44);
     return acc;
   }, { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity });
   const width = Math.max(canvas.width, Math.ceil(extents.maxX - extents.minX + padding * 2));
@@ -1582,6 +1703,13 @@ function handleGraphAction(action) {
   }
   persistUiPrefs();
   render();
+  if (["fullscreen", "fit", "reset-layout", "technical-mode"].includes(action)) {
+    const raf = typeof requestAnimationFrame === "function" ? requestAnimationFrame : (callback) => setTimeout(callback, 0);
+    raf(() => {
+      renderGraph();
+      setTimeout(renderGraph, 60);
+    });
+  }
 }
 
 function fitGraph() {
@@ -1696,15 +1824,15 @@ function storyGraphLayout(nodes, canvas) {
     "Mental Health AI": 0,
     "Health Data": 1,
     "High-Risk AI System": 1,
-    GDPR: 2,
-    "EU AI Act": 2,
+    GDPR: 4,
+    "EU AI Act": 4,
     "Article 9": 3,
-    "Privacy Controls": 3,
-    "Human Oversight": 3,
-    "Risk Management": 3,
-    "Technical Documentation": 3,
-    "GDPR Article 35": 4,
-    "AI Act Articles 9-15": 4,
+    "Privacy Controls": 2,
+    "Human Oversight": 2,
+    "Risk Management": 2,
+    "Technical Documentation": 2,
+    "GDPR Article 35": 3,
+    "AI Act Articles 9-15": 3,
   };
   return layeredGraphLayout(nodes.map((node) => ({ ...node, preferredLayer: layerByLabel[node.label] ?? graphLayer(node) })), canvas);
 }
@@ -1716,23 +1844,24 @@ function layeredGraphLayout(nodes, canvas) {
     if (!layers.has(layer)) layers.set(layer, []);
     layers.get(layer).push(node);
   });
-  const sortedLayers = [...layers.keys()].sort((a, b) => a - b);
+  const sortedLayers = [0, 1, 2, 3, 4].filter((layer) => layers.has(layer));
   const left = canvas.sidePadding;
   const right = Math.max(left + 1, canvas.width - canvas.sidePadding);
   const top = canvas.topPadding;
   const maxGroupSize = Math.max(...[...layers.values()].map((group) => group.length), 1);
-  const requiredLayerHeight = (maxGroupSize + 1) * 104;
+  const requiredLayerHeight = (maxGroupSize + 1) * 118;
   const bottom = Math.max(top + requiredLayerHeight, canvas.height - canvas.bottomPadding);
-  const xGap = (right - left) / Math.max(sortedLayers.length - 1, 1);
+  const columnFractions = { 0: 0.02, 1: 0.26, 2: 0.50, 3: 0.73, 4: 0.95 };
   return sortedLayers.flatMap((layer, layerIndex) => {
-    const group = layers.get(layer);
-    const minGap = group.some((node) => node.type === "regulation") ? 128 : 104;
+    const group = layers.get(layer).sort((a, b) => graphNodeRank(a, new Map()) - graphNodeRank(b, new Map()) || String(a.label).localeCompare(String(b.label)));
+    const minGap = group.some((node) => ["regulation", "evidence"].includes(String(node.type).toLowerCase())) ? 124 : 112;
     const yGap = Math.max(minGap, (bottom - top) / Math.max(group.length + 1, 2));
     const groupHeight = (group.length - 1) * yGap;
     const firstY = Math.max(top + yGap, (top + bottom) / 2 - groupHeight / 2);
+    const x = left + (right - left) * (columnFractions[layer] ?? (layerIndex / Math.max(sortedLayers.length - 1, 1)));
     return group.map((node, index) => ({
       ...node,
-      x: left + layerIndex * xGap,
+      x,
       y: clampNumber(firstY + index * yGap + (group.length > 1 && layerIndex % 2 ? yGap * 0.08 : 0), top + 54, bottom - 54),
     }));
   });
@@ -1740,19 +1869,26 @@ function layeredGraphLayout(nodes, canvas) {
 
 function graphLayer(node) {
   const type = String(node.type || "").toLowerCase();
-  if (type === "question" || type === "system") return 0;
-  if (type === "concept" || type === "entity" || type === "ontology") return 1;
-  if (type === "regulation") return 2;
-  if (type === "risk" || type === "statement") return 3;
-  if (type === "control" || type === "evidence") return 4;
+  const label = String(node.label || "").toLowerCase();
+  if (type === "question") return 0;
+  if (type === "system" || type === "concept" || type === "entity" || type === "ontology") return 1;
+  if (type === "risk" || type === "control" || type === "statement" || label.includes("requirement") || label.includes("obligation")) return 2;
+  if (type === "evidence" || type === "citation" || isCitationLabel(node.label) || isCitationLabel(node.citation)) return 3;
+  if (type === "regulation" || type === "source" || isRegulationOrSourceLabel(node.label) || isRegulationOrSourceLabel(node.sourceDocument)) return 4;
+  if (type === "group") return Number.isFinite(node.preferredLayer) ? node.preferredLayer : 3;
   return 2;
 }
 
 function graphNodeWidth(node) {
   const label = String(node.label || "");
   const type = String(node.type || "").toLowerCase();
-  const base = type === "regulation" ? 132 : type === "evidence" ? 148 : 144;
-  return clampNumber(base + Math.min(label.length, 28) * 3.2, 128, 190);
+  const base = type === "question" ? 168 : type === "regulation" ? 150 : type === "evidence" ? 164 : 156;
+  return clampNumber(base + Math.min(label.length, 34) * 2.8, 150, 224);
+}
+
+function graphNodeHeight(node) {
+  const type = String(node.type || "").toLowerCase();
+  return type === "group" ? 64 : 82;
 }
 
 function graphEdgePath(source, target) {
@@ -1760,16 +1896,14 @@ function graphEdgePath(source, target) {
   const targetWidth = graphNodeWidth(target);
   const dx = target.x - source.x;
   const dy = target.y - source.y;
-  const horizontal = Math.abs(dx) >= Math.abs(dy);
   const startX = source.x + Math.sign(dx || 1) * sourceWidth / 2;
   const endX = target.x - Math.sign(dx || 1) * targetWidth / 2;
   const startY = source.y;
   const endY = target.y;
-  if (horizontal && Math.abs(dy) < 44) {
+  if (Math.abs(dy) < 36) {
     return `M ${startX} ${startY} L ${endX} ${endY}`;
   }
-  const touchesRegulation = source.type === "regulation" || target.type === "regulation";
-  const curve = Math.min(Math.abs(dx) * (touchesRegulation ? 0.14 : 0.2), touchesRegulation ? 44 : 64);
+  const curve = Math.min(Math.abs(dx) * 0.16, 56);
   const c1x = startX + Math.sign(dx || 1) * curve;
   const c2x = endX - Math.sign(dx || 1) * curve;
   return `M ${startX} ${startY} C ${c1x} ${startY}, ${c2x} ${endY}, ${endX} ${endY}`;
@@ -1793,9 +1927,9 @@ function edgeLabelPoint(source, target, label = "") {
 function visibleEdgeLabel(edge, source, target, technicalGraph) {
   const label = shortEdgeLabel(edge.label);
   if (!label) return "";
-  const important = new Set(["regulated by", "requires", "cites", "mitigated by", "classified as"]);
+  const important = new Set(["regulated by", "requires", "cites", "mitigated by", "classified as", "retrieved evidence", "supports answer"]);
   if (important.has(label)) return label;
-  if (technicalGraph && important.has(shortEdgeLabel(edge.relationshipType))) return label;
+  if (technicalGraph && important.has(shortEdgeLabel(edge.relationshipType))) return shortEdgeLabel(edge.relationshipType);
   return "";
 }
 
@@ -1807,6 +1941,9 @@ function nodeTooltip(node, graph) {
     node.sourceDocument ? `Source: ${node.sourceDocument}` : "",
     node.citation ? `Citation: ${node.citation}` : "",
     node.evidenceId ? `Evidence ID: ${node.evidenceId}` : "",
+    node.score !== undefined ? `Relevance score: ${node.score}` : "",
+    node.snippet ? `Snippet: ${truncate(node.snippet, 220)}` : "",
+    node.hiddenLabels ? `Hidden nodes:\n${node.hiddenLabels}` : "",
     illustrative ? "Origin: illustrative fallback graph" : "Origin: retrieved evidence graph",
   ].filter(Boolean);
   return details.join("\n");
@@ -1898,6 +2035,8 @@ function normalizeGraphNodes(nodes = []) {
       sourceDocument,
       citation,
       evidenceId: node.evidence_id || node.evidenceId || "",
+      score: node.score ?? node.relevance_score ?? node.relevanceScore,
+      snippet: node.snippet || node.evidence_text || node.evidenceText || "",
     };
   }).filter((node) => node.id && node.label);
 }
@@ -2044,10 +2183,10 @@ function readableGraphLabel(node, index = 0) {
   const raw = String(node.label || node.name || node.source_document || node.type || `Node ${index + 1}`).trim();
   if (!raw) return `Node ${index + 1}`;
   const type = String(node.type || node.category || "").toLowerCase();
-  if (/\b(GDPR|HIPAA|EU AI Act|AI Act)\b/i.test(raw) && raw.split(/\s+/).length > 1) return truncate(raw, 34);
-  if (type === "regulation" && (node.source_document || raw.includes(".pdf"))) return truncate(raw, 28);
-  if (type === "evidence") return truncate(raw, 30);
-  if (type === "statement") return truncate(raw, 34);
+  if (/\b(GDPR|HIPAA|EU AI Act|AI Act)\b/i.test(raw) && raw.split(/\s+/).length > 1) return truncate(raw, 46);
+  if (type === "regulation" && (node.source_document || raw.includes(".pdf"))) return truncate(raw, 38);
+  if (type === "evidence") return truncate(raw, 42);
+  if (type === "statement") return truncate(raw, 48);
   return shortGraphLabel(raw, index);
 }
 
@@ -2109,7 +2248,7 @@ function shortGraphLabel(label, index = 0) {
   if (lower.includes("cyber")) return "Cybersecurity";
   if (lower.includes("transparency")) return "Transparency";
   if (lower.includes("evidence")) return "Evidence Passages";
-  return truncate(text.replace(/\s+/g, " "), 24);
+  return truncate(text.replace(/\s+/g, " "), 38);
 }
 
 function summarizeAnswer(answer, question) {
@@ -2211,7 +2350,7 @@ function slug(value) {
 function svgLines(label, width = 144) {
   const words = String(label || "").split(/\s+/);
   const lines = [];
-  const maxChars = Math.max(12, Math.floor(width / 9.5));
+  const maxChars = Math.max(13, Math.floor(width / 9.2));
   words.forEach((word) => {
     if (!lines.length) {
       lines.push(word);
@@ -2221,9 +2360,9 @@ function svgLines(label, width = 144) {
     if (`${current} ${word}`.trim().length > maxChars) lines.push(word);
     else lines[lines.length - 1] = `${current} ${word}`.trim();
   });
-  const visibleLines = lines.slice(0, 2);
+  const visibleLines = lines.slice(0, 3);
   if (lines.length > visibleLines.length) visibleLines[visibleLines.length - 1] = truncate(visibleLines.at(-1), maxChars - 1);
-  return visibleLines.map((line, index) => `<tspan x="0" y="${(index - (visibleLines.length - 1) / 2) * 15}">${escapeHtml(line)}</tspan>`).join("");
+  return visibleLines.map((line, index) => `<tspan x="0" y="${(index - (visibleLines.length - 1) / 2) * 14}">${escapeHtml(line)}</tspan>`).join("");
 }
 
 function inlineMarkdown(value) {

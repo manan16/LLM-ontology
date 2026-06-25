@@ -3,27 +3,31 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Complaince Aware RAG Assistant</title>
+    <title>Compliance-Aware RAG Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   </head>
   <body>
     <div class="demo-shell">
       <header class="demo-header">
         <div class="brand-lockup">
-          <div class="brand-mark" aria-hidden="true">
-            <span></span><span></span><span></span><span></span>
-          </div>
-          <div>
-            <h1>Complaince Aware RAG Assistant</h1>
-            <p>Evidence-backed compliance reasoning for healthcare AI</p>
-            <strong class="sr-only">Complaince Aware RAG Assistant</strong>
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <line x1="7" y1="9" x2="14" y2="20" /><line x1="21" y1="9" x2="14" y2="20" /><line x1="7" y1="9" x2="21" y2="9" />
+              <circle cx="7" cy="9" r="3" /><circle cx="21" cy="9" r="3" /><circle cx="14" cy="20" r="3.4" class="brand-mark-key" />
+            </svg>
+          </span>
+          <div class="brand-text">
+            <h1>Compliance-Aware RAG Assistant</h1>
+            <p>Evidence-grounded reasoning for healthcare AI</p>
           </div>
         </div>
 
         <div class="header-actions">
           <div class="status-strip" aria-label="System status">
-            <span class="status-badge good">Live backend mode</span>
-            <span class="status-badge good">Preset cache disabled</span>
+            <span class="status-badge good">Live backend</span>
             <span class="status-badge demo">Research demo</span>
           </div>
           <button id="reset-demo-button" type="button" class="reset-demo-button">Reset demo</button>
@@ -31,109 +35,94 @@
       </header>
 
       <main id="demo-grid" class="demo-grid">
-        <aside id="left-sidebar" class="panel session-panel" aria-label="Demo presets and session history">
+        <aside id="left-sidebar" class="panel session-panel" aria-label="Session history">
           <div class="panel-heading">
-            <div>
-              <h2>Demo presets</h2>
+            <div class="panel-heading-text">
+              <span class="eyebrow">Docket</span>
+              <h2>Session</h2>
             </div>
             <div class="sidebar-actions">
-              <button id="new-session-button" type="button" class="icon-button" aria-label="Start a new session">＋</button>
+              <button id="new-session-button" type="button" class="icon-button" aria-label="Start a new session" title="Start a new session">+</button>
             </div>
           </div>
 
-          <section class="demo-prompts" aria-labelledby="demo-prompts-title">
-            <div class="section-title sr-only">
-              <h3 id="demo-prompts-title">Demo presets</h3>
-              <span id="question-count">5 suggested questions</span>
-            </div>
-            <div id="demo-question-list" class="demo-question-list"></div>
-          </section>
-
           <details class="session-questions" aria-labelledby="session-questions-title" open>
             <summary class="section-title">
-              <h3 id="session-questions-title">Session history</h3>
+              <span class="eyebrow">Session history</span>
+              <h3 id="session-questions-title" class="sr-only">Session history</h3>
+              <span id="session-state" class="session-state-pill">Ready</span>
               <button id="clear-session-button" type="button" class="clear-session-button">Clear</button>
             </summary>
-            <span id="session-state" class="session-state-pill">Ready</span>
             <div id="question-cards" class="question-cards"></div>
           </details>
         </aside>
 
         <div class="resize-handle" data-resize-handle="left" role="separator" aria-label="Resize sidebar"></div>
 
-        <section class="panel journey-panel" aria-label="Graph journey">
-          <section class="collapsible-block composer-block" data-section-block="composer">
+        <section class="panel journey-panel" aria-label="Compliance determination">
+          <section class="sheet-section composer-block collapsible-block" data-section-block="composer">
             <div class="block-header">
+              <span class="eyebrow">Ask</span>
               <h2>Question composer</h2>
             </div>
             <form id="question-form" class="question-form composer-card block-body" autocomplete="off">
               <div class="composer-main">
                 <label for="question-input" class="sr-only">Question composer</label>
-                <textarea id="question-input" rows="2" maxlength="500" placeholder="Ask about GDPR, HIPAA, or the EU AI Act..."></textarea>
+                <textarea id="question-input" rows="2" maxlength="500" placeholder="Ask about GDPR, HIPAA, or the EU AI Act&hellip;"></textarea>
                 <div class="composer-footer">
                   <span id="char-count">0 / 500</span>
                   <button id="ask-button" type="submit">Ask compliance assistant</button>
                 </div>
               </div>
               <div class="response-state-card" aria-label="Response state">
-                <strong>Response state</strong>
+                <span class="eyebrow">Response state</span>
                 <span id="composer-source-badge" class="active-response-state">Live pipeline run</span>
                 <small id="composer-source-note">Current run only</small>
               </div>
             </form>
           </section>
 
-          <section class="journey-card collapsible-block" data-section-block="journey">
-            <div class="panel-heading block-header">
-              <h2>Graph Journey</h2>
+          <section class="sheet-section journey-card collapsible-block" data-section-block="journey">
+            <div class="block-header">
+              <span class="eyebrow">Pipeline</span>
+              <h2>Graph journey</h2>
             </div>
             <div id="stepper" class="stepper block-body"></div>
           </section>
 
-          <section class="answer-section middle-card" aria-label="Evidence-backed answer">
-            <div class="panel-heading block-header">
-              <div>
-                <p>Compliance Assessment</p>
-                <h2>Evidence-backed answer</h2>
-              </div>
+          <section class="sheet-section answer-section" aria-label="Evidence-backed answer">
+            <div class="block-header">
+              <span class="eyebrow">Determination</span>
+              <h2>Evidence-backed answer</h2>
               <button id="copy-answer-button" type="button" class="secondary-button">Copy</button>
             </div>
             <div id="answer-content" class="answer-content"></div>
-            <p class="answer-disclaimer">Responses are generated from retrieved regulatory text and are not legal advice.</p>
           </section>
 
-          <section class="sources-section middle-card" aria-label="Sources used">
+          <section class="sheet-section sources-section" aria-label="Sources used">
             <div id="evidence-content" class="evidence-content"></div>
           </section>
 
-          <section class="graph-card collapsible-block" data-section-block="graph">
-            <div class="graph-card-heading block-header">
-              <div>
-                <h2>Knowledge graph path <span aria-hidden="true">ⓘ</span></h2>
-              </div>
+          <section class="sheet-section graph-card collapsible-block" data-section-block="graph">
+            <div class="block-header graph-card-heading">
+              <span class="eyebrow">Provenance</span>
+              <h2>Knowledge graph path</h2>
               <button type="button" class="section-toggle-button" data-section-toggle="graph" aria-expanded="true">Collapse</button>
             </div>
             <div id="graph-stage" class="graph-stage block-body"></div>
           </section>
-
-          <div class="panel-heading legacy-heading">
-            <div>
-              <p>Knowledge graph path</p>
-              <h2>Graph Journey</h2>
-            </div>
-          </div>
         </section>
 
-        <div class="resize-handle" data-resize-handle="right" role="separator" aria-label="Resize assessment panel"></div>
+        <div class="resize-handle" data-resize-handle="right" role="separator" aria-label="Resize inspector"></div>
 
-        <aside class="panel inspector-panel" aria-label="Retrieval Inspector">
+        <aside class="panel inspector-panel" aria-label="Retrieval inspector">
           <div class="panel-heading">
-            <div>
-              <p>Evidence Inspector</p>
-              <h2>Retrieval Inspector</h2>
+            <div class="panel-heading-text">
+              <span class="eyebrow">Under the hood</span>
+              <h2>Retrieval inspector</h2>
             </div>
           </div>
-          <section id="technical-details-drawer" class="technical-details-drawer" aria-label="Retrieval Inspector details"></section>
+          <section id="technical-details-drawer" class="technical-details-drawer" aria-label="Retrieval inspector details"></section>
         </aside>
       </main>
 
