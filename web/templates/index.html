@@ -1,137 +1,58 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Compliance-Aware RAG Assistant</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  </head>
-  <body>
-    <div class="demo-shell">
-      <header class="demo-header">
-        <div class="brand-lockup">
-          <span class="brand-mark" aria-hidden="true">
-            <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <line x1="7" y1="9" x2="14" y2="20" /><line x1="21" y1="9" x2="14" y2="20" /><line x1="7" y1="9" x2="21" y2="9" />
-              <circle cx="7" cy="9" r="3" /><circle cx="21" cy="9" r="3" /><circle cx="14" cy="20" r="3.4" class="brand-mark-key" />
-            </svg>
-          </span>
-          <div class="brand-text">
-            <h1>Compliance-Aware RAG Assistant</h1>
-            <p>Evidence-grounded reasoning for healthcare AI</p>
+<!DOCTYPE html>
+<html lang="en" data-direction="console" data-density="comfortable">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KEP · Compliance Graph-RAG</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;550;600;650;700&family=JetBrains+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- ../static/... resolves to /static/... when served by Flask at "/" and to web/static/... when opened directly -->
+  <link rel="stylesheet" href="../static/css/kep.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="hdr">
+      <div class="hdr-brand">
+        <div class="hdr-logo">K</div>
+        <div class="hdr-title">KEP <span class="sub">· Compliance Graph-RAG</span></div>
+      </div>
+      <div class="hdr-spacer"></div>
+      <div class="switcher">
+        <button data-dir="console" class="on">Console</button>
+        <button data-dir="terminal">Terminal</button>
+        <button data-dir="schematic">Schematic</button>
+      </div>
+      <div class="hdr-status"><span class="dot" id="statusDot"></span> <span id="statusLbl" class="hdr-mono">connecting…</span></div>
+      <div class="settings-wrap">
+        <button class="icon-btn" id="gearBtn" title="Display settings" aria-label="Display settings">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
+        <div class="settings-pop hidden" id="settingsPop">
+          <div class="settings-row">
+            <span class="eyebrow settings-label">Accent</span>
+            <div class="swatches" id="swatches"></div>
+          </div>
+          <div class="settings-row">
+            <span class="eyebrow settings-label">Density</span>
+            <div class="seg">
+              <button data-dens="comfortable" class="on">Comfortable</button>
+              <button data-dens="compact">Compact</button>
+            </div>
           </div>
         </div>
+      </div>
+    </header>
 
-        <div class="header-actions">
-          <div class="status-strip" aria-label="System status">
-            <span class="status-badge good">Live backend</span>
-            <span class="status-badge demo">Research demo</span>
-          </div>
-          <button id="reset-demo-button" type="button" class="reset-demo-button">Reset demo</button>
-        </div>
-      </header>
-
-      <main id="demo-grid" class="demo-grid">
-        <aside id="left-sidebar" class="panel session-panel" aria-label="Session history">
-          <div class="panel-heading">
-            <div class="panel-heading-text">
-              <span class="eyebrow">Docket</span>
-              <h2>Session</h2>
-            </div>
-            <div class="sidebar-actions">
-              <button id="new-session-button" type="button" class="icon-button" aria-label="Start a new session" title="Start a new session">+</button>
-            </div>
-          </div>
-
-          <details class="session-questions" aria-labelledby="session-questions-title" open>
-            <summary class="section-title">
-              <span class="eyebrow">Session history</span>
-              <h3 id="session-questions-title" class="sr-only">Session history</h3>
-              <span id="session-state" class="session-state-pill">Ready</span>
-              <button id="clear-session-button" type="button" class="clear-session-button">Clear</button>
-            </summary>
-            <div id="question-cards" class="question-cards"></div>
-          </details>
-        </aside>
-
-        <div class="resize-handle" data-resize-handle="left" role="separator" aria-label="Resize sidebar"></div>
-
-        <section class="panel journey-panel" aria-label="Compliance determination">
-          <section class="sheet-section composer-block collapsible-block" data-section-block="composer">
-            <div class="block-header">
-              <span class="eyebrow">Ask</span>
-              <h2>Question composer</h2>
-            </div>
-            <form id="question-form" class="question-form composer-card block-body" autocomplete="off">
-              <div class="composer-main">
-                <label for="question-input" class="sr-only">Question composer</label>
-                <textarea id="question-input" rows="2" maxlength="500" placeholder="Ask about GDPR, HIPAA, or the EU AI Act&hellip;"></textarea>
-                <div class="composer-footer">
-                  <span id="char-count">0 / 500</span>
-                  <button id="ask-button" type="submit">Ask compliance assistant</button>
-                </div>
-              </div>
-              <div class="response-state-card" aria-label="Response state">
-                <span class="eyebrow">Response state</span>
-                <span id="composer-source-badge" class="active-response-state">Live pipeline run</span>
-                <small id="composer-source-note">Current run only</small>
-              </div>
-            </form>
-          </section>
-
-          <section class="sheet-section journey-card collapsible-block" data-section-block="journey">
-            <div class="block-header">
-              <span class="eyebrow">Pipeline</span>
-              <h2>Graph journey</h2>
-            </div>
-            <div id="stepper" class="stepper block-body"></div>
-          </section>
-
-          <section class="sheet-section answer-section" aria-label="Evidence-backed answer">
-            <div class="block-header">
-              <span class="eyebrow">Determination</span>
-              <h2>Evidence-backed answer</h2>
-              <button id="copy-answer-button" type="button" class="secondary-button">Copy</button>
-            </div>
-            <div id="answer-content" class="answer-content"></div>
-          </section>
-
-          <section class="sheet-section sources-section" aria-label="Sources used">
-            <div id="evidence-content" class="evidence-content"></div>
-          </section>
-
-          <section class="sheet-section graph-card collapsible-block" data-section-block="graph">
-            <div class="block-header graph-card-heading">
-              <span class="eyebrow">Provenance</span>
-              <h2>Knowledge graph path</h2>
-              <button type="button" class="section-toggle-button" data-section-toggle="graph" aria-expanded="true">Collapse</button>
-            </div>
-            <div id="graph-stage" class="graph-stage block-body"></div>
-          </section>
-        </section>
-
-        <div class="resize-handle" data-resize-handle="right" role="separator" aria-label="Resize inspector"></div>
-
-        <aside class="panel inspector-panel" aria-label="Retrieval inspector">
-          <div class="panel-heading">
-            <div class="panel-heading-text">
-              <span class="eyebrow">Under the hood</span>
-              <h2>Retrieval inspector</h2>
-            </div>
-          </div>
-          <section id="technical-details-drawer" class="technical-details-drawer" aria-label="Retrieval inspector details"></section>
-        </aside>
-      </main>
-
-      <footer class="demo-footer">
-        <span>Responses are generated from retrieved regulatory text and are not legal advice.</span>
-        <span>Compliance-aware RAG + knowledge graph for healthcare AI.</span>
-      </footer>
+    <div class="body">
+      <aside class="pane pane-l" id="leftPane"></aside>
+      <main class="pane pane-c" id="centerPane"></main>
+      <aside class="pane pane-r" id="rightPane"></aside>
     </div>
+  </div>
 
-    <script src="{{ url_for('static', filename='app.js') }}"></script>
-  </body>
+  <script src="../static/js/kep-demo.js"></script>
+  <script src="../static/js/kep-graph.js"></script>
+  <script src="../static/js/kep-app.js"></script>
+</body>
 </html>
