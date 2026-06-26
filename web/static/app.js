@@ -794,7 +794,7 @@ function renderGraph() {
       <span><i class="legend-orange"></i>Orange = risk</span>
       <span><i class="legend-green"></i>Green = control / evidence</span>
     </div>
-    <svg viewBox="${viewport.viewBox}" style="min-width: ${viewport.width}px; min-height: ${viewport.height}px;" role="img" aria-label="Highlighted compliance knowledge graph">
+    <svg viewBox="${viewport.viewBox}" role="img" aria-label="Highlighted compliance knowledge graph">
       <defs>
         <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
           <path d="M 0 0 L 10 5 L 0 10 z"></path>
@@ -1612,7 +1612,7 @@ function graphCanvasSize() {
 }
 
 function graphViewport(nodes, canvas = graphCanvasSize()) {
-  if (!nodes.length) return { viewBox: `0 0 ${canvas.width} ${canvas.height}`, width: canvas.width, height: canvas.height };
+  if (!nodes.length) return { viewBox: `0 0 ${canvas.width} ${canvas.height}` };
   const padding = state.ui.graphFullscreen ? 96 : 76;
   const extents = nodes.reduce((acc, node) => {
     const width = graphNodeWidth(node);
@@ -1629,8 +1629,6 @@ function graphViewport(nodes, canvas = graphCanvasSize()) {
   const minY = Math.min(0, Math.floor(extents.minY - padding));
   return {
     viewBox: `${minX} ${minY} ${width} ${height}`,
-    width: Math.ceil(width * state.ui.graphZoom),
-    height: Math.ceil(height * state.ui.graphZoom),
   };
 }
 
@@ -1883,7 +1881,7 @@ function graphNodeWidth(node) {
   const label = String(node.label || "");
   const type = String(node.type || "").toLowerCase();
   const base = type === "question" ? 168 : type === "regulation" ? 150 : type === "evidence" ? 164 : 156;
-  return clampNumber(base + Math.min(label.length, 34) * 2.8, 150, 224);
+  return clampNumber(base + Math.min(label.length, 30) * 2.4, 150, 188);
 }
 
 function graphNodeHeight(node) {
