@@ -6,7 +6,13 @@ from threading import Lock
 from time import perf_counter
 from typing import Any
 
-from rag import AnswerGenerator, GraphRetriever, build_context
+from rag import (
+    AnswerGenerator,
+    DeterminationGenerator,
+    GraphRetriever,
+    build_context,
+    insufficient_determination,
+)
 from rag.context_builder import context_row_ids
 from rag.query_planner import QueryPlan
 
@@ -66,6 +72,7 @@ def answer_question(
             "graph": _build_no_evidence_graph(cleaned_question),
             "context": context if show_context else "",
             "debug": _build_debug(retriever, rows) if debug else {},
+            "determination": insufficient_determination(NO_EVIDENCE_MESSAGE),
             "metrics": {
                 **_build_metrics(rows, evidence, safe_limit, elapsed_ms, model, timings),
                 "no_evidence": True,
@@ -77,6 +84,13 @@ def answer_question(
     _log_stage("generation_started", evidence_items=len(evidence))
     answer = AnswerGenerator(model=model).generate(cleaned_question, context)
     timings["generation_ms"] = _elapsed_ms(generation_started)
+
+    determination_started = perf_counter()
+    _log_stage("determination_started", evidence_items=len(evidence))
+    determination = DeterminationGenerator(model=model).generate(cleaned_question, context, answer)
+    timings["determination_ms"] = _elapsed_ms(determination_started)
+    _log_stage("determination_completed", verdict=determination.get("verdict"))
+
     elapsed_ms = _elapsed_ms(started_at)
     timings["total_ms"] = elapsed_ms
     _log_stage("pipeline_completed", **timings)
@@ -88,6 +102,7 @@ def answer_question(
         "graph": graph,
         "context": context if show_context else "",
         "debug": _build_debug(retriever, rows) if debug else {},
+        "determination": determination,
         "metrics": _build_metrics(rows, evidence, safe_limit, elapsed_ms, model, timings),
         "response_source": "live",
     }

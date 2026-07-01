@@ -62,6 +62,7 @@ def ask() -> tuple[Any, int]:
             "graph": result.get("graph", {"nodes": [], "edges": []}),
             "context": result["context"],
             "debug": result["debug"],
+            "determination": result.get("determination", _unavailable_determination()),
             "metrics": result["metrics"],
             "response_source": result.get("response_source", "live"),
             "error": None,
@@ -76,9 +77,18 @@ def _error_response(message: str) -> dict[str, Any]:
         "graph": {"nodes": [], "edges": []},
         "context": "",
         "debug": {},
+        "determination": _unavailable_determination(),
         "metrics": {},
         "response_source": "error",
         "error": message,
+    }
+
+
+def _unavailable_determination() -> dict[str, Any]:
+    return {
+        "verdict": "unavailable",
+        "obligations": [],
+        "summary": "No determination is available for this response.",
     }
 
 

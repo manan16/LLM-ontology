@@ -236,7 +236,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .metricline .v { color: var(--fg-1); font-family: var(--font-mono); font-weight: 600; }
 
 /* ============================ CENTER PANE ================================ */
-.cp { max-width: 760px; margin: 0 auto; padding: 26px 28px 64px; }
+.cp { max-width: 960px; margin: 0 auto; padding: 26px 28px 64px; }
 :root[data-density="compact"] .cp { padding: 18px 20px 48px; }
 
 /* composer */
@@ -344,7 +344,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .verdict-badge.permit { background: rgba(70,192,138,0.16); color: var(--good); }
 .verdict-badge.obligation { background: var(--accent-soft); color: var(--accent); }
 .verdict-badge.nuance { background: rgba(224,179,65,0.16); color: var(--warn); }
+.verdict-badge.prohibit { background: rgba(224,104,107,0.16); color: var(--danger); }
+.verdict-badge.insufficient { background: rgba(107,117,137,0.16); color: var(--fg-2); }
 .verdict-text { font-size: 14.5px; font-weight: 600; color: var(--fg-0); }
+.determination-obs { margin-top: 14px; }
 
 .answer-summary { font-size: 14.5px; line-height: 1.62; color: var(--fg-1); margin-bottom: 18px; }
 .answer-points { display: flex; flex-direction: column; gap: 1px; }

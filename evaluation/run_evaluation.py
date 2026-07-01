@@ -26,10 +26,14 @@ RESULT_COLUMNS = [
     "question",
     "expected_regulations",
     "retrieved_regulations",
+    "matched_regulations",
+    "missed_regulations",
     "expected_concepts",
     "matched_concepts",
+    "missed_concepts",
     "expected_evidence_keywords",
     "matched_evidence_keywords",
+    "missed_evidence_keywords",
     "answer",
     "citations",
     "source_documents",
@@ -45,8 +49,10 @@ RESULT_COLUMNS = [
     "evidence_keyword_coverage",
     "regulation_coverage",
     "citation_coverage",
+    "has_citations",
     "answer_relevance_score",
     "faithfulness_score",
+    "evidence_grounding",
     "overall_score",
     "latency_seconds",
     "status",
@@ -66,6 +72,17 @@ EMPTY_RESULT = {
     "context": "",
     "debug": {},
     "metrics": {},
+}
+
+# T4: overall_score weights. Each axis is orthogonal and counted exactly once, so the
+# lexical-overlap coverages (already folded into retrieval_recall) are not re-added
+# separately as they were before. Weights sum to 1.0: retrieval recall carries the
+# most signal, answer relevance next, and the two structural axes least.
+OVERALL_SCORE_WEIGHTS = {
+    "retrieval_recall": 0.40,    # did retrieval surface expected regs/concepts/keywords
+    "answer_relevance": 0.30,    # does the answer cover expected concepts/keywords
+    "citation_coverage": 0.15,   # structural: are citations present
+    "evidence_grounding": 0.15,  # structural: is the answer backed by retrieved evidence
 }
 
 
@@ -167,23 +184,37 @@ def build_result_row(
     debug = result.get("debug") if isinstance(result.get("debug"), dict) else {}
     top_rows = debug.get("top_rows") if isinstance(debug.get("top_rows"), list) else []
 
+    # T1: score against clean, separated text fields instead of one combined blob.
+    # answer_text  -> the model's answer only.
+    # evidence_text -> retrieved statement text only (no IDs, scores, field names,
+    #                  or json.dumps metadata that previously leaked into matches).
+    answer_text = answer
     evidence_text = joined_text(
         [
             *(item.get("evidence_text") for item in evidence if isinstance(item, dict)),
             *(item.get("statement") for item in evidence if isinstance(item, dict)),
+            *(item.get("statement") for item in top_rows if isinstance(item, dict)),
         ]
     )
-    metadata_text = joined_text([json.dumps(item, ensure_ascii=False, default=str) for item in [*evidence, *top_rows]])
-    searchable_text = joined_text([answer, evidence_text, metadata_text])
 
     expected_regulations = list_values(question_item.get("expected_regulations"))
     expected_concepts = list_values(question_item.get("expected_concepts"))
     expected_keywords = list_values(question_item.get("expected_evidence_keywords"))
 
-    retrieved_regulations = find_retrieved_regulations(searchable_text, evidence, top_rows)
+    # Retrieval metrics measure what retrieval surfaced -> match against evidence_text.
+    retrieved_regulations = find_retrieved_regulations(evidence, top_rows)
     matched_regulations = [reg for reg in expected_regulations if reg in retrieved_regulations]
-    matched_concepts = [concept for concept in expected_concepts if concept_matches(concept, searchable_text)]
-    matched_keywords = [keyword for keyword in expected_keywords if keyword_matches(keyword, searchable_text)]
+    matched_concepts = [concept for concept in expected_concepts if concept_matches(concept, evidence_text)]
+    matched_keywords = [keyword for keyword in expected_keywords if keyword_matches(keyword, evidence_text)]
+
+    # T5: audit trail -- record which expected items were matched vs missed.
+    missed_regulations = [reg for reg in expected_regulations if reg not in matched_regulations]
+    missed_concepts = [concept for concept in expected_concepts if concept not in matched_concepts]
+    missed_keywords = [keyword for keyword in expected_keywords if keyword not in matched_keywords]
+
+    # Answer relevance measures the answer itself -> match against answer_text only.
+    answer_matched_concepts = [concept for concept in expected_concepts if concept_matches(concept, answer_text)]
+    answer_matched_keywords = [keyword for keyword in expected_keywords if keyword_matches(keyword, answer_text)]
 
     citations = extract_citations(answer, evidence, top_rows)
     source_documents = extract_source_documents(evidence, top_rows, debug)
@@ -194,19 +225,25 @@ def build_result_row(
     keyword_coverage = coverage(len(matched_keywords), len(expected_keywords))
     citation_coverage = score_citation_coverage(answer, citations, source_documents)
     retrieval_recall = round((regulation_coverage + concept_coverage + keyword_coverage) / 3, 3)
-    answer_relevance = score_answer_relevance(answer, matched_keywords, expected_keywords, matched_concepts, expected_concepts)
+    answer_relevance = score_answer_relevance(answer_text, answer_matched_keywords, expected_keywords, answer_matched_concepts, expected_concepts)
     faithfulness = score_faithfulness(answer, citations, evidence)
+    # T3: accurately-named structural signals. citation_coverage and faithfulness_score
+    # are structural (presence checks), not semantic, so surface what they actually
+    # measure under honest names. Values mirror the structural metrics above; no
+    # semantic faithfulness is fabricated.
+    has_citations = detect_has_citations(answer, citations)
+    evidence_grounding = faithfulness
+    # T4: single weighted average over orthogonal axes, each counted once. Lexical
+    # overlap (regulation/concept/keyword coverage) lives only inside retrieval_recall
+    # and is no longer re-added on its own.
+    axis_values = {
+        "retrieval_recall": retrieval_recall,
+        "answer_relevance": answer_relevance,
+        "citation_coverage": citation_coverage,
+        "evidence_grounding": evidence_grounding,
+    }
     overall_score = round(
-        (
-            retrieval_recall
-            + concept_coverage
-            + keyword_coverage
-            + regulation_coverage
-            + citation_coverage
-            + answer_relevance
-            + faithfulness
-        )
-        / 7,
+        sum(OVERALL_SCORE_WEIGHTS[axis] * axis_values[axis] for axis in OVERALL_SCORE_WEIGHTS),
         3,
     )
 
@@ -216,10 +253,14 @@ def build_result_row(
         "question": clean_text(question_item.get("question")),
         "expected_regulations": expected_regulations,
         "retrieved_regulations": retrieved_regulations,
+        "matched_regulations": matched_regulations,
+        "missed_regulations": missed_regulations,
         "expected_concepts": expected_concepts,
         "matched_concepts": matched_concepts,
+        "missed_concepts": missed_concepts,
         "expected_evidence_keywords": expected_keywords,
         "matched_evidence_keywords": matched_keywords,
+        "missed_evidence_keywords": missed_keywords,
         "answer": answer,
         "citations": citations,
         "source_documents": source_documents,
@@ -235,8 +276,10 @@ def build_result_row(
         "evidence_keyword_coverage": keyword_coverage,
         "regulation_coverage": regulation_coverage,
         "citation_coverage": citation_coverage,
+        "has_citations": has_citations,
         "answer_relevance_score": answer_relevance,
         "faithfulness_score": faithfulness,
+        "evidence_grounding": evidence_grounding,
         "overall_score": overall_score,
         "latency_seconds": latency_seconds,
         "status": status,
@@ -247,26 +290,68 @@ def build_result_row(
         row["retrieved_context"] = result.get("context")
     row["retrieved_evidence"] = evidence
     row["retrieval_debug"] = debug
+    # T5: consolidated audit trail (JSON-only, like retrieved_evidence/retrieval_debug).
+    row["match_audit"] = {
+        "regulations": {"expected": expected_regulations, "matched": matched_regulations, "missed": missed_regulations},
+        "concepts": {"expected": expected_concepts, "matched": matched_concepts, "missed": missed_concepts},
+        "evidence_keywords": {"expected": expected_keywords, "matched": matched_keywords, "missed": missed_keywords},
+    }
     return row
 
 
+def regulation_from_provenance(item: dict[str, Any]) -> str | None:
+    """Map one retrieved item to a regulation using its source_group/source_document.
+
+    Returns the regulation name when provenance is recognized, otherwise None.
+    """
+    source_group = normalize_text(item.get("source_group"))
+    source_document = normalize_text(item.get("source_document"))
+    for regulation in REGULATION_ALIASES:
+        source_key = normalize_text(regulation).replace(" ", "_")
+        # normalize_text turns "eu_ai_act" -> "eu ai act"; compare on that form.
+        group_key = source_key.replace("_", " ")
+        if source_group and source_group == group_key:
+            return regulation
+        if source_document and group_key in source_document:
+            return regulation
+    return None
+
+
 def find_retrieved_regulations(
-    searchable_text: str,
     evidence: list[Any],
     top_rows: list[Any],
 ) -> list[str]:
-    text = normalize_text(searchable_text)
-    source_groups = {
-        clean_text(item.get("source_group")).lower()
-        for item in [*evidence, *top_rows]
-        if isinstance(item, dict)
-    }
-    matched: list[str] = []
-    for regulation, aliases in REGULATION_ALIASES.items():
-        source_key = regulation.lower().replace(" ", "_")
-        if source_key in source_groups or any(alias in text for alias in aliases):
-            matched.append(regulation)
-    return matched
+    """Derive retrieved regulations from evidence provenance (T2).
+
+    Primary signal: each retrieved item's source_group/source_document. Alias text
+    matching is only a fallback for items that carry no provenance at all, and is
+    scoped to those items' text -- so a HIPAA alias (e.g. "phi") appearing inside a
+    GDPR-sourced statement does NOT flag HIPAA as retrieved.
+    """
+    matched: set[str] = set()
+    unsourced_text_parts: list[str] = []
+
+    for item in [*evidence, *top_rows]:
+        if not isinstance(item, dict):
+            continue
+        regulation = regulation_from_provenance(item)
+        if regulation:
+            matched.add(regulation)
+        else:
+            # No recognized provenance -> keep this item's text for a gated fallback.
+            unsourced_text_parts.append(joined_text([item.get("evidence_text"), item.get("statement")]))
+
+    # Fallback only: alias-match against text from items that lacked provenance.
+    if unsourced_text_parts:
+        fallback_text = normalize_text(joined_text(unsourced_text_parts))
+        for regulation, aliases in REGULATION_ALIASES.items():
+            if regulation in matched:
+                continue
+            if any(alias in fallback_text for alias in aliases):
+                matched.add(regulation)
+
+    # Stable output in REGULATION_ALIASES declaration order.
+    return [regulation for regulation in REGULATION_ALIASES if regulation in matched]
 
 
 def extract_citations(answer: str, evidence: list[Any], top_rows: list[Any]) -> list[str]:
@@ -316,8 +401,20 @@ def _source_documents_from_context_ids(row_ids: list[Any]) -> list[str]:
     return documents
 
 
+def detect_has_citations(answer: str, citations: list[str]) -> bool:
+    """Structural: whether the answer carries explicit citations.
+
+    Mirrors the 1.0 branch of score_citation_coverage -- a citation list is present,
+    or the answer references an article/section/cfr/etc. Names what the structural
+    citation_coverage metric measures (citation *presence*), not semantic correctness.
+    """
+    if citations:
+        return True
+    return bool(re.search(r"\b(article|section|cfr|citation|source|evidence)\b", answer, flags=re.IGNORECASE))
+
+
 def score_citation_coverage(answer: str, citations: list[str], source_documents: list[str]) -> float:
-    if citations or re.search(r"\b(article|section|cfr|citation|source|evidence)\b", answer, flags=re.IGNORECASE):
+    if detect_has_citations(answer, citations):
         return 1.0
     if source_documents:
         return 0.5

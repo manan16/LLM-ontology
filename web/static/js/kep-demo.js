@@ -18,6 +18,14 @@
   // ===================== Q1 · HIPAA =========================================
   const HIPAA = {
     response_source: "live", error: null, context: "",
+    determination: {
+      verdict: "permitted_with_conditions",
+      obligations: [
+        "Apply the minimum necessary standard to each permitted use or disclosure, except disclosures for treatment [E4].",
+        "Limit disclosures required by another law to the extent that law compels them [E2].",
+      ],
+      summary: "A covered entity may use or disclose PHI without individual authorization in the permitted categories shown, subject to the conditions in the retrieved evidence.",
+    },
     answer:
       "A covered entity may disclose protected health information (PHI) **without the individual's authorization** in a defined set of situations under the HIPAA Privacy Rule.\n\n" +
       "- **Treatment, payment, and health care operations (TPO)** are permitted without authorization [E1].\n" +
@@ -91,6 +99,16 @@
   // ===================== Q2 · EU AI Act =====================================
   const AIACT = {
     response_source: "live", error: null, context: "",
+    determination: {
+      verdict: "obligations_apply",
+      obligations: [
+        "Establish and maintain a continuous risk-management system across the lifecycle [E1].",
+        "Apply data-governance practices to training, validation, and testing data sets [E2].",
+        "Draw up technical documentation and keep automatically generated logs [E3].",
+        "Ensure transparency and enable effective human oversight [E4].",
+      ],
+      summary: "Providers of high-risk AI systems must satisfy a cumulative set of obligations under Chapter III before and after placing the system on the market.",
+    },
     answer:
       "Providers of high-risk AI systems must satisfy a **cumulative set of obligations** under Chapter III of the EU AI Act before and after placing the system on the market.\n\n" +
       "1. Establish and maintain a continuous **risk-management system** across the lifecycle [E1].\n" +
@@ -170,6 +188,14 @@
   // ===================== Q3 · GDPR ==========================================
   const GDPR = {
     response_source: "live", error: null, context: "",
+    determination: {
+      verdict: "permitted_with_conditions",
+      obligations: [
+        "Establish an Article 9(2) condition before processing health data; explicit consent is one option but not the only one [E2].",
+        "Where relying on medical-diagnosis or public-health grounds, process only within the limits of Art. 9(2)(h)/(i) [E3].",
+      ],
+      summary: "Health data is prohibited by default under Article 9(1), but Article 9(2) provides conditions — including but not limited to explicit consent — that permit processing.",
+    },
     answer:
       "**No — explicit consent is not always required.** Processing of health data is prohibited by default under Article 9(1), but Article 9(2) lists several conditions that lift the prohibition, of which explicit consent is only one.\n\n" +
       "- Health data is a **special category**; its processing is prohibited by default [E1].\n" +

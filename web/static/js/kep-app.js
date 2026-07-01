@@ -106,6 +106,7 @@
       graph: payload.graph || { nodes: [], edges: [] }, plan, metrics: m, stageTimes, notes,
       totalMs: m.total_ms || m.elapsed_ms || Object.values(stageTimes).reduce((a, b) => a + (b || 0), 0),
       groups, source: payload.response_source, error: payload.error,
+      determination: payload.determination || null,
     };
   }
   function countGroups(p) {
@@ -265,7 +266,8 @@
       area.innerHTML =
         finalStepperBlock(vm) +
         `<div class="sec-head"><span class="eyebrow">Answer</span><span class="ln"></span></div>
-         <div class="notice warn"><div class="notice-glyph">∅</div><div><div class="notice-title">No sufficient evidence</div><div class="notice-body">${esc(vm.answer || "No regulatory evidence was found in the knowledge graph for this question.")}</div></div></div>`;
+         <div class="notice warn"><div class="notice-glyph">∅</div><div><div class="notice-title">No sufficient evidence</div><div class="notice-body">${esc(vm.answer || "No regulatory evidence was found in the knowledge graph for this question.")}</div></div></div>` +
+        determinationBlock(vm);
       renderInspector(vm);
       return;
     }
@@ -274,8 +276,9 @@
     area.innerHTML =
       finalStepperBlock(vm) +
       `<div class="sec-head"><span class="eyebrow">Answer</span><span class="ln"></span>${item.demo ? '<span class="demo-badge">● sample data</span>' : `<span class="tag reg-${slug}">${esc(item.regulation)}</span>`}</div>
-       <div class="answer fade-in"><div class="answer-md" id="answerMd">${renderAnswerMd(vm.answer)}</div><div class="coverage">${coverage}</div></div>
-       <div class="sec-head"><span class="eyebrow">Knowledge graph</span><span class="ln"></span><span class="eyebrow">${vm.graph.nodes.length} nodes</span></div>
+       <div class="answer fade-in"><div class="answer-md" id="answerMd">${renderAnswerMd(vm.answer)}</div><div class="coverage">${coverage}</div></div>` +
+      determinationBlock(vm) +
+      `<div class="sec-head"><span class="eyebrow">Knowledge graph</span><span class="ln"></span><span class="eyebrow">${vm.graph.nodes.length} nodes</span></div>
        <div class="graph-wrap" data-om-raster id="graphMount"></div>
        <div class="sec-head"><span class="eyebrow">Evidence · ${vm.evidence.length}</span><span class="ln"></span><span class="eyebrow">grounded</span></div>
        <div class="evidence-list" id="evList">${vm.evidence.map(evidenceCard).join("")}</div>`;
@@ -295,6 +298,30 @@
   function finalStepperBlock(vm) {
     const progress = { completed: new Set(STAGES.map((s) => s.id)), active: null, notes: vm.notes };
     return `<div class="sec-head"><span class="eyebrow">Pipeline journey</span><span class="ln"></span><span class="eyebrow">complete · ${(vm.totalMs / 1000).toFixed(2)}s</span></div>${stepperHtml(progress, vm.stageTimes)}`;
+  }
+
+  // ---- determination (backend-derived verdict / obligations / summary) -----
+  const VERDICT_META = {
+    obligations_apply:         { badge: "obligation",   label: "Obligations apply" },
+    permitted_with_conditions: { badge: "permit",       label: "Permitted · conditions" },
+    prohibited:                { badge: "prohibit",     label: "Prohibited" },
+    insufficient_evidence:     { badge: "insufficient", label: "Insufficient evidence" },
+    unavailable:               { badge: "insufficient", label: "Determination unavailable" },
+  };
+  function determinationBlock(vm) {
+    const d = vm.determination;
+    if (!d || !d.verdict) return "";
+    const meta = VERDICT_META[d.verdict] || { badge: "insufficient", label: d.verdict };
+    const obligations = Array.isArray(d.obligations) ? d.obligations : [];
+    const summary = d.summary ? `<span class="verdict-text">${inline(d.summary)}</span>` : "";
+    const obs = obligations.length
+      ? `<div class="answer-md determination-obs"><div class="eyebrow" style="margin-bottom:9px">Obligations · ${obligations.length}</div><ul>${obligations.map((o) => "<li>" + inline(o) + "</li>").join("")}</ul></div>`
+      : "";
+    return `<div class="sec-head"><span class="eyebrow">Determination</span><span class="ln"></span><span class="eyebrow">backend-derived</span></div>
+       <div class="answer fade-in">
+         <div class="verdict"><span class="verdict-badge ${meta.badge}">${esc(meta.label)}</span>${summary}</div>
+         ${obs}
+       </div>`;
   }
 
   function coverageChips(vm) {
