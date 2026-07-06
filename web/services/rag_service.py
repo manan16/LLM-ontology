@@ -6,10 +6,12 @@ from threading import Lock
 from time import perf_counter
 from typing import Any
 
+from app.config import get_settings
 from rag import (
     AnswerGenerator,
     DeterminationGenerator,
     GraphRetriever,
+    SemanticRetriever,
     build_context,
     insufficient_determination,
 )
@@ -20,6 +22,8 @@ from rag.query_planner import QueryPlan
 LOGGER = logging.getLogger(__name__)
 _retriever: GraphRetriever | None = None
 _retriever_lock = Lock()
+_semantic_retriever: SemanticRetriever | None = None
+_semantic_lock = Lock()
 NO_EVIDENCE_MESSAGE = "No sufficient regulatory evidence was found in the knowledge graph for this question."
 
 
@@ -50,6 +54,10 @@ def answer_question(
     _log_stage("graph_query_started", question=cleaned_question, limit=safe_limit)
     rows = retriever.retrieve(cleaned_question, limit=safe_limit)
     timings["graph_query_ms"] = _elapsed_ms(graph_query_started)
+
+    semantic_started = perf_counter()
+    rows = _augment_with_semantic(rows, cleaned_question)
+    timings["semantic_query_ms"] = _elapsed_ms(semantic_started)
     timings["retrieval_ms"] = _elapsed_ms(retrieval_started)
 
     ranking_started = perf_counter()
@@ -120,8 +128,70 @@ def _get_retriever() -> GraphRetriever:
     return _retriever
 
 
+def _get_semantic_retriever() -> SemanticRetriever | None:
+    """Return the shared SemanticRetriever, or None if it cannot be initialized."""
+    global _semantic_retriever
+    if not get_settings().semantic_retrieval_enabled:
+        return None
+    if _semantic_retriever is None:
+        with _semantic_lock:
+            if _semantic_retriever is None:
+                try:
+                    LOGGER.info("Creating shared SemanticRetriever for web RAG service")
+                    _semantic_retriever = SemanticRetriever()
+                except Exception:
+                    LOGGER.exception("Semantic retriever unavailable; falling back to graph-only retrieval")
+                    return None
+    return _semantic_retriever
+
+
+def _augment_with_semantic(rows: list[dict[str, Any]], question: str) -> list[dict[str, Any]]:
+    """Append dense-retrieval chunk rows that add evidence not already present.
+
+    Graph rows keep their ranking priority; semantic rows are added afterwards
+    and only when they contribute chunk text the graph retrieval did not surface.
+    """
+    semantic_retriever = _get_semantic_retriever()
+    if semantic_retriever is None:
+        return rows
+    try:
+        semantic_rows = semantic_retriever.retrieve(question)
+    except Exception:
+        LOGGER.exception("Semantic retrieval failed; returning graph rows only")
+        return rows
+    if not semantic_rows:
+        return rows
+
+    seen = {
+        _evidence_fingerprint(row)
+        for row in rows
+        if _evidence_fingerprint(row)
+    }
+    added = 0
+    for row in semantic_rows:
+        fingerprint = _evidence_fingerprint(row)
+        if not fingerprint or fingerprint in seen:
+            continue
+        seen.add(fingerprint)
+        rows.append(row)
+        added += 1
+    LOGGER.info("Semantic retrieval added %s new chunk row(s) to %s graph row(s)", added, len(rows) - added)
+    return rows
+
+
+def _evidence_fingerprint(row: dict[str, Any]) -> str:
+    text = _clean(row.get("evidence_text")) or _clean(row.get("source_chunk_text"))
+    return " ".join(text.lower().split())[:300]
+
+
 def close_retriever() -> None:
-    global _retriever
+    global _retriever, _semantic_retriever
+    if _semantic_retriever is not None:
+        semantic_client = getattr(_semantic_retriever, "neo4j_client", None)
+        semantic_close = getattr(semantic_client, "close", None)
+        if callable(semantic_close):
+            semantic_close()
+        _semantic_retriever = None
     if _retriever is None:
         return
     neo4j_client = getattr(_retriever, "neo4j_client", None)
@@ -366,6 +436,7 @@ def _build_metrics(
         "routing_ms": stage_timings.get("routing_ms", 0),
         "retrieval_ms": stage_timings.get("retrieval_ms", 0),
         "graph_query_ms": stage_timings.get("graph_query_ms", 0),
+        "semantic_query_ms": stage_timings.get("semantic_query_ms", 0),
         "ranking_ms": stage_timings.get("ranking_ms", 0),
         "generation_ms": stage_timings.get("generation_ms", 0),
         "total_ms": stage_timings.get("total_ms", elapsed_ms),

@@ -150,6 +150,7 @@ def test_pipeline_reports_summary_split_chunks_and_failures(monkeypatch: Any, ca
         chunk_max_chars=100,
         chunk_overlap_chars=10,
         neo4j_database="neo4j",
+        semantic_retrieval_enabled=False,
     ))
     monkeypatch.setattr(pipeline_module, "load_document", lambda path: document)
     monkeypatch.setattr(pipeline_module, "build_chunks", lambda document, max_chars, overlap_chars: chunks)

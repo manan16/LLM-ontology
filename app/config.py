@@ -27,6 +27,22 @@ class Settings(BaseSettings):
     chunk_overlap_chars: int = Field(default=150, alias="CHUNK_OVERLAP_CHARS")
     log_level: str = Field(default="DEBUG", alias="LOG_LEVEL")
 
+    # Semantic retrieval (embeddings + Neo4j vector index).
+    embedding_model: str = Field(default="BAAI/bge-base-en-v1.5", alias="EMBEDDING_MODEL")
+    # Empty string means "auto": use cuda when available, otherwise cpu.
+    embedding_device: str = Field(default="", alias="EMBEDDING_DEVICE")
+    embedding_batch_size: int = Field(default=32, alias="EMBEDDING_BATCH_SIZE")
+    # BGE models expect this instruction prefix on *queries* (not passages).
+    embedding_query_prefix: str = Field(
+        default="Represent this sentence for searching relevant passages: ",
+        alias="EMBEDDING_QUERY_PREFIX",
+    )
+    vector_index_name: str = Field(default="source_chunk_embedding", alias="VECTOR_INDEX_NAME")
+    vector_dimensions: int = Field(default=768, alias="VECTOR_DIMENSIONS")
+    vector_similarity: str = Field(default="cosine", alias="VECTOR_SIMILARITY")
+    semantic_top_k: int = Field(default=10, alias="SEMANTIC_TOP_K")
+    semantic_retrieval_enabled: bool = Field(default=True, alias="SEMANTIC_RETRIEVAL_ENABLED")
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
