@@ -7,6 +7,7 @@ from flask import Flask, jsonify, render_template, request
 from neo4j import GraphDatabase
 
 from app.config import get_settings
+from web.services.evaluation_report import load_evaluation_report
 from web.services.rag_service import answer_question
 
 
@@ -16,6 +17,11 @@ app = Flask(__name__)
 @app.get("/")
 def index() -> str:
     return render_template("index.html")
+
+
+@app.get("/evaluation")
+def evaluation() -> str:
+    return render_template("evaluation.html", report=load_evaluation_report())
 
 
 @app.get("/health")

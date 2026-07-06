@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-direction="console" data-density="comfortable">
+<html lang="en" data-direction="schematic" data-density="comfortable">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -17,12 +17,11 @@
         <div class="hdr-logo">K</div>
         <div class="hdr-title">KEP <span class="sub">· Compliance Graph-RAG</span></div>
       </div>
+      <nav class="hdr-nav">
+        <a href="/" class="on">Console</a>
+        <a href="/evaluation">Evaluation</a>
+      </nav>
       <div class="hdr-spacer"></div>
-      <div class="switcher">
-        <button data-dir="console" class="on">Console</button>
-        <button data-dir="terminal">Terminal</button>
-        <button data-dir="schematic">Schematic</button>
-      </div>
       <div class="hdr-status"><span class="dot" id="statusDot"></span> <span id="statusLbl" class="hdr-mono">connecting…</span></div>
       <div class="settings-wrap">
         <button class="icon-btn" id="gearBtn" title="Display settings" aria-label="Display settings">

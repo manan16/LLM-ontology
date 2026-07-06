@@ -36,7 +36,8 @@
 
   // ---- app state -----------------------------------------------------------
   const state = {
-    direction: ls.get("kep_direction", "console"),
+    // Schematic is the only supported theme; ignore any stale stored value.
+    direction: "schematic",
     density: ls.get("kep_density", "comfortable"),
     accent: ls.get("kep_accent", ""),
     history: [],      // {id, regulation, question, status, payload, error, demo}
