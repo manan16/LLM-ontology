@@ -9,7 +9,12 @@ from web.services import rag_service
 
 
 @pytest.fixture(autouse=True)
-def reset_rag_service_retriever() -> None:
+def reset_rag_service_retriever(monkeypatch: Any) -> None:
+    # Default the semantic layer to *empty* deterministic input (never the live
+    # Neo4j/embeddings stack). This controls the input without mocking away the
+    # unconfirmed policy — tests that exercise the semantic-only path install a
+    # FakeSemanticRetriever carrying chunks via install_semantic().
+    install_semantic(monkeypatch, [])
     rag_service.close_retriever()
     yield
     rag_service.close_retriever()
@@ -64,6 +69,40 @@ class FakeAnswerGenerator:
         return "Grounded answer"
 
 
+class FakeSemanticRetriever:
+    """Deterministic stand-in for the vector-search retriever."""
+
+    def __init__(self, rows: list[dict[str, Any]] | None = None) -> None:
+        self._rows = rows or []
+
+    def retrieve(self, question: str, *args: Any, **kwargs: Any) -> list[dict[str, Any]]:
+        return [dict(row) for row in self._rows]
+
+
+def semantic_chunk_row(index: int, text: str) -> dict[str, Any]:
+    """A semantic (vector-search) row as produced by SemanticRetriever."""
+    similarity = round(0.9 - index * 0.05, 4)
+    return {
+        "query_route": "semantic_vector",
+        "statement_name": f"Semantic Section {index}",
+        "seed_name": f"Semantic Section {index}",
+        "related_labels": ["SourceChunk"],
+        "source_chunk_text": text,
+        "evidence_text": None,
+        "section_title": f"Semantic Section {index}",
+        "section_id": f"sec-{index}",
+        "source_document": "eu_ai_act.pdf",
+        "chunk_id": f"chunk-{index}",
+        "similarity": similarity,
+        "score": round(similarity * 100, 2),
+        "semantic": True,
+    }
+
+
+def install_semantic(monkeypatch: Any, rows: list[dict[str, Any]]) -> None:
+    monkeypatch.setattr(rag_service, "_get_semantic_retriever", lambda: FakeSemanticRetriever(rows))
+
+
 def test_answer_question_returns_answer_evidence_context_and_debug(monkeypatch: Any) -> None:
     monkeypatch.setattr(rag_service, "_retriever", None)
     monkeypatch.setattr(rag_service, "GraphRetriever", FakeRetriever)
@@ -76,7 +115,10 @@ def test_answer_question_returns_answer_evidence_context_and_debug(monkeypatch: 
     )
 
     assert result["answer"] == "Grounded answer"
+    assert result["confidence"] == "confirmed"
+    assert result["evidence_type"] == "graph_confirmed"
     assert result["evidence"][0]["statement"] == "Provider Compliance"
+    assert result["evidence"][0]["evidence_type"] == "graph_confirmed"
     assert "Providers of high-risk AI systems" in result["context"]
     assert result["debug"]["query_plan"]["intent"] == "obligations"
     assert result["debug"]["top_rows"][0]["score"] == 42
@@ -115,7 +157,9 @@ def test_answer_question_reuses_single_graph_retriever(monkeypatch: Any) -> None
     assert rag_service._get_retriever() is rag_service._get_retriever()
 
 
-def test_answer_question_returns_no_evidence_state_without_generation(monkeypatch: Any) -> None:
+def test_no_evidence_when_graph_and_semantic_both_empty(monkeypatch: Any) -> None:
+    """Genuine no-evidence: neither graph nor semantic retrieval found anything."""
+
     class EmptyRetriever(FakeRetriever):
         def retrieve(self, question: str, limit: int = 30) -> list[dict[str, Any]]:
             return []
@@ -126,12 +170,15 @@ def test_answer_question_returns_no_evidence_state_without_generation(monkeypatc
     monkeypatch.setattr(rag_service, "_retriever", None)
     monkeypatch.setattr(rag_service, "GraphRetriever", EmptyRetriever)
     monkeypatch.setattr(rag_service, "AnswerGenerator", CountingAnswerGenerator)
+    install_semantic(monkeypatch, [])
 
     result = rag_service.answer_question("What safeguards are needed for a new concept?", debug=True)
 
     assert result["answer"] == rag_service.NO_EVIDENCE_MESSAGE
     assert result["evidence"] == []
     assert result["response_source"] == "no_evidence"
+    assert result["confidence"] == "none"
+    assert result["evidence_type"] == "none"
     assert result["metrics"]["evidence_items"] == 0
     assert result["metrics"]["no_evidence"] is True
     assert result["metrics"]["generation_ms"] == 0
@@ -139,6 +186,52 @@ def test_answer_question_returns_no_evidence_state_without_generation(monkeypatc
     assert len(result["graph"]["nodes"]) == 1
     assert result["graph"]["edges"] == []
     assert CountingAnswerGenerator.calls == 0
+
+
+def test_graph_empty_with_semantic_chunks_returns_unconfirmed(monkeypatch: Any) -> None:
+    """Graph returns nothing, semantic returns 3 chunks -> unconfirmed/semantic_only.
+
+    The chunks must survive into the response as context, but no confident
+    determination/verdict may be produced from them.
+    """
+
+    class EmptyRetriever(FakeRetriever):
+        def retrieve(self, question: str, limit: int = 30) -> list[dict[str, Any]]:
+            return []
+
+    def _determination_must_not_run(*args: Any, **kwargs: Any) -> Any:  # pragma: no cover - guard
+        raise AssertionError("determination LLM must not run for semantic-only evidence")
+
+    chunks = [
+        semantic_chunk_row(1, "A new concept related to safeguards for emerging AI features."),
+        semantic_chunk_row(2, "Possibly relevant discussion of monitoring for novel systems."),
+        semantic_chunk_row(3, "Additional similar passage about oversight of new capabilities."),
+    ]
+
+    monkeypatch.setattr(rag_service, "_retriever", None)
+    monkeypatch.setattr(rag_service, "GraphRetriever", EmptyRetriever)
+    monkeypatch.setattr(rag_service, "AnswerGenerator", FakeAnswerGenerator)
+    monkeypatch.setattr(rag_service, "DeterminationGenerator", _determination_must_not_run)
+    install_semantic(monkeypatch, chunks)
+
+    result = rag_service.answer_question("What safeguards are needed for a new concept?", show_context=True)
+
+    # Distinct status, not a stamped verdict.
+    assert result["response_source"] == "semantic_only"
+    assert result["confidence"] == "unconfirmed"
+    assert result["evidence_type"] == "semantic_only"
+    assert result["determination"]["verdict"] == "unconfirmed"
+    assert result["determination"]["obligations"] == []
+
+    # Semantic hits are still present for transparency (not silently dropped).
+    assert len(result["evidence"]) == 3
+    assert all(item["evidence_type"] == "semantic_only" for item in result["evidence"])
+    assert "A new concept related to safeguards" in result["evidence"][0]["evidence_text"]
+
+    # Context is rendered with the distinct unconfirmed Metadata banner.
+    assert "[Metadata]" in result["context"]
+    assert "semantic_only" in result["context"]
+    assert "unconfirmed" in result["context"]
 
 
 def test_answer_question_rejects_empty_question() -> None:
@@ -175,6 +268,86 @@ def test_flask_ask_route_returns_clean_json(monkeypatch: Any) -> None:
     assert data["metrics"]["top_k"] == 30
     assert data["response_source"] == "live"
     assert data["error"] is None
+
+
+def _hybrid_production_result(**kwargs: Any) -> dict[str, Any]:
+    # The top-level answer/determination are always the hybrid-gated production
+    # result, regardless of the requested retrieval mode.
+    return {
+        "question": kwargs.get("question", ""),
+        "answer": "Hybrid production answer",
+        "evidence": [{"id": 1, "statement": "S", "evidence_text": "E", "evidence_type": "graph_confirmed"}],
+        "graph": {"nodes": [], "edges": []},
+        "context": "",
+        "debug": {"top_rows": []},
+        "determination": {"verdict": "obligations_apply", "obligations": [], "summary": "x"},
+        "confidence": "confirmed",
+        "evidence_type": "graph_confirmed",
+        "metrics": {"top_k": 30},
+        "response_source": "live",
+    }
+
+
+def test_ask_route_accepts_each_mode_and_echoes_it_in_debug(monkeypatch: Any) -> None:
+    from rag.retrieval_service import RetrievalResult
+
+    monkeypatch.setattr("web.app.answer_question", _hybrid_production_result)
+
+    called_modes: list[str] = []
+
+    def fake_retrieval(query: str, mode: str, top_k: int = 10, debug: bool = False) -> RetrievalResult:
+        called_modes.append(mode)
+        return RetrievalResult(
+            mode=mode,
+            query=query,
+            rows=[{"statement_name": "X", "source_chunk_text": "txt", "semantic": mode == "semantic"}],
+            top_k=top_k,
+            timings_ms={"graph_ms": 1},
+            debug={"mode": mode, "row_count": 1},
+        )
+
+    monkeypatch.setattr("web.app.retrieval_retrieve", fake_retrieval)
+
+    client = app.test_client()
+    for mode in ("semantic", "graph", "hybrid"):
+        response = client.post(
+            "/ask", json={"question": "What must providers do?", "mode": mode, "debug": True}
+        )
+        assert response.status_code == 200, mode
+        data = response.get_json()
+
+        # Mode echoed back in the debug field (and top-level).
+        assert data["debug"]["mode"] == mode
+        assert data["mode"] == mode
+
+        # Top-level answer/determination stay hybrid-gated regardless of mode.
+        assert data["answer"] == "Hybrid production answer"
+        assert data["determination"]["verdict"] == "obligations_apply"
+
+        # Ablation modes carry a comparison view; hybrid does not re-run retrieval.
+        if mode == "hybrid":
+            assert "comparison" not in data["debug"]
+        else:
+            assert data["debug"]["comparison"]["mode"] == mode
+            assert data["debug"]["comparison"]["row_count"] == 1
+
+    # retrieval_service was only invoked for the two ablation modes.
+    assert called_modes == ["semantic", "graph"]
+
+
+def test_ask_route_rejects_invalid_mode(monkeypatch: Any) -> None:
+    # answer_question must not even run for an invalid mode.
+    def _must_not_run(**kwargs: Any) -> Any:  # pragma: no cover - guard
+        raise AssertionError("answer_question must not run for an invalid mode")
+
+    monkeypatch.setattr("web.app.answer_question", _must_not_run)
+
+    client = app.test_client()
+    response = client.post("/ask", json={"question": "q", "mode": "lexical"})
+
+    assert response.status_code == 400
+    data = response.get_json()
+    assert "mode" in (data.get("error") or "").lower()
 
 
 def test_flask_index_renders_dashboard() -> None:

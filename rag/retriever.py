@@ -2147,3 +2147,19 @@ OPTIONAL MATCH (section:Section)-[:CONTAINS]->(chunk)
 OPTIONAL MATCH (regulation:Regulation)-[:HAS_SECTION]->(section)
 {_COMMON_RETURN}
 """
+
+
+def expand_chunk_entities(
+    chunk_ids: list[str],
+    max_hops: int = 1,
+    neo4j_client: Neo4jClient | None = None,
+) -> dict[str, dict[str, Any]]:
+    """Expand semantically-retrieved chunk IDs into linked entities and relationship triples.
+
+    This is the retrieval-layer entry point that pairs with SemanticRetriever's
+    vector search: pass the chunk IDs it returns to enrich each chunk with the
+    graph entities it mentions and their immediate (subject, predicate, object)
+    relationships. See Neo4jClient.expand_chunk_entities for the traversal.
+    """
+    client = neo4j_client or Neo4jClient(get_settings())
+    return client.expand_chunk_entities(chunk_ids, max_hops=max_hops)

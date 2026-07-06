@@ -43,6 +43,15 @@ class Settings(BaseSettings):
     semantic_top_k: int = Field(default=10, alias="SEMANTIC_TOP_K")
     semantic_retrieval_enabled: bool = Field(default=True, alias="SEMANTIC_RETRIEVAL_ENABLED")
 
+    # Hybrid ranking weights for the confirmed state. hybrid_score =
+    # semantic_weight * semantic_score + graph_weight * graph_relevance_score.
+    # No lexical/BM25 term — that retriever is not in this stack.
+    # Graph is weighted higher (0.6 vs 0.4) so structurally verified graph
+    # evidence leads by default; dense semantic similarity is supplementary
+    # context that can still surface strong passages above weak graph rows.
+    hybrid_semantic_weight: float = Field(default=0.4, alias="HYBRID_SEMANTIC_WEIGHT")
+    hybrid_graph_weight: float = Field(default=0.6, alias="HYBRID_GRAPH_WEIGHT")
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

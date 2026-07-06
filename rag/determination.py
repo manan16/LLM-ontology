@@ -28,6 +28,12 @@ SUPPORTED_VERDICTS = (
 VERDICT_UNAVAILABLE = "unavailable"
 VERDICT_INSUFFICIENT = "insufficient_evidence"
 
+# System-level verdict used when the only supporting evidence is semantic
+# (vector-similarity) chunks that are NOT confirmed against the compliance
+# graph. Distinct from "insufficient_evidence": we *did* find possibly-relevant
+# passages, but they are not sufficient to stamp a confident determination.
+VERDICT_UNCONFIRMED = "unconfirmed"
+
 # Ollama structured-output JSON schema. The enum constrains the verdict to the
 # supported set so parsing is reliable and the model cannot invent a verdict.
 DETERMINATION_SCHEMA: dict[str, Any] = {
@@ -54,6 +60,20 @@ def unavailable_determination(summary: str) -> dict[str, Any]:
     """Determination used when the synthesis step itself fails."""
     return {
         "verdict": VERDICT_UNAVAILABLE,
+        "obligations": [],
+        "summary": summary,
+    }
+
+
+def unconfirmed_determination(summary: str) -> dict[str, Any]:
+    """Determination for the semantic-only path.
+
+    No confident verdict is produced because the supporting passages were found
+    by vector similarity only and could not be confirmed against the compliance
+    graph. The LLM determination pass is intentionally skipped for this state.
+    """
+    return {
+        "verdict": VERDICT_UNCONFIRMED,
         "obligations": [],
         "summary": summary,
     }

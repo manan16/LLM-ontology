@@ -44,6 +44,7 @@
     activeId: null,
     seq: 0,
     online: null,     // null=unknown, true, false
+    mode: "hybrid",   // retrieval ablation: hybrid (production) | semantic | graph
     inspectorTab: "plan",
     hotEvidence: null,
     graph: null,      // KepGraph instance
@@ -108,6 +109,10 @@
       totalMs: m.total_ms || m.elapsed_ms || Object.values(stageTimes).reduce((a, b) => a + (b || 0), 0),
       groups, source: payload.response_source, error: payload.error,
       determination: payload.determination || null,
+      confidence: payload.confidence || null,
+      evidenceType: payload.evidence_type || null,
+      mode: payload.mode || (payload.debug && payload.debug.mode) || "hybrid",
+      comparison: (payload.debug && payload.debug.comparison) || null,
     };
   }
   function countGroups(p) {
@@ -194,6 +199,13 @@
         <div class="composer-bar">
           <span class="chip on">Graph-RAG</span>
           <span class="chip">Cite sources</span>
+          <label class="chip" style="gap:6px">retrieval
+            <select id="modeSelect" style="background:transparent;border:0;color:inherit;font:inherit;outline:none">
+              ${[["hybrid", "Hybrid"], ["semantic", "Semantic"], ["graph", "Graph"]]
+                .map(([v, l]) => `<option value="${v}"${state.mode === v ? " selected" : ""}>${l}</option>`)
+                .join("")}
+            </select>
+          </label>
           <span class="spacer"></span>
           <button class="ask" id="askBtn">Ask <kbd>⌘↵</kbd></button>
         </div>
@@ -214,6 +226,8 @@
     ta.addEventListener("input", () => autoGrow(ta));
     ta.addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); submit(ta.value); } });
     $("#askBtn").addEventListener("click", () => submit(ta.value));
+    const modeSel = $("#modeSelect");
+    if (modeSel) modeSel.addEventListener("change", (e) => { state.mode = e.target.value; });
     center.querySelectorAll("[data-ex]").forEach((b) => b.addEventListener("click", () => {
       const ex = window.KEP_DEMO.examples[+b.getAttribute("data-ex")];
       submit(ex.question);
@@ -266,6 +280,7 @@
     if (vm.source === "no_evidence" || !vm.evidence.length) {
       area.innerHTML =
         finalStepperBlock(vm) +
+        modeBanner(vm) +
         `<div class="sec-head"><span class="eyebrow">Answer</span><span class="ln"></span></div>
          <div class="notice warn"><div class="notice-glyph">∅</div><div><div class="notice-title">No sufficient evidence</div><div class="notice-body">${esc(vm.answer || "No regulatory evidence was found in the knowledge graph for this question.")}</div></div></div>` +
         determinationBlock(vm);
@@ -274,14 +289,17 @@
     }
 
     const coverage = coverageChips(vm);
+    const unconfirmed = vm.confidence === "unconfirmed" || vm.evidenceType === "semantic_only";
     area.innerHTML =
       finalStepperBlock(vm) +
-      `<div class="sec-head"><span class="eyebrow">Answer</span><span class="ln"></span>${item.demo ? '<span class="demo-badge">● sample data</span>' : `<span class="tag reg-${slug}">${esc(item.regulation)}</span>`}</div>
+      modeBanner(vm) +
+      unconfirmedBanner(vm) +
+      `<div class="sec-head"><span class="eyebrow">Answer</span><span class="ln"></span>${unconfirmed ? '<span class="demo-badge" style="color:var(--warn)">● unconfirmed · semantic-only</span>' : (item.demo ? '<span class="demo-badge">● sample data</span>' : `<span class="tag reg-${slug}">${esc(item.regulation)}</span>`)}</div>
        <div class="answer fade-in"><div class="answer-md" id="answerMd">${renderAnswerMd(vm.answer)}</div><div class="coverage">${coverage}</div></div>` +
       determinationBlock(vm) +
       `<div class="sec-head"><span class="eyebrow">Knowledge graph</span><span class="ln"></span><span class="eyebrow">${vm.graph.nodes.length} nodes</span></div>
        <div class="graph-wrap" data-om-raster id="graphMount"></div>
-       <div class="sec-head"><span class="eyebrow">Evidence · ${vm.evidence.length}</span><span class="ln"></span><span class="eyebrow">grounded</span></div>
+       <div class="sec-head"><span class="eyebrow">Evidence · ${vm.evidence.length}</span><span class="ln"></span><span class="eyebrow">${unconfirmed ? "semantic-only" : "grounded"}</span></div>
        <div class="evidence-list" id="evList">${vm.evidence.map(evidenceCard).join("")}</div>`;
 
     // graph
@@ -301,6 +319,39 @@
     return `<div class="sec-head"><span class="eyebrow">Pipeline journey</span><span class="ln"></span><span class="eyebrow">complete · ${(vm.totalMs / 1000).toFixed(2)}s</span></div>${stepperHtml(progress, vm.stageTimes)}`;
   }
 
+  // ---- retrieval mode (ablation) notice ------------------------------------
+  // Shows which retrieval produced the comparison view. The answer/determination
+  // are ALWAYS the hybrid-gated production result; semantic/graph are ablations.
+  function modeBanner(vm) {
+    const mode = vm.mode || "hybrid";
+    const label = mode.charAt(0).toUpperCase() + mode.slice(1);
+    if (mode === "hybrid") {
+      return `<div class="sec-head"><span class="eyebrow">Retrieval mode</span><span class="ln"></span><span class="eyebrow">${esc(label)} · production</span></div>`;
+    }
+    const n = vm.comparison ? (vm.comparison.row_count || 0) : 0;
+    return `<div class="notice" style="margin-bottom:12px">
+      <div class="notice-glyph">⇄</div>
+      <div>
+        <div class="notice-title">Retrieval mode: ${esc(label)} (ablation view)</div>
+        <div class="notice-body">The answer and determination below are still the hybrid-gated production result. The ${esc(mode)}-only retrieval (${n} rows) is shown in the Debug · comparison inspector for contrast.</div>
+      </div>
+    </div>`;
+  }
+
+  // ---- unconfirmed / semantic-only notice ----------------------------------
+  // Rendered distinctly so a vector-similarity-only result is never presented
+  // like a graph-confirmed determination.
+  function unconfirmedBanner(vm) {
+    if (vm.confidence !== "unconfirmed" && vm.evidenceType !== "semantic_only") return "";
+    return `<div class="notice warn" style="margin-bottom:14px">
+      <div class="notice-glyph">≈</div>
+      <div>
+        <div class="notice-title">Possibly related — not confirmed against the compliance graph</div>
+        <div class="notice-body">These passages were retrieved by semantic similarity. No matching entities or obligations were found in the knowledge graph, so no compliance determination is stamped. Treat the evidence below as context only.</div>
+      </div>
+    </div>`;
+  }
+
   // ---- determination (backend-derived verdict / obligations / summary) -----
   const VERDICT_META = {
     obligations_apply:         { badge: "obligation",   label: "Obligations apply" },
@@ -308,6 +359,7 @@
     prohibited:                { badge: "prohibit",     label: "Prohibited" },
     insufficient_evidence:     { badge: "insufficient", label: "Insufficient evidence" },
     unavailable:               { badge: "insufficient", label: "Determination unavailable" },
+    unconfirmed:               { badge: "insufficient", label: "Unconfirmed · not in graph" },
   };
   function determinationBlock(vm) {
     const d = vm.determination;
@@ -516,7 +568,7 @@
   function askBackend(question) {
     return fetch("ask", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question, show_context: true, debug: true }),
+      body: JSON.stringify({ question, mode: state.mode, show_context: true, debug: true }),
     }).then((r) => {
       if (!r.ok) throw new Error("HTTP " + r.status);
       state.online = true; updateNeoStat();
