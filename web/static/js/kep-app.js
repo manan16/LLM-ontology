@@ -234,7 +234,7 @@
     }));
 
     if (active) {
-      if (active.status === "running") renderRunning();
+      if (active.status === "running") renderRunning(active);
       else if (active.status === "done") renderResult(active);
       else if (active.status === "error") renderError(active);
     } else {
@@ -262,9 +262,17 @@
     }).join("") + `</div>`;
   }
 
-  function renderRunning() {
+  // Shows the question that produced the current result, above the pipeline/answer.
+  function questionBlock(item) {
+    if (!item || !item.question) return "";
+    return `<div class="sec-head"><span class="eyebrow">Question</span><span class="ln"></span></div>
+       <div class="asked-q">${esc(item.question)}</div>`;
+  }
+
+  function renderRunning(item) {
     const area = $("#resultArea");
     area.innerHTML =
+      questionBlock(item) +
       `<div class="sec-head"><span class="eyebrow">Pipeline journey</span><span class="ln"></span><span class="eyebrow">running</span></div>
        <div id="stepperMount"></div>
        <div class="sec-head"><span class="eyebrow">Answer</span><span class="ln"></span></div>
@@ -279,6 +287,7 @@
     // no-evidence / error guard
     if (vm.source === "no_evidence" || !vm.evidence.length) {
       area.innerHTML =
+        questionBlock(item) +
         finalStepperBlock(vm) +
         modeBanner(vm) +
         `<div class="sec-head"><span class="eyebrow">Answer</span><span class="ln"></span></div>
@@ -291,6 +300,7 @@
     const coverage = coverageChips(vm);
     const unconfirmed = vm.confidence === "unconfirmed" || vm.evidenceType === "semantic_only";
     area.innerHTML =
+      questionBlock(item) +
       finalStepperBlock(vm) +
       modeBanner(vm) +
       unconfirmedBanner(vm) +
@@ -424,8 +434,8 @@
   }
 
   function renderError(item) {
-    const area = $("#resultArea") || (renderRunning(), $("#resultArea"));
-    if (area) area.innerHTML = `<div class="notice error"><div class="notice-glyph">!</div><div><div class="notice-title">Request failed</div><div class="notice-body">${esc(item.error || "The system could not retrieve evidence or generate an answer right now.")}</div></div></div>`;
+    const area = $("#resultArea") || (renderRunning(item), $("#resultArea"));
+    if (area) area.innerHTML = questionBlock(item) + `<div class="notice error"><div class="notice-glyph">!</div><div><div class="notice-title">Request failed</div><div class="notice-body">${esc(item.error || "The system could not retrieve evidence or generate an answer right now.")}</div></div></div>`;
   }
 
   // ========================================================================
@@ -513,9 +523,33 @@
   // ========================================================================
   function activeItem() { return state.history.find((h) => h.id === state.activeId) || null; }
 
+  // ---- session-history persistence (survives page navigation) -------------
+  const HKEY = "kep_history";
+  function saveHistory() {
+    try {
+      const items = state.history
+        .slice(0, 25)                                // cap stored history
+        .map((h) => ({ id: h.id, question: h.question, regulation: h.regulation, status: h.status, time: h.time, payload: h.payload, error: h.error, demo: h.demo }));
+      localStorage.setItem(HKEY, JSON.stringify({ seq: state.seq, activeId: state.activeId, items }));
+    } catch (e) { /* quota / disabled storage — non-fatal */ }
+  }
+  function loadHistory() {
+    try {
+      const raw = localStorage.getItem(HKEY); if (!raw) return;
+      const data = JSON.parse(raw); if (!data || !Array.isArray(data.items)) return;
+      state.history = data.items.map((h) => ({ ...h, vm: h.payload ? adapt(h.payload) : null }));
+      state.seq = data.seq || 0;
+      if (data.activeId && state.history.some((h) => h.id === data.activeId)) state.activeId = data.activeId;
+      // Resume any query that was still in flight when the page was left — the
+      // original fetch died with the old page, so re-issue it against the backend.
+      state.history.filter((h) => h.status === "running").forEach(runQuery);
+    } catch (e) { /* corrupt / disabled storage — start fresh */ }
+  }
+
   function newQuery() {
     state.activeId = null; state.hotEvidence = null; state.graph = null;
     stopStepper();
+    saveHistory();
     renderLeft(); renderCenter(); renderRight();
     const ta = $("#composerInput"); if (ta) ta.focus();
   }
@@ -524,6 +558,7 @@
     const item = state.history.find((h) => h.id === id); if (!item) return;
     state.activeId = id; state.hotEvidence = null; state.inspectorTab = "plan";
     stopStepper();
+    saveHistory();
     renderLeft(); renderCenter(); renderRight();
   }
 
@@ -534,9 +569,17 @@
     const item = { id, question, regulation: guessReg(question), status: "running", time: nowLabel(), payload: null, vm: null, demo: false };
     state.history.unshift(item);
     state.activeId = id; state.hotEvidence = null; state.inspectorTab = "plan";
+    saveHistory();                       // persist immediately so an in-flight query survives navigation
     renderLeft(); renderCenter(); renderRight();
+    runQuery(item);
+  }
+
+  // Fires the backend call + stepper for a history item. Reused by submit() and
+  // by loadHistory() to resume a query that was still running when the page unloaded.
+  function runQuery(item) {
+    item.status = "running";
     startStepper(item);
-    askBackend(question).then(({ payload, demo }) => {
+    askBackend(item.question).then(({ payload, demo }) => {
       if (state.history.indexOf(item) === -1) return;
       item.demo = demo;
       if (payload && payload.error && !demo) { item.status = "error"; item.error = payload.error; }
@@ -546,12 +589,14 @@
         item.status = "done";
       }
       finishStepper(item);
+      saveHistory();
     }).catch((err) => {
       if (state.history.indexOf(item) === -1) return;
       item.status = "error"; item.error = String(err && err.message || err);
       stopStepper();
       if (item.id === state.activeId) { renderError(item); }
       renderLeft();
+      saveHistory();
     });
   }
 
@@ -646,6 +691,7 @@
   function init() {
     applyTheme();
     wireHeader();
+    loadHistory();
     renderLeft(); renderCenter(); renderRight();
     checkHealth();
   }
