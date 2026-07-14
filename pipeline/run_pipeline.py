@@ -10,10 +10,12 @@ from app.logger import configure_logging, get_logger
 from extraction.extractor import RegulationExtractor
 from extraction.normalizer import normalize_chunk_results
 from extraction.ollama_client import OllamaClient
+from graph.embeddings import ensure_vector_index, store_chunk_embeddings
 from graph.neo4j_client import Neo4jClient
 from graph.writer import GraphWriter
-from ingestion.chunking import build_chunks
+from ingestion.chunking import DocumentChunk, build_chunks
 from ingestion.loaders import load_document
+from rag.embedding_service import get_embedding_service
 from tqdm import tqdm
 
 
@@ -102,6 +104,8 @@ def _run_document_pipeline(document, settings) -> PipelineResult:
         writer = GraphWriter(neo4j_client)
         writer.ensure_schema()
         writer.write_document_graph(document, chunks, nodes, relationships, statements)
+        if getattr(settings, "semantic_retrieval_enabled", False):
+            _embed_new_chunks(neo4j_client, chunks, settings)
     finally:
         neo4j_client.close()
 
@@ -125,6 +129,30 @@ def _run_document_pipeline(document, settings) -> PipelineResult:
         relationship_count=len(relationships),
         elapsed_seconds=elapsed_seconds,
     )
+
+
+def _embed_new_chunks(neo4j_client: Neo4jClient, chunks: list[DocumentChunk], settings) -> None:
+    """Generate and store embeddings for freshly written chunks during ingestion.
+
+    Failures here are logged but never abort ingestion: the graph is already
+    written and embeddings can be produced later via ``backfill_embeddings.py``.
+    """
+    if not chunks:
+        return
+    try:
+        ensure_vector_index(neo4j_client, settings)
+        embedding_service = get_embedding_service(settings)
+        vectors = embedding_service.embed_documents([chunk.text for chunk in chunks])
+        payload = [
+            {"chunk_id": chunk.chunk_id, "embedding": vector}
+            for chunk, vector in zip(chunks, vectors)
+        ]
+        updated = store_chunk_embeddings(neo4j_client, payload)
+        logger.info("Embedded %s/%s new chunks during ingestion", updated, len(chunks))
+    except Exception:
+        logger.exception(
+            "Failed to embed new chunks during ingestion; run backfill_embeddings.py to recover"
+        )
 
 
 def _coerce_document_paths(document_paths: str | Path | Iterable[str | Path]) -> list[str | Path]:

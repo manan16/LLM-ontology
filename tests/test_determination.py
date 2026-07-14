@@ -143,6 +143,38 @@ class FakeAnswerGenerator:
         return "Grounded answer [E1]."
 
 
+class FakeSemanticRetriever:
+    """Deterministic stand-in for the vector-search retriever."""
+
+    def __init__(self, rows: list[dict[str, Any]] | None = None) -> None:
+        self._rows = rows or []
+
+    def retrieve(self, question: str, *args: Any, **kwargs: Any) -> list[dict[str, Any]]:
+        return [dict(row) for row in self._rows]
+
+
+def semantic_chunk_row(index: int, text: str) -> dict[str, Any]:
+    similarity = round(0.9 - index * 0.05, 4)
+    return {
+        "query_route": "semantic_vector",
+        "statement_name": f"Semantic Section {index}",
+        "seed_name": f"Semantic Section {index}",
+        "related_labels": ["SourceChunk"],
+        "source_chunk_text": text,
+        "evidence_text": None,
+        "section_title": f"Semantic Section {index}",
+        "source_document": "eu_ai_act.pdf",
+        "chunk_id": f"chunk-{index}",
+        "similarity": similarity,
+        "score": round(similarity * 100, 2),
+        "semantic": True,
+    }
+
+
+def install_semantic(monkeypatch: Any, rows: list[dict[str, Any]]) -> None:
+    monkeypatch.setattr(rag_service, "_get_semantic_retriever", lambda: FakeSemanticRetriever(rows))
+
+
 class FakeDeterminationGenerator:
     def __init__(self, model: str | None = None) -> None:
         self.model = model
@@ -156,7 +188,10 @@ class FakeDeterminationGenerator:
 
 
 @pytest.fixture(autouse=True)
-def reset_retriever() -> Any:
+def reset_retriever(monkeypatch: Any) -> Any:
+    # Default the semantic layer to *empty* deterministic input (never the live
+    # stack); tests exercising the semantic-only path install chunks explicitly.
+    install_semantic(monkeypatch, [])
     rag_service.close_retriever()
     yield
     rag_service.close_retriever()
@@ -179,6 +214,7 @@ def test_answer_question_includes_backend_determination(monkeypatch: Any) -> Non
 def test_no_evidence_returns_insufficient_determination(monkeypatch: Any) -> None:
     monkeypatch.setattr(rag_service, "_retriever", None)
     monkeypatch.setattr(rag_service, "GraphRetriever", EmptyRetriever)
+    install_semantic(monkeypatch, [])
 
     def _should_not_run(*args: Any, **kwargs: Any) -> Any:  # pragma: no cover - guard
         raise AssertionError("determination LLM must not run when there is no evidence")
@@ -190,6 +226,39 @@ def test_no_evidence_returns_insufficient_determination(monkeypatch: Any) -> Non
     assert result["response_source"] == "no_evidence"
     assert result["determination"]["verdict"] == VERDICT_INSUFFICIENT
     assert result["determination"]["obligations"] == []
+
+
+def test_semantic_only_evidence_yields_unconfirmed_not_verdict(monkeypatch: Any) -> None:
+    """Graph found nothing but semantic search returned chunks.
+
+    The determination must be flagged unconfirmed (no confident verdict), and the
+    LLM determination pass must not run over semantic-only evidence.
+    """
+    monkeypatch.setattr(rag_service, "_retriever", None)
+    monkeypatch.setattr(rag_service, "GraphRetriever", EmptyRetriever)
+    monkeypatch.setattr(rag_service, "AnswerGenerator", FakeAnswerGenerator)
+    install_semantic(
+        monkeypatch,
+        [
+            semantic_chunk_row(1, "Possibly related passage about oversight of new AI features."),
+            semantic_chunk_row(2, "Another semantically similar passage on monitoring."),
+            semantic_chunk_row(3, "A third passage discussing safeguards for novel systems."),
+        ],
+    )
+
+    def _should_not_run(*args: Any, **kwargs: Any) -> Any:  # pragma: no cover - guard
+        raise AssertionError("determination LLM must not run for semantic-only evidence")
+
+    monkeypatch.setattr(rag_service, "DeterminationGenerator", _should_not_run)
+
+    result = rag_service.answer_question("What safeguards apply to a brand new concept?", show_context=True)
+
+    assert result["response_source"] == "semantic_only"
+    assert result["confidence"] == "unconfirmed"
+    assert result["evidence_type"] == "semantic_only"
+    assert result["determination"]["verdict"] == "unconfirmed"
+    assert result["determination"]["obligations"] == []
+    assert len(result["evidence"]) == 3
 
 
 # ---------------------------------------------------------------------------
