@@ -7,6 +7,7 @@ from app.config import Settings, get_settings
 from graph.neo4j_client import Neo4jClient
 from rag.context_builder import is_suppressed_context_row
 from rag.query_planner import PERMISSION_EXCEPTION_EXPANSIONS, QueryPlan, build_query_plan, extract_query_terms
+from rag.retriever.dedup import _dedupe_debug, _dedupe_ids, _dedupe_values
 
 
 GRAPH_RETRIEVAL_CATEGORIES = {
@@ -1567,16 +1568,6 @@ def _infer_source_group(row: dict[str, Any], text: str) -> str:
     return "unknown"
 
 
-def _dedupe_debug(items: list[str]) -> list[str]:
-    seen: set[str] = set()
-    unique: list[str] = []
-    for item in items:
-        if item and item not in seen:
-            seen.add(item)
-            unique.append(item)
-    return unique
-
-
 def _debug_row(row: dict[str, Any]) -> dict[str, Any]:
     return {
         "id": _row_debug_id(row),
@@ -1715,30 +1706,6 @@ def _merge_plans(parent: QueryPlan, child: QueryPlan) -> QueryPlan:
         [*getattr(child, "mental_health_expansion_terms", []), *getattr(parent, "mental_health_expansion_terms", [])]
     )
     return child
-
-
-def _dedupe_values(values: list[str]) -> list[str]:
-    seen: set[str] = set()
-    unique: list[str] = []
-    for value in values:
-        normalized = str(value).lower().strip()
-        if normalized and normalized not in seen:
-            seen.add(normalized)
-            unique.append(normalized)
-    return unique
-
-
-def _dedupe_ids(values: list[Any]) -> list[str]:
-    seen: set[str] = set()
-    unique: list[str] = []
-    for value in values:
-        parsed = str(value or "").strip()
-        if not parsed:
-            continue
-        if parsed not in seen:
-            seen.add(parsed)
-            unique.append(parsed)
-    return unique
 
 
 def _infer_gdpr_rights_group(text: str) -> str:
