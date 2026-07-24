@@ -9,3 +9,7 @@ tenacity>=8.2,<9.0
 tqdm>=4.66,<5.0
 sentence-transformers>=2.7,<4.0
 pytest>=8.2,<9.0
+# Supplementary LLM-graded evaluation (evaluation/ragas_supplement.py); optional,
+# does not replace the deterministic metrics in run_evaluation.py.
+ragas>=0.2
+langchain-openai>=0.1

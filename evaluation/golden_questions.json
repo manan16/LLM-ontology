@@ -6,6 +6,8 @@
     "expected_regulations": ["GDPR"],
     "expected_concepts": ["DataSubject", "RightOfAccess", "RightToRectification", "RightToErasure", "RightToRestriction", "RightToDataPortability", "RightToObject"],
     "expected_evidence_keywords": ["data subject", "right of access", "rectification", "erasure", "restriction", "data portability", "object"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should retrieve GDPR data subject rights evidence."
   },
   {
@@ -15,6 +17,8 @@
     "expected_regulations": ["GDPR"],
     "expected_concepts": ["Controller", "HealthData", "SpecialCategoryData", "LawfulBasis", "DataProtectionImpactAssessment", "SecurityOfProcessing"],
     "expected_evidence_keywords": ["controller", "health data", "special category", "lawful basis", "security", "data protection impact assessment"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should connect controller obligations to special category health data."
   },
   {
@@ -24,6 +28,8 @@
     "expected_regulations": ["GDPR"],
     "expected_concepts": ["SpecialCategoryData", "HealthData", "ExplicitConsent", "Article9Exception", "PublicInterest", "HealthCareProvision"],
     "expected_evidence_keywords": ["special categories", "health data", "explicit consent", "public interest", "health care", "Article 9"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should retrieve GDPR Article 9 processing conditions."
   },
   {
@@ -33,6 +39,8 @@
     "expected_regulations": ["GDPR"],
     "expected_concepts": ["DataProtectionImpactAssessment", "HighRiskProcessing", "Controller", "SystematicMonitoring", "SpecialCategoryData"],
     "expected_evidence_keywords": ["data protection impact assessment", "high risk", "rights and freedoms", "systematic", "special category"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should retrieve DPIA definition and trigger evidence."
   },
   {
@@ -42,6 +50,8 @@
     "expected_regulations": ["GDPR"],
     "expected_concepts": ["AutomatedDecisionMaking", "Profiling", "DataSubject", "RightToObject", "MeaningfulInformation", "HumanIntervention"],
     "expected_evidence_keywords": ["automated decision-making", "profiling", "legal effects", "human intervention", "meaningful information"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should retrieve GDPR automated decision-making and profiling obligations."
   },
   {
@@ -51,6 +61,8 @@
     "expected_regulations": ["HIPAA"],
     "expected_concepts": ["CoveredEntity", "ProtectedHealthInformation", "Authorization", "PermittedDisclosure", "RequiredByLaw", "PublicHealth"],
     "expected_evidence_keywords": ["covered entity", "protected health information", "without authorization", "required by law", "public health", "may disclose"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should favor permission and exception evidence over authorization-required evidence."
   },
   {
@@ -60,6 +72,8 @@
     "expected_regulations": ["HIPAA"],
     "expected_concepts": ["BusinessAssociate", "CoveredEntity", "ProtectedHealthInformation", "BusinessAssociateAgreement", "Safeguards"],
     "expected_evidence_keywords": ["business associate", "covered entity", "protected health information", "safeguards", "agreement"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should retrieve business associate obligations and related safeguards."
   },
   {
@@ -69,6 +83,8 @@
     "expected_regulations": ["HIPAA"],
     "expected_concepts": ["ProtectedHealthInformation", "AdministrativeSafeguard", "PhysicalSafeguard", "TechnicalSafeguard", "SecurityRule"],
     "expected_evidence_keywords": ["protected health information", "administrative safeguards", "physical safeguards", "technical safeguards", "security"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should retrieve HIPAA Security Rule safeguard evidence."
   },
   {
@@ -78,6 +94,8 @@
     "expected_regulations": ["HIPAA"],
     "expected_concepts": ["Individual", "ProtectedHealthInformation", "RightOfAccess", "AmendmentRight", "AccountingOfDisclosures", "NoticeOfPrivacyPractices"],
     "expected_evidence_keywords": ["individual", "protected health information", "access", "amend", "accounting of disclosures", "notice"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should retrieve individual rights under the HIPAA Privacy Rule."
   },
   {
@@ -87,6 +105,8 @@
     "expected_regulations": ["HIPAA"],
     "expected_concepts": ["Authorization", "CoveredEntity", "ProtectedHealthInformation", "UseAndDisclosure", "PermittedUse"],
     "expected_evidence_keywords": ["authorization", "covered entity", "use or disclose", "protected health information", "valid authorization"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should explain authorization as a permission mechanism and distinguish exceptions."
   },
   {
@@ -96,6 +116,8 @@
     "expected_regulations": ["EU AI Act"],
     "expected_concepts": ["Provider", "HighRiskAISystem", "RiskManagementSystem", "QualityManagementSystem", "TechnicalDocumentation", "PostMarketMonitoring"],
     "expected_evidence_keywords": ["provider", "high-risk AI system", "risk management system", "quality management system", "technical documentation", "post-market monitoring"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should retrieve concrete provider obligations for high-risk AI systems."
   },
   {
@@ -105,6 +127,8 @@
     "expected_regulations": ["EU AI Act"],
     "expected_concepts": ["Deployer", "HighRiskAISystem", "InstructionsForUse", "HumanOversightRequirement", "Monitoring", "InputData"],
     "expected_evidence_keywords": ["deployer", "high-risk AI system", "instructions for use", "human oversight", "monitor", "input data"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should retrieve deployer obligations and operational use requirements."
   },
   {
@@ -114,6 +138,8 @@
     "expected_regulations": ["EU AI Act"],
     "expected_concepts": ["TechnicalDocumentation", "HighRiskAISystem", "Provider", "ConformityAssessment", "RecordKeeping"],
     "expected_evidence_keywords": ["technical documentation", "high-risk AI system", "provider", "conformity assessment", "record keeping", "logs"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should retrieve technical documentation and record keeping evidence."
   },
   {
@@ -123,6 +149,8 @@
     "expected_regulations": ["EU AI Act"],
     "expected_concepts": ["HumanOversightRequirement", "HighRiskAISystem", "NaturalPerson", "Provider", "Deployer", "RiskMitigation"],
     "expected_evidence_keywords": ["human oversight", "natural persons", "high-risk AI system", "risk", "operational constraints", "intervene"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should retrieve human oversight requirements for high-risk AI systems."
   },
   {
@@ -132,6 +160,8 @@
     "expected_regulations": ["EU AI Act"],
     "expected_concepts": ["PostMarketMonitoring", "Provider", "HighRiskAISystem", "SeriousIncident", "CorrectiveAction"],
     "expected_evidence_keywords": ["post-market monitoring", "provider", "high-risk AI system", "serious incident", "corrective action"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should retrieve monitoring and incident follow-up obligations."
   },
   {
@@ -141,6 +171,8 @@
     "expected_regulations": ["GDPR", "HIPAA"],
     "expected_concepts": ["HealthData", "SpecialCategoryData", "ProtectedHealthInformation", "Controller", "CoveredEntity", "DataSubject"],
     "expected_evidence_keywords": ["health data", "special category", "protected health information", "controller", "covered entity", "individual"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should retrieve evidence from GDPR and HIPAA and distinguish data concepts."
   },
   {
@@ -150,6 +182,8 @@
     "expected_regulations": ["GDPR", "EU AI Act"],
     "expected_concepts": ["HighRiskAISystem", "HealthData", "SpecialCategoryData", "Controller", "Provider", "DataProtectionImpactAssessment", "HumanOversightRequirement"],
     "expected_evidence_keywords": ["high-risk AI system", "health data", "special category", "controller", "provider", "human oversight", "technical documentation"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should retrieve privacy and AI governance evidence."
   },
   {
@@ -159,6 +193,8 @@
     "expected_regulations": ["GDPR", "HIPAA", "EU AI Act"],
     "expected_concepts": ["Provider", "HighRiskAISystem", "PatientData", "HealthData", "ProtectedHealthInformation", "TechnicalDocumentation", "SecuritySafeguard"],
     "expected_evidence_keywords": ["provider", "patient data", "high-risk AI system", "protected health information", "health data", "technical documentation", "safeguards"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should test cross-regulation retrieval for a provider using patient data."
   },
   {
@@ -168,6 +204,8 @@
     "expected_regulations": ["GDPR", "HIPAA", "EU AI Act"],
     "expected_concepts": ["Controller", "CoveredEntity", "Provider", "PersonalData", "ProtectedHealthInformation", "AISystem"],
     "expected_evidence_keywords": ["controller", "covered entity", "provider", "personal data", "protected health information", "AI system"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should retrieve actor definitions from all three regimes."
   },
   {
@@ -177,6 +215,8 @@
     "expected_regulations": ["GDPR", "HIPAA", "EU AI Act"],
     "expected_concepts": ["DataProtectionImpactAssessment", "TechnicalDocumentation", "PoliciesAndProcedures", "Safeguards", "RecordKeeping", "PostMarketMonitoring"],
     "expected_evidence_keywords": ["data protection impact assessment", "technical documentation", "policies and procedures", "safeguards", "records", "monitoring"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should retrieve documentation and evidence concepts across regulations."
   },
   {
@@ -186,6 +226,8 @@
     "expected_regulations": ["GDPR", "HIPAA", "EU AI Act"],
     "expected_concepts": ["MentalHealthDiagnosticSystem", "MentalHealthData", "HealthData", "SpecialCategoryData", "ProtectedHealthInformation", "HighRiskAISystem", "HumanOversightRequirement", "DataProtectionImpactAssessment"],
     "expected_evidence_keywords": ["mental health", "health data", "special category", "protected health information", "high-risk AI system", "human oversight", "technical documentation"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Question should retrieve evidence from all three regulations and connect it to the mental-health diagnostics use case."
   },
   {
@@ -195,6 +237,8 @@
     "expected_regulations": ["GDPR"],
     "expected_concepts": ["MentalHealthData", "HealthData", "SpecialCategoryData", "Controller", "LawfulBasis", "DataProtectionImpactAssessment", "DataSubjectRights"],
     "expected_evidence_keywords": ["mental health", "health data", "special category", "controller", "lawful basis", "data protection impact assessment"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should retrieve GDPR evidence and mental-health use-case context."
   },
   {
@@ -204,6 +248,8 @@
     "expected_regulations": ["HIPAA"],
     "expected_concepts": ["MentalHealthData", "PatientData", "ProtectedHealthInformation", "CoveredEntity", "BusinessAssociate", "Safeguards", "Authorization"],
     "expected_evidence_keywords": ["mental health", "patient data", "protected health information", "covered entity", "business associate", "authorization", "safeguards"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should retrieve HIPAA evidence for PHI and mental-health data context."
   },
   {
@@ -213,6 +259,8 @@
     "expected_regulations": ["EU AI Act"],
     "expected_concepts": ["ClinicalDiagnosticAISystem", "HighRiskAISystem", "Provider", "RiskManagementSystem", "TechnicalDocumentation", "HumanOversightRequirement", "PostMarketMonitoring"],
     "expected_evidence_keywords": ["clinical diagnostic", "high-risk AI system", "provider", "risk management", "technical documentation", "human oversight", "post-market monitoring"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should retrieve high-risk AI requirements for a clinical diagnostic system."
   },
   {
@@ -222,6 +270,8 @@
     "expected_regulations": ["GDPR", "HIPAA", "EU AI Act"],
     "expected_concepts": ["MentalHealthRiskScore", "AISystemOutput", "ProtectedHealthInformation", "SecuritySafeguard", "HumanOversightRequirement", "RiskManagementSystem"],
     "expected_evidence_keywords": ["risk scores", "mental health", "safeguards", "protected health information", "human oversight", "risk management"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should retrieve safeguards for outputs and regulated health data."
   },
   {
@@ -231,6 +281,8 @@
     "expected_regulations": ["EU AI Act", "GDPR"],
     "expected_concepts": ["HumanOversightRequirement", "MentalHealthDiagnosticSystem", "HighRiskAISystem", "AutomatedDecisionMaking", "HumanIntervention", "ClinicalReviewer"],
     "expected_evidence_keywords": ["human oversight", "mental health diagnosis", "high-risk AI system", "human intervention", "automated decision"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should retrieve EU AI Act oversight and GDPR human intervention evidence."
   },
   {
@@ -240,6 +292,8 @@
     "expected_regulations": ["GDPR", "HIPAA"],
     "expected_concepts": ["MentalHealthScreeningData", "HealthData", "SpecialCategoryData", "ProtectedHealthInformation", "ReidentificationRisk", "UnauthorizedDisclosure"],
     "expected_evidence_keywords": ["mental health screening", "health data", "special category", "protected health information", "risk", "disclosure"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should retrieve data protection risk concepts linked to screening data."
   },
   {
@@ -249,6 +303,8 @@
     "expected_regulations": ["GDPR", "EU AI Act"],
     "expected_concepts": ["MentalHealthDiagnosticSystem", "TransparencyRequirement", "Explainability", "InstructionsForUse", "DataSubjectInformation", "TechnicalDocumentation"],
     "expected_evidence_keywords": ["transparency", "explainability", "instructions for use", "meaningful information", "technical documentation", "mental health"],
+    "expected_citations": [],
+    "expects_abstention": false,
     "notes": "Should retrieve transparency and explanation evidence for mental-health diagnostics."
   }
 ]

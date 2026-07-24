@@ -15,7 +15,11 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from rag.retrieval_service import retrieve as retrieve_by_mode
-from web.services.rag_service import answer_question
+from web.services.rag_service import (
+    NO_EVIDENCE_MESSAGE,
+    UNCONFIRMED_MESSAGE,
+    answer_question,
+)
 
 
 DEFAULT_INPUT = Path(__file__).resolve().parent / "golden_questions.json"
@@ -27,6 +31,11 @@ DEFAULT_OUTPUT_DIR = Path(__file__).resolve().parent / "results"
 RETRIEVAL_MODES = ("semantic", "graph", "hybrid")
 MODE_CHOICES = (*RETRIEVAL_MODES, "all")
 DEFAULT_MODE = "hybrid"
+
+# Verdicts that count as a (correct) abstention: the system declined to stamp a
+# confident compliance determination. "insufficient_evidence" = no supporting
+# evidence at all; "unconfirmed" = only semantic passages, not graph-confirmed.
+ABSTENTION_VERDICTS = frozenset({"insufficient_evidence", "unconfirmed"})
 
 # Sentinel for answer/determination-dependent fields under retrieval-only modes.
 # Deliberately NOT 0 -- a 0 would read as a failing score in the comparison table,
@@ -43,6 +52,7 @@ ANSWER_DEPENDENT_FIELDS = (
     "has_citations",
     "answer_relevance_score",
     "faithfulness_score",
+    "citation_accuracy",
     "evidence_grounding",
     "overall_score",
 )
@@ -79,8 +89,11 @@ RESULT_COLUMNS = [
     "has_citations",
     "answer_relevance_score",
     "faithfulness_score",
+    "citation_accuracy",
     "evidence_grounding",
     "overall_score",
+    "expects_abstention",
+    "abstention_correct",
     "latency_seconds",
     "status",
     "error",
@@ -101,6 +114,18 @@ EMPTY_RESULT = {
     "debug": {},
     "metrics": {},
 }
+
+# Shared citation regexes: extract_citations() harvests Article/Art./CFR/[...] style
+# citations from answers, and score_citation_accuracy() reuses the same patterns to
+# canonicalize citations so surface variants ("Article 5(1)(e)" vs "Art. 5(1)(e)" vs
+# "GDPR Art 5.1.e") normalize to one comparable key.
+CITATION_PATTERNS = [
+    r"\bArticle\s+\d+[A-Za-z0-9()\-]*",
+    r"\bArt\.\s*\d+[A-Za-z0-9()\-]*",
+    r"\b\d+\s*CFR\s*[\d.]+",
+    r"\b45\s*CFR\s*[\d.]+",
+    r"\[[^\]]+\]",
+]
 
 # T4: overall_score weights. Each axis is orthogonal and counted exactly once, so the
 # lexical-overlap coverages (already folded into retrieval_recall) are not re-added
@@ -349,6 +374,7 @@ def build_result_row(
     expected_regulations = list_values(question_item.get("expected_regulations"))
     expected_concepts = list_values(question_item.get("expected_concepts"))
     expected_keywords = list_values(question_item.get("expected_evidence_keywords"))
+    expected_citations = list_values(question_item.get("expected_citations"))
 
     # Retrieval metrics measure what retrieval surfaced -> match against evidence_text.
     retrieved_regulations = find_retrieved_regulations(evidence, top_rows)
@@ -375,7 +401,8 @@ def build_result_row(
     citation_coverage = score_citation_coverage(answer, citations, source_documents)
     retrieval_recall = round((regulation_coverage + concept_coverage + keyword_coverage) / 3, 3)
     answer_relevance = score_answer_relevance(answer_text, answer_matched_keywords, expected_keywords, answer_matched_concepts, expected_concepts)
-    faithfulness = score_faithfulness(answer, citations, evidence)
+    citation_accuracy = score_citation_accuracy(citations, expected_citations)
+    faithfulness = score_faithfulness(answer, citations, evidence, expected_citations)
     # T3: accurately-named structural signals. citation_coverage and faithfulness_score
     # are structural (presence checks), not semantic, so surface what they actually
     # measure under honest names. Values mirror the structural metrics above; no
@@ -395,6 +422,15 @@ def build_result_row(
         sum(OVERALL_SCORE_WEIGHTS[axis] * axis_values[axis] for axis in OVERALL_SCORE_WEIGHTS),
         3,
     )
+
+    # Abstention-aware scoring. For a question deliberately designed to have no
+    # answer, retrieval_recall/answer_relevance/citation_coverage are meaningless,
+    # so overall_score collapses to a pass/fail on whether the system correctly
+    # abstained (declined a confident determination) instead of the weighted blend.
+    expects_abstention = bool(question_item.get("expects_abstention"))
+    abstention_correct = detect_abstention(result, answer) if expects_abstention else False
+    if expects_abstention:
+        overall_score = 1.0 if abstention_correct else 0.0
 
     # Answer/determination-dependent axes only apply to the hybrid (production)
     # path. Under semantic/graph modes they are marked NOT_APPLICABLE so the
@@ -438,8 +474,11 @@ def build_result_row(
         "has_citations": answer_field(has_citations),
         "answer_relevance_score": answer_field(answer_relevance),
         "faithfulness_score": answer_field(faithfulness),
+        "citation_accuracy": answer_field(citation_accuracy),
         "evidence_grounding": answer_field(evidence_grounding),
         "overall_score": answer_field(overall_score),
+        "expects_abstention": expects_abstention,
+        "abstention_correct": abstention_correct,
         "latency_seconds": latency_seconds,
         "status": status,
         "error": error,
@@ -522,14 +561,7 @@ def extract_citations(answer: str, evidence: list[Any], top_rows: list[Any]) -> 
         if citation:
             citations.append(citation)
 
-    citation_patterns = [
-        r"\bArticle\s+\d+[A-Za-z0-9()\-]*",
-        r"\bArt\.\s*\d+[A-Za-z0-9()\-]*",
-        r"\b\d+\s*CFR\s*[\d.]+",
-        r"\b45\s*CFR\s*[\d.]+",
-        r"\[[^\]]+\]",
-    ]
-    for pattern in citation_patterns:
+    for pattern in CITATION_PATTERNS:
         citations.extend(re.findall(pattern, answer, flags=re.IGNORECASE))
     return sorted(set(clean_text(citation) for citation in citations if clean_text(citation)))
 
@@ -594,7 +626,82 @@ def score_answer_relevance(
     return round((keyword_score * 0.6) + (concept_score * 0.4), 3)
 
 
-def score_faithfulness(answer: str, citations: list[str], evidence: list[Any]) -> float:
+def canonical_citation(citation: Any) -> str:
+    """Collapse a citation to a comparable key.
+
+    Reuses CITATION_PATTERNS to isolate the citation token, then drops the leading
+    article/section words and every non-alphanumeric separator so surface variants
+    normalize to one form: "Article 5(1)(e)", "Art. 5(1)(e)", and "GDPR Art 5.1.e"
+    all become "51e", while "Article 8" stays "8".
+    """
+    text = clean_text(citation)
+    if not text:
+        return ""
+    for pattern in CITATION_PATTERNS:
+        found = re.search(pattern, text, flags=re.IGNORECASE)
+        if found:
+            text = found.group(0)
+            break
+    text = text.lower()
+    tail = re.search(r"\d.*", text)
+    if tail:
+        text = tail.group(0)
+    return re.sub(r"[^a-z0-9]", "", text)
+
+
+def score_citation_accuracy(citations: list[str], expected_citations: list[str]) -> float | None:
+    """Fraction of expected citations found among the actual citations.
+
+    Returns None when expected_citations is empty (question not yet annotated), so
+    callers can distinguish "no ground truth" from a genuine 0.0 score. Matching is
+    variant-insensitive via canonical_citation().
+    """
+    expected = list_values(expected_citations)
+    if not expected:
+        return None
+    actual_keys = {canonical_citation(citation) for citation in citations}
+    actual_keys.discard("")
+    matched = sum(1 for citation in expected if canonical_citation(citation) in actual_keys)
+    return round(matched / len(expected), 3)
+
+
+def detect_abstention(result: dict[str, Any], answer: str) -> bool:
+    """Whether the system declined to give a confident determination.
+
+    Prefers the structured determination verdict when the result carries one
+    (``insufficient_evidence`` / ``unconfirmed``). When no determination is
+    present (e.g. retrieval-only modes), falls back to the answer text carrying a
+    known abstention message (NO_EVIDENCE_MESSAGE / UNCONFIRMED_MESSAGE) or the
+    "does not contain enough evidence" phrasing.
+    """
+    determination = result.get("determination") if isinstance(result, dict) else None
+    if isinstance(determination, dict):
+        verdict = clean_text(determination.get("verdict")).lower()
+        if verdict:
+            return verdict in ABSTENTION_VERDICTS
+    normalized_answer = normalize_text(answer)
+    if not normalized_answer:
+        return False
+    if "does not contain enough evidence" in normalized_answer:
+        return True
+    return any(
+        normalize_text(message) in normalized_answer
+        for message in (NO_EVIDENCE_MESSAGE, UNCONFIRMED_MESSAGE)
+    )
+
+
+def score_faithfulness(
+    answer: str,
+    citations: list[str],
+    evidence: list[Any],
+    expected_citations: list[str] | None = None,
+) -> float:
+    # When a question is annotated with expected citations, faithfulness is the
+    # citation-accuracy score (a real discriminating signal). Otherwise fall back to
+    # the structural presence-based 0/0.5/1.0 heuristic unchanged.
+    accuracy = score_citation_accuracy(citations, expected_citations or [])
+    if accuracy is not None:
+        return accuracy
     normalized_answer = normalize_text(answer)
     if not normalized_answer or "does not contain enough evidence" in normalized_answer:
         return 0.0

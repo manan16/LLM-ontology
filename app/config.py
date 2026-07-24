@@ -27,8 +27,16 @@ class Settings(BaseSettings):
     chunk_overlap_chars: int = Field(default=150, alias="CHUNK_OVERLAP_CHARS")
     log_level: str = Field(default="DEBUG", alias="LOG_LEVEL")
 
-    # Semantic retrieval (embeddings + Neo4j vector index).
+    # Semantic retrieval (embeddings + Neo4j vector index). embedding_model is the
+    # LOCAL sentence-transformers/BGE model used for retrieval; it is NOT the same as
+    # ragas_embedding_model below (an Ollama-served model used only by
+    # evaluation/ragas_supplement.py). The two are not interchangeable and must not
+    # be merged.
     embedding_model: str = Field(default="BAAI/bge-base-en-v1.5", alias="EMBEDDING_MODEL")
+    # Ollama-served embedding model used ONLY by evaluation/ragas_supplement.py for
+    # RAGAS answer_relevancy scoring via the OpenAI-compatible /v1/embeddings endpoint.
+    # Separate from embedding_model (local BGE retrieval model) -- do not merge them.
+    ragas_embedding_model: str = Field(default="nomic-embed-text", alias="RAGAS_EMBEDDING_MODEL")
     # Empty string means "auto": use cuda when available, otherwise cpu.
     embedding_device: str = Field(default="", alias="EMBEDDING_DEVICE")
     embedding_batch_size: int = Field(default=32, alias="EMBEDDING_BATCH_SIZE")

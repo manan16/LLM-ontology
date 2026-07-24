@@ -138,7 +138,30 @@ def aggregate(results_by_mode: dict[str, list[dict[str, Any]]]) -> dict[str, Any
         "hybrid_only_metrics": list(HYBRID_ONLY_METRICS),
         "categories": category_block,
         "overall": {"counts": overall_counts, "metrics": overall},
+        # Abstention accuracy is reported on its own, not folded into ALL_METRICS:
+        # it is a pass/fail over a *subset* of questions (those annotated
+        # expects_abstention), so averaging it alongside per-question metrics
+        # would misrepresent both.
+        "abstention": _abstention_summary(results_by_mode),
     }
+
+
+def _abstention_summary(results_by_mode: dict[str, list[dict[str, Any]]]) -> dict[str, Any]:
+    """Per-mode abstention accuracy over questions annotated expects_abstention.
+
+    ``accuracy`` is the fraction of those questions the mode correctly abstained on
+    (None when the mode has no abstention-annotated rows).
+    """
+    summary: dict[str, Any] = {}
+    for mode in MODES:
+        rows = [row for row in results_by_mode.get(mode, []) if row.get("expects_abstention")]
+        correct = sum(1 for row in rows if row.get("abstention_correct") is True)
+        summary[mode] = {
+            "count": len(rows),
+            "correct": correct,
+            "accuracy": round(correct / len(rows), 3) if rows else None,
+        }
+    return summary
 
 
 def _metric_means(rows: list[dict[str, Any]], mode: str) -> dict[str, Any]:
@@ -200,6 +223,23 @@ def render_markdown(aggregation: dict[str, Any]) -> str:
         overall_cells = [_fmt(overall_metrics[mode].get(metric)) for mode in modes]
         lines.append("| **Overall** | " + " | ".join(f"**{cell}**" for cell in overall_cells) + " |")
         lines.append("")
+
+    abstention = aggregation.get("abstention", {})
+    lines.append("## Abstention accuracy")
+    lines.append("")
+    lines.append(
+        "Fraction of questions annotated `expects_abstention: true` where the mode "
+        "correctly declined a confident determination (insufficient_evidence / "
+        "unconfirmed). Reported separately from the per-question metrics above."
+    )
+    lines.append("")
+    lines.append("| Mode | Abstention accuracy | Correct / annotated |")
+    lines.append("| --- | --- | --- |")
+    for mode in modes:
+        block = abstention.get(mode, {})
+        accuracy = _fmt(block.get("accuracy"))
+        lines.append(f"| {mode} | {accuracy} | {block.get('correct', 0)} / {block.get('count', 0)} |")
+    lines.append("")
 
     counts = aggregation["overall"]["counts"]
     lines.append("## Row counts")

@@ -168,6 +168,8 @@ The Docker Neo4j service uses the local `neo4j` user and `neo4j` database. This 
 
 The Compose setup does not rebuild or seed the knowledge graph on container start. Build or import the graph separately, then use the web app for the RAG/KG demo.
 
+The Flask debugger is **off by default**. It is gated behind `FLASK_DEBUG=1`, which enables Werkzeug's interactive debugger — that allows arbitrary code execution and must **never** be set in the Compose demo or anywhere the app is reachable over a network (e.g. an exposed Cloudflare tunnel URL). Treat `FLASK_DEBUG=1` as opt-in for local development only.
+
 ## RAG Architecture
 
 The current retrieval flow is:

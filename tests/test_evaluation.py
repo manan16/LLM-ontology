@@ -15,7 +15,10 @@ from evaluation.run_evaluation import (
     evaluate_question,
     find_retrieved_regulations,
     keyword_matches,
+    score_citation_accuracy,
+    score_faithfulness,
 )
+from evaluation.run_evaluation import NO_EVIDENCE_MESSAGE
 
 
 def test_keyword_matching_handles_hyphenation_and_spacing() -> None:
@@ -227,6 +230,135 @@ def test_provenance_gated_metrics_full_audit(monkeypatch) -> None:
     assert row["match_audit"]["regulations"]["missed"] == []
     assert row["match_audit"]["concepts"]["missed"] == ["AutomatedDecisionMaking"]
     assert row["match_audit"]["evidence_keywords"]["matched"] == ["human oversight"]
+
+
+def test_score_citation_accuracy_none_when_unannotated() -> None:
+    # No ground truth yet -> None (distinct from a genuine 0.0), so faithfulness
+    # falls back to the structural 0/0.5/1.0 heuristic.
+    assert score_citation_accuracy(["Article 5(1)(e)"], []) is None
+
+    evidence = [{"statement": "x", "evidence_text": "y"}]
+    # Structural fallback: citations + evidence present -> 1.0.
+    assert score_faithfulness("Article 5 applies.", ["Article 5"], evidence, []) == 1.0
+    # Structural fallback: evidence only -> 0.5.
+    assert score_faithfulness("Some answer.", [], evidence, []) == 0.5
+
+
+def test_score_citation_accuracy_matches_across_surface_variants() -> None:
+    expected = ["Article 5(1)(e)"]
+    # Each of these is the same citation written differently and must count as a match.
+    assert score_citation_accuracy(["Art. 5(1)(e)"], expected) == 1.0
+    assert score_citation_accuracy(["GDPR Art 5.1.e"], expected) == 1.0
+    assert score_citation_accuracy(["Article 5(1)(e)"], expected) == 1.0
+
+    # When annotated, faithfulness returns the accuracy score, not the structural 1.0.
+    evidence = [{"statement": "x", "evidence_text": "y"}]
+    assert score_faithfulness("Art. 5(1)(e) applies.", ["Art. 5(1)(e)"], evidence, expected) == 1.0
+
+
+def test_score_citation_accuracy_mismatch_scores_zero() -> None:
+    expected = ["Article 5(1)(e)"]
+    # Wrong article -> canonical keys differ ("8" vs "51e") -> 0.0, not a false 1.0.
+    assert score_citation_accuracy(["Article 8"], expected) == 0.0
+
+    # Partial: one of two expected citations found -> 0.5.
+    assert score_citation_accuracy(["Art. 5(1)(e)"], ["Article 5(1)(e)", "Article 8"]) == 0.5
+
+    # Faithfulness reflects the mismatch even though citations+evidence are present.
+    evidence = [{"statement": "x", "evidence_text": "y"}]
+    assert score_faithfulness("Article 8 applies.", ["Article 8"], evidence, expected) == 0.0
+
+
+_ABSTENTION_QUESTION = {
+    "id": "stress_001",
+    "category": "stress",
+    "question": "Does the Martian Data Act permit exporting brain-implant telemetry?",
+    "expected_regulations": [],
+    "expected_concepts": [],
+    "expected_evidence_keywords": [],
+    "expected_citations": [],
+    "expects_abstention": True,
+}
+
+
+def test_expects_abstention_correct_scores_one() -> None:
+    # System correctly abstains (insufficient_evidence verdict) -> pass.
+    result = {
+        "answer": NO_EVIDENCE_MESSAGE,
+        "evidence": [],
+        "determination": {"verdict": "insufficient_evidence", "obligations": [], "summary": ""},
+        "debug": {"top_rows": []},
+    }
+    row = build_result_row(_ABSTENTION_QUESTION, result, latency_seconds=1.0)
+
+    assert row["expects_abstention"] is True
+    assert row["abstention_correct"] is True
+    # Retrieval/answer/citation axes are meaningless here -> pass/fail only.
+    assert row["overall_score"] == 1.0
+
+
+def test_expects_abstention_incorrect_scores_zero() -> None:
+    # System answers with a confident verdict when it should have abstained -> fail.
+    result = {
+        "answer": "The Martian Data Act imposes export obligations under Article 5.",
+        "evidence": [
+            {
+                "statement": "export rule",
+                "source_group": "gdpr",
+                "source_document": "gdpr.pdf",
+                "evidence_text": "Controllers must document transfers.",
+                "citation": "Article 5",
+            }
+        ],
+        "determination": {"verdict": "obligations_apply", "obligations": ["x"], "summary": "y"},
+        "debug": {"top_rows": []},
+    }
+    row = build_result_row(_ABSTENTION_QUESTION, result, latency_seconds=1.0)
+
+    assert row["expects_abstention"] is True
+    assert row["abstention_correct"] is False
+    assert row["overall_score"] == 0.0
+
+
+def test_non_abstention_question_unaffected() -> None:
+    # A normal question (expects_abstention absent) keeps the weighted-blend score
+    # and is never pinned to 0.0/1.0 by the abstention branch.
+    question = {
+        "id": "gdpr_x",
+        "category": "gdpr_only",
+        "question": "What oversight applies?",
+        "expected_regulations": ["GDPR", "EU AI Act"],
+        "expected_concepts": ["HumanOversightRequirement", "AutomatedDecisionMaking"],
+        "expected_evidence_keywords": ["human oversight", "data minimization"],
+        "expected_citations": [],
+    }
+    result = {
+        "answer": "The EU AI Act Article 14 requires human oversight.",
+        "evidence": [
+            {
+                "statement": "oversight",
+                "source_group": "eu_ai_act",
+                "source_document": "eu_ai_act.pdf",
+                "evidence_text": "High-risk AI systems require human oversight.",
+                "citation": "Article 14",
+            },
+            {
+                "statement": "gdpr",
+                "source_group": "gdpr",
+                "source_document": "gdpr.pdf",
+                "evidence_text": "GDPR safeguards personal data.",
+                "citation": "Article 9",
+            },
+        ],
+        "determination": {"verdict": "obligations_apply", "obligations": ["x"], "summary": "y"},
+        "debug": {"top_rows": []},
+    }
+    row = build_result_row(question, result, latency_seconds=1.0)
+
+    assert row["expects_abstention"] is False
+    assert row["abstention_correct"] is False
+    # Partial coverage -> a genuine weighted score, not the abstention pass/fail.
+    assert 0.0 < row["overall_score"] < 1.0
 
 
 def test_alias_fallback_only_when_provenance_absent() -> None:
