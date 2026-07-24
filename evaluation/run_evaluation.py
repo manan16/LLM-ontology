@@ -14,11 +14,38 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from rag.retrieval_service import retrieve as retrieve_by_mode
 from web.services.rag_service import answer_question
 
 
 DEFAULT_INPUT = Path(__file__).resolve().parent / "golden_questions.json"
 DEFAULT_OUTPUT_DIR = Path(__file__).resolve().parent / "results"
+
+# Retrieval strategies exposed via --mode. "hybrid" is the production path
+# (answer_question, full metrics); "semantic"/"graph" are retrieval-only ablation
+# modes routed through rag.retrieval_service.retrieve.
+RETRIEVAL_MODES = ("semantic", "graph", "hybrid")
+MODE_CHOICES = (*RETRIEVAL_MODES, "all")
+DEFAULT_MODE = "hybrid"
+
+# Sentinel for answer/determination-dependent fields under retrieval-only modes.
+# Deliberately NOT 0 -- a 0 would read as a failing score in the comparison table,
+# misrepresenting a metric that simply does not apply when no answer is generated.
+NOT_APPLICABLE = "not_applicable"
+
+# Fields that only have meaning when an answer (and determination) is generated,
+# i.e. the hybrid/production path. Under semantic/graph modes they are set to
+# NOT_APPLICABLE and excluded from overall_score.
+ANSWER_DEPENDENT_FIELDS = (
+    "answer",
+    "citations",
+    "citation_coverage",
+    "has_citations",
+    "answer_relevance_score",
+    "faithfulness_score",
+    "evidence_grounding",
+    "overall_score",
+)
 
 RESULT_COLUMNS = [
     "question_id",
@@ -58,6 +85,7 @@ RESULT_COLUMNS = [
     "status",
     "error",
     "notes",
+    "mode",
 ]
 
 REGULATION_ALIASES = {
@@ -98,25 +126,66 @@ def main() -> None:
     if args.max_questions:
         questions = questions[: args.max_questions]
 
-    args.output_dir.mkdir(parents=True, exist_ok=True)
+    modes = RETRIEVAL_MODES if args.mode == "all" else (args.mode,)
+    summaries: dict[str, float | None] = {}
+    for mode in modes:
+        # For a single-mode run (including the default hybrid) results go straight
+        # into --output-dir, preserving today's behaviour. Only `--mode all` fans
+        # out into results/<mode>/ subdirectories.
+        if args.mode == "all":
+            print(f"\n=== Mode: {mode} ===")
+            output_dir = args.output_dir / mode
+        else:
+            output_dir = args.output_dir
+        results = run_mode(questions, mode, output_dir, args)
+        summaries[mode] = mean_metric(results, "retrieval_recall")
+
+    # retrieval_recall is the one axis every mode produces, so it is the comparable
+    # cross-mode summary (overall_score blends answer axes only present for hybrid).
+    print("\n=== Per-mode summary (mean retrieval_recall) ===")
+    for mode in modes:
+        print(f"{mode}: mean_retrieval_recall={summaries[mode]}")
+
+
+def run_mode(
+    questions: list[dict[str, Any]],
+    mode: str,
+    output_dir: Path,
+    args: argparse.Namespace,
+) -> list[dict[str, Any]]:
+    output_dir.mkdir(parents=True, exist_ok=True)
     if args.append:
-        results = load_existing_results(args.output_dir)
+        results = load_existing_results(output_dir)
     else:
-        clear_outputs(args.output_dir)
+        clear_outputs(output_dir)
         results = []
     total = len(questions)
     for index, question in enumerate(questions, start=1):
         question_id = clean_text(question.get("id")) or f"question_{index}"
         print(f"[{index}/{total}] Evaluating {question_id}: {clean_text(question.get('question'))}")
-        row = evaluate_question(question, limit=args.limit, model=args.model, include_context=args.include_context)
+        row = evaluate_question(
+            question,
+            limit=args.limit,
+            model=args.model,
+            include_context=args.include_context,
+            mode=mode,
+        )
         results.append(row)
-        write_results(results, args.output_dir)
+        write_results(results, output_dir)
         print(
             f"[{index}/{total}] {question_id} status={row['status']} "
             f"overall_score={row['overall_score']} latency_seconds={row['latency_seconds']}"
         )
-    write_results(results, args.output_dir)
-    print(f"Wrote {len(results)} evaluation rows to {args.output_dir}")
+    write_results(results, output_dir)
+    print(f"Wrote {len(results)} evaluation rows to {output_dir}")
+    return results
+
+
+def mean_metric(results: list[dict[str, Any]], key: str) -> float | None:
+    values = [row.get(key) for row in results if isinstance(row.get(key), (int, float)) and not isinstance(row.get(key), bool)]
+    if not values:
+        return None
+    return round(sum(values) / len(values), 3)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -124,6 +193,16 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT, help="Path to golden questions JSON.")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR, help="Directory for CSV/Markdown/JSON outputs.")
     parser.add_argument("--limit", type=int, default=30, help="Maximum retrieved graph rows per question.")
+    parser.add_argument(
+        "--mode",
+        choices=MODE_CHOICES,
+        default=DEFAULT_MODE,
+        help=(
+            "Retrieval strategy: 'hybrid' (default, production answer_question path with full "
+            "metrics), 'semantic' or 'graph' (retrieval-only ablation), or 'all' to run every "
+            "mode over the same questions, writing each to results/<mode>/."
+        ),
+    )
     parser.add_argument("--model", help="Optional Ollama model override for answer generation.")
     parser.add_argument("--max-questions", type=int, help="Evaluate only the first N questions.")
     parser.add_argument("--question-id", action="append", help="Evaluate a specific question id. Can be repeated.")
@@ -150,6 +229,7 @@ def evaluate_question(
     limit: int = 30,
     model: str | None = None,
     include_context: bool = False,
+    mode: str = DEFAULT_MODE,
 ) -> dict[str, Any]:
     started_at = perf_counter()
     error = ""
@@ -157,19 +237,87 @@ def evaluate_question(
     result: dict[str, Any] = EMPTY_RESULT
 
     try:
-        result = answer_question(
-            str(question_item.get("question") or ""),
-            limit=limit,
-            show_context=include_context,
-            debug=True,
-            model=model,
-        )
+        if mode == "hybrid":
+            result = answer_question(
+                str(question_item.get("question") or ""),
+                limit=limit,
+                show_context=include_context,
+                debug=True,
+                model=model,
+            )
+        else:
+            # Retrieval-only ablation (semantic / graph): no answer generation,
+            # no determination. Route through the unified retrieval service and
+            # adapt its rows into the result shape build_result_row consumes.
+            result = _retrieval_only_result(question_item, mode, limit, include_context)
     except Exception as exc:  # pragma: no cover - exercised in real integration runs
         status = "error"
         error = f"{type(exc).__name__}: {exc}"
 
     latency_seconds = round(perf_counter() - started_at, 3)
-    return build_result_row(question_item, result, latency_seconds, status, error)
+    return build_result_row(question_item, result, latency_seconds, status, error, mode=mode)
+
+
+def _retrieval_only_result(
+    question_item: dict[str, Any],
+    mode: str,
+    limit: int,
+    include_context: bool,
+) -> dict[str, Any]:
+    """Run a retrieval-only mode and shape it like an answer_question() result.
+
+    Only the retrieval-side fields are populated (``evidence`` derived from
+    ``RetrievalResult.rows`` and ``debug``); ``answer`` is empty because these
+    modes generate no answer. build_result_row (called with the same ``mode``)
+    marks the answer/determination-dependent fields as NOT_APPLICABLE.
+    """
+    retrieval = retrieve_by_mode(
+        str(question_item.get("question") or ""),
+        mode=mode,
+        top_k=limit,
+        debug=True,
+    )
+    debug = dict(retrieval.debug) if isinstance(retrieval.debug, dict) else {}
+    debug.setdefault("top_rows", [])
+    result: dict[str, Any] = {
+        "answer": "",
+        "evidence": _rows_to_evidence(retrieval.rows),
+        "context": "",
+        "debug": debug,
+        "metrics": {},
+    }
+    if include_context:
+        result["context"] = "\n\n".join(
+            clean_text(item.get("evidence_text")) for item in result["evidence"] if clean_text(item.get("evidence_text"))
+        )
+    return result
+
+
+def _rows_to_evidence(rows: Any) -> list[dict[str, Any]]:
+    """Adapt RetrievalResult.rows into the evidence-item shape metrics expect.
+
+    Coalesces ``source_chunk_text`` (semantic rows) into ``evidence_text`` and
+    keeps the provenance (source_group/source_document) the retrieval metrics use.
+    """
+    evidence: list[dict[str, Any]] = []
+    if not isinstance(rows, list):
+        return evidence
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        text = clean_text(row.get("evidence_text")) or clean_text(row.get("source_chunk_text"))
+        evidence.append(
+            {
+                "statement": clean_text(row.get("statement_name")) or clean_text(row.get("related_name")) or "Unknown",
+                "source_group": row.get("source_group"),
+                "source_document": row.get("source_document"),
+                "evidence_text": text,
+                "citation": clean_text(row.get("citation")),
+                "score": row.get("score"),
+                "semantic": bool(row.get("semantic")),
+            }
+        )
+    return evidence
 
 
 def build_result_row(
@@ -178,6 +326,7 @@ def build_result_row(
     latency_seconds: float,
     status: str = "ok",
     error: str = "",
+    mode: str = DEFAULT_MODE,
 ) -> dict[str, Any]:
     answer = clean_text(result.get("answer"))
     evidence = result.get("evidence") if isinstance(result.get("evidence"), list) else []
@@ -247,9 +396,19 @@ def build_result_row(
         3,
     )
 
+    # Answer/determination-dependent axes only apply to the hybrid (production)
+    # path. Under semantic/graph modes they are marked NOT_APPLICABLE so the
+    # comparison table never reads them as failing (0) scores; overall_score is
+    # likewise NOT_APPLICABLE because it blends those answer axes.
+    answer_dependent = mode == "hybrid"
+
+    def answer_field(value: Any) -> Any:
+        return value if answer_dependent else NOT_APPLICABLE
+
     row = {
         "question_id": clean_text(question_item.get("id")),
         "category": clean_text(question_item.get("category")),
+        "mode": mode,
         "question": clean_text(question_item.get("question")),
         "expected_regulations": expected_regulations,
         "retrieved_regulations": retrieved_regulations,
@@ -261,8 +420,8 @@ def build_result_row(
         "expected_evidence_keywords": expected_keywords,
         "matched_evidence_keywords": matched_keywords,
         "missed_evidence_keywords": missed_keywords,
-        "answer": answer,
-        "citations": citations,
+        "answer": answer_field(answer),
+        "citations": answer_field(citations),
         "source_documents": source_documents,
         "explicit_regulations": list_values(plan_debug.get("explicit_regulations")),
         "inferred_regulations": list_values(plan_debug.get("inferred_regulations")),
@@ -275,12 +434,12 @@ def build_result_row(
         "concept_coverage": concept_coverage,
         "evidence_keyword_coverage": keyword_coverage,
         "regulation_coverage": regulation_coverage,
-        "citation_coverage": citation_coverage,
-        "has_citations": has_citations,
-        "answer_relevance_score": answer_relevance,
-        "faithfulness_score": faithfulness,
-        "evidence_grounding": evidence_grounding,
-        "overall_score": overall_score,
+        "citation_coverage": answer_field(citation_coverage),
+        "has_citations": answer_field(has_citations),
+        "answer_relevance_score": answer_field(answer_relevance),
+        "faithfulness_score": answer_field(faithfulness),
+        "evidence_grounding": answer_field(evidence_grounding),
+        "overall_score": answer_field(overall_score),
         "latency_seconds": latency_seconds,
         "status": status,
         "error": error,
