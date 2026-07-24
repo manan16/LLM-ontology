@@ -9,14 +9,12 @@ import surface: every name previously importable as ``from rag.retriever import 
 
 from __future__ import annotations
 
-from rag.retriever.core import (
-    _COMMON_RETURN,
-    GraphRetriever,
+from rag.retriever.core import GraphRetriever, expand_chunk_entities, extract_query_terms
+from rag.retriever.routes import _COMMON_RETURN
+from rag.retriever.scoring import (
     _dedupe_rows,
     _is_evidence_expansion_seed,
     _select_final_rows,
-    expand_chunk_entities,
-    extract_query_terms,
 )
 
 __all__ = [
