@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -71,6 +72,53 @@ def load_evaluation_report(path: Path | None = None) -> dict[str, Any]:
         "metrics": COMPONENT_METRICS,
         "rows": prepared,
     }
+
+
+def load_ablation_comparison(results_dir: Path | None = None) -> dict[str, Any] | None:
+    """Mean retrieval_recall per retrieval mode (semantic/graph/hybrid).
+
+    Reuses evaluation/compare_modes.py's loading + aggregation so the mean is
+    computed exactly like its SHARED_METRICS path (no duplicated logic). Reads
+    ``evaluation/results/<mode>/evaluation_results.json`` for each mode; returns
+    ``None`` (never raises) when none of the three files are present/populated,
+    so the template can render nothing.
+    """
+    # Reuse the aggregation module. Ensure the project root is importable first
+    # (compare_modes lives under evaluation/, a namespace package).
+    if str(_PROJECT_ROOT) not in sys.path:
+        sys.path.insert(0, str(_PROJECT_ROOT))
+    try:
+        from evaluation import compare_modes
+    except ImportError as exc:  # pragma: no cover - only if evaluation/ is absent
+        LOGGER.warning("Could not import evaluation.compare_modes: %s", exc)
+        return None
+
+    base = results_dir or compare_modes.DEFAULT_RESULTS_DIR
+    try:
+        results_by_mode = compare_modes.load_results(base)
+    except (OSError, json.JSONDecodeError) as exc:
+        LOGGER.warning("Could not read ablation results under %s: %s", base, exc)
+        return None
+
+    # Degrade to None when no mode produced any rows -- nothing to compare.
+    if not any(results_by_mode.get(mode) for mode in compare_modes.MODES):
+        LOGGER.info("No ablation results found under %s", base)
+        return None
+
+    aggregation = compare_modes.aggregate(results_by_mode)
+    overall_metrics = aggregation["overall"]["metrics"]
+    overall_counts = aggregation["overall"]["counts"]
+
+    modes = [
+        {
+            "mode": mode,
+            "label": mode.capitalize(),
+            "retrieval_recall": overall_metrics.get(mode, {}).get("retrieval_recall"),
+            "count": overall_counts.get(mode, 0),
+        }
+        for mode in compare_modes.MODES
+    ]
+    return {"modes": modes}
 
 
 def _unavailable(path: Path, message: str) -> dict[str, Any]:

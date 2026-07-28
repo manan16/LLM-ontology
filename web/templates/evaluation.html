@@ -57,6 +57,16 @@
           <div class="mcell"><div class="mcell-v" style="color:{{ 'var(--danger)' if report.summary.error_count else 'var(--good)' }}">{{ report.summary.error_count }}</div><div class="mcell-k">failed rows (status=error)</div></div>
         </div>
 
+        {# a2. Retrieval-mode comparison — omitted entirely when no ablation runs exist. #}
+        {% if ablation %}
+        <div class="sec-head"><span class="eyebrow">Retrieval mode comparison</span><span class="ln"></span><span class="eyebrow">mean retrieval_recall</span></div>
+        <div class="mgrid eval-summary">
+          {% for m in ablation.modes %}
+          <div class="mcell"><div class="mcell-v">{{ "%.3f"|format(m.retrieval_recall) if m.retrieval_recall is not none else "—" }}</div><div class="mcell-k">{{ m.label }} · mean recall</div></div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
         <!-- b. Category breakdown -->
         <div class="sec-head"><span class="eyebrow">Category breakdown</span><span class="ln"></span><span class="eyebrow">mean overall</span></div>
         <div class="eval-cats">

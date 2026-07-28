@@ -363,18 +363,23 @@
   }
 
   // ---- determination (backend-derived verdict / obligations / summary) -----
+  // Fixed colour-per-verdict mapping, keyed ONLY on the backend-supplied
+  // determination verdict (never derived client-side from answer text). Three
+  // fixed tones: teal for graph-confirmed states (obligations_apply /
+  // permitted_with_conditions), rust-orange for prohibited, gray for the
+  // insufficient_evidence / unavailable / unconfirmed system states.
   const VERDICT_META = {
-    obligations_apply:         { badge: "obligation",   label: "Obligations apply" },
-    permitted_with_conditions: { badge: "permit",       label: "Permitted · conditions" },
-    prohibited:                { badge: "prohibit",     label: "Prohibited" },
-    insufficient_evidence:     { badge: "insufficient", label: "Insufficient evidence" },
-    unavailable:               { badge: "insufficient", label: "Determination unavailable" },
-    unconfirmed:               { badge: "insufficient", label: "Unconfirmed · not in graph" },
+    obligations_apply:         { badge: "confirmed",  label: "Obligations apply" },
+    permitted_with_conditions: { badge: "confirmed",  label: "Permitted · conditions" },
+    prohibited:                { badge: "prohibited", label: "Prohibited" },
+    insufficient_evidence:     { badge: "muted",      label: "Insufficient evidence" },
+    unavailable:               { badge: "muted",      label: "Determination unavailable" },
+    unconfirmed:               { badge: "muted",      label: "Unconfirmed · not in graph" },
   };
   function determinationBlock(vm) {
     const d = vm.determination;
     if (!d || !d.verdict) return "";
-    const meta = VERDICT_META[d.verdict] || { badge: "insufficient", label: d.verdict };
+    const meta = VERDICT_META[d.verdict] || { badge: "muted", label: d.verdict };
     const obligations = Array.isArray(d.obligations) ? d.obligations : [];
     const summary = d.summary ? `<span class="verdict-text">${inline(d.summary)}</span>` : "";
     const obs = obligations.length

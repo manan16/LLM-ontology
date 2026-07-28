@@ -360,11 +360,12 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.03em;
   padding: 5px 10px; border-radius: var(--radius-sm); text-transform: uppercase; white-space: nowrap; flex: none;
 }
-.verdict-badge.permit { background: rgba(70,192,138,0.16); color: var(--good); }
-.verdict-badge.obligation { background: var(--accent-soft); color: var(--accent); }
-.verdict-badge.nuance { background: rgba(224,179,65,0.16); color: var(--warn); }
-.verdict-badge.prohibit { background: rgba(224,104,107,0.16); color: var(--danger); }
-.verdict-badge.insufficient { background: rgba(107,117,137,0.16); color: var(--fg-2); }
+/* Fixed determination-verdict tones (see VERDICT_META in kep-app.js):
+   teal = graph-confirmed, rust-orange = prohibited, gray = insufficient/
+   unavailable/unconfirmed. Colour is fixed per verdict, not styled generically. */
+.verdict-badge.confirmed { background: var(--accent-soft); color: var(--accent); }
+.verdict-badge.prohibited { background: rgba(180,83,15,0.16); color: var(--accent-2); }
+.verdict-badge.muted { background: rgba(107,117,137,0.16); color: var(--fg-2); }
 .verdict-text { font-size: 14.5px; font-weight: 600; color: var(--fg-0); }
 .determination-obs { margin-top: 14px; }
 
