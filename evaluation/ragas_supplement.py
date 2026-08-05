@@ -50,13 +50,14 @@ def main() -> None:
     output_path = results_dir / OUTPUT_FILENAME
 
     rows = load_rows(input_path)
-    samples = [build_sample(row) for row in rows]
+    samples = [build_sample(row, max_contexts=args.max_contexts) for row in rows]
     settings = get_settings()
 
     llm, embeddings, metrics = build_ragas_components(
         settings,
         model=args.model,
         embedding_model=args.embedding_model,
+        max_tokens=args.max_tokens,
     )
 
     # Fail fast: answer_relevancy needs a working embedding model. Probe it once so a
@@ -64,12 +65,30 @@ def main() -> None:
     # question's scores across the whole batch.
     verify_embedding_model(embeddings, args.embedding_model or settings.ragas_embedding_model)
 
+    previous_by_id: dict[str, dict[str, Any]] = {}
+    if args.resume and output_path.exists():
+        with output_path.open("r", encoding="utf-8") as handle:
+            for row in json.load(handle):
+                if isinstance(row, dict) and row.get("question_id"):
+                    previous_by_id[row["question_id"]] = row
+
     results: list[dict[str, Any]] = []
     total = len(samples)
     for index, sample in enumerate(samples, start=1):
         question_id = sample["question_id"]
+
+        previous = previous_by_id.get(question_id)
+        if previous is not None and not previous.get("error"):
+            print(f"[{index}/{total}] {question_id} already scored (--resume) — skipping")
+            results.append(previous)
+            write_results(results, output_path)
+            continue
+
         print(f"[{index}/{total}] RAGAS scoring {question_id or '(no id)'} ...")
-        scores, error = score_sample(sample, llm, embeddings, metrics)
+        scores, error = score_sample(
+            sample, llm, embeddings, metrics,
+            max_workers=args.max_workers, timeout=args.timeout,
+        )
         if error:
             print(f"[{index}/{total}] {question_id} FAILED: {error}")
         results.append(
@@ -105,6 +124,44 @@ def build_parser() -> argparse.ArgumentParser:
         "--embedding-model",
         help="Embedding model served by Ollama for answer_relevancy. Defaults to Settings.ragas_embedding_model.",
     )
+    parser.add_argument(
+        "--max-contexts",
+        type=int,
+        default=8,
+        help=(
+            "Cap the number of retrieved-evidence contexts passed to RAGAS per question "
+            "(default 8). Faithfulness/ContextPrecision issue a judge-LLM call per "
+            "context/claim; some questions retrieve ~40 evidence rows, which is enough "
+            "load against a local Ollama instance to time out or return unparsable output."
+        ),
+    )
+    parser.add_argument(
+        "--max-workers",
+        type=int,
+        default=2,
+        help="RAGAS RunConfig max_workers (default 2). Lower than RAGAS's default of 16 "
+        "because a local single-instance Ollama server can't genuinely parallelise judge calls.",
+    )
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=300,
+        help="RAGAS RunConfig timeout in seconds per judge call (default 300, vs RAGAS's default 180).",
+    )
+    parser.add_argument(
+        "--max-tokens",
+        type=int,
+        default=4096,
+        help="Max completion tokens for the judge chat model (default 4096). Too low a "
+        "value causes LLMDidNotFinishException on longer answers/claim lists.",
+    )
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="If ragas_results.json already exists, keep rows that succeeded (error is "
+        "null) and only re-score questions that are missing or previously errored, "
+        "instead of re-scoring the whole batch from scratch.",
+    )
     return parser
 
 
@@ -120,10 +177,18 @@ def load_rows(input_path: Path) -> list[dict[str, Any]]:
     return [row for row in loaded if isinstance(row, dict)]
 
 
-def build_sample(row: dict[str, Any]) -> dict[str, Any]:
+def build_sample(row: dict[str, Any], max_contexts: int = 8) -> dict[str, Any]:
     """Project one deterministic result row into the RAGAS input shape.
 
-    contexts are the per-evidence ``evidence_text`` strings (empty ones dropped).
+    contexts are the per-evidence ``evidence_text`` strings (empty ones dropped),
+    capped at ``max_contexts`` and taken in retrieval-rank order (the hybrid
+    retriever already returns rows best-first). Faithfulness and
+    LLMContextPrecisionWithoutReference both need a judge-LLM call per
+    context/claim; some questions retrieve ~40 evidence rows, which is enough
+    concurrent/serial LLM load against a local Ollama instance to time out or
+    produce malformed output that RAGAS silently scores as NaN. Capping to the
+    top few contexts keeps the judge load tractable without changing what the
+    deterministic pipeline itself retrieved or answered from.
     ground_truth is intentionally omitted -- only reference-free metrics are used.
     """
     evidence = row.get("retrieved_evidence")
@@ -138,7 +203,7 @@ def build_sample(row: dict[str, Any]) -> dict[str, Any]:
         "question_id": _clean(row.get("question_id")),
         "question": _clean(row.get("question")),
         "answer": _clean(row.get("answer")),
-        "contexts": contexts,
+        "contexts": contexts[:max_contexts],
     }
 
 
@@ -146,6 +211,7 @@ def build_ragas_components(
     settings: Any,
     model: str | None = None,
     embedding_model: str | None = None,
+    max_tokens: int = 4096,
 ) -> tuple[Any, Any, list[Any]]:
     """Construct the Ollama-backed judge LLM, embeddings and reference-free metrics.
 
@@ -179,6 +245,7 @@ def build_ragas_components(
         base_url=base_url,
         api_key="ollama",  # placeholder; Ollama ignores the key
         temperature=0.0,
+        max_tokens=max_tokens,
     )
     embeddings = OpenAIEmbeddings(
         model=embed_model,
@@ -220,17 +287,32 @@ def score_sample(
     llm: Any,
     embeddings: Any,
     metrics: list[Any],
+    max_workers: int = 2,
+    timeout: int = 300,
 ) -> tuple[dict[str, float | None], str | None]:
     """Run RAGAS for a single question.
 
     Returns (scores, error). On any failure the scores map to None and the error
     message is captured so the caller can record it and continue the batch.
+
+    max_workers/timeout feed a RunConfig tuned for a local, single-instance Ollama
+    server: RAGAS's default (max_workers=16, timeout=180) assumes a backend that
+    can genuinely parallelise requests. A local Ollama server serving one model
+    effectively serialises generation regardless of how many requests are in
+    flight, so 16 concurrent judge calls just queue up and start timing out --
+    which is consistent with Faithfulness/ContextPrecision (many judge calls per
+    question) failing while ResponseRelevancy (one call, no context dependency)
+    succeeds. raise_exceptions=True additionally stops RAGAS's default behaviour
+    of catching a per-metric failure internally and scoring it NaN with no
+    indication anything went wrong -- the real exception now propagates here and
+    gets recorded in this question's ``error`` field instead of vanishing.
     """
     empty: dict[str, float | None] = {key: None for key in OUTPUT_METRIC_KEYS}
     if not sample["answer"] or not sample["contexts"]:
         return empty, "missing answer or contexts"
     try:
         from ragas import EvaluationDataset, SingleTurnSample, evaluate
+        from ragas.run_config import RunConfig
 
         dataset = EvaluationDataset(
             samples=[
@@ -241,7 +323,15 @@ def score_sample(
                 )
             ]
         )
-        result = evaluate(dataset=dataset, metrics=metrics, llm=llm, embeddings=embeddings)
+        run_config = RunConfig(max_workers=max_workers, timeout=timeout)
+        result = evaluate(
+            dataset=dataset,
+            metrics=metrics,
+            llm=llm,
+            embeddings=embeddings,
+            run_config=run_config,
+            raise_exceptions=True,
+        )
         return _extract_scores(result, metrics), None
     except Exception as exc:  # noqa: BLE001 - isolate per-question failures
         return empty, f"{type(exc).__name__}: {exc}"

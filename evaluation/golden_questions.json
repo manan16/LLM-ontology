@@ -306,5 +306,142 @@
     "expected_citations": [],
     "expects_abstention": false,
     "notes": "Should retrieve transparency and explanation evidence for mental-health diagnostics."
+  },
+  {
+    "id": "mh_009",
+    "category": "mental_health_cross_regulation",
+    "question": "What breach or incident notification obligations arise if a mental health diagnostic AI system suffers a data security incident?",
+    "expected_regulations": ["GDPR", "HIPAA", "EU AI Act"],
+    "expected_concepts": [
+      "SecurityIncident",
+      "PersonalDataBreach",
+      "ProtectedHealthInformation",
+      "MentalHealthData",
+      "BreachNotification",
+      "IncidentReporting",
+      "HighRiskAISystem",
+      "Regulator"
+    ],
+    "expected_evidence_keywords": [
+      "breach",
+      "security incident",
+      "notification",
+      "protected health information",
+      "mental health",
+      "incident reporting",
+      "supervisory authority"
+    ],
+    "expected_citations": [],
+    "expects_abstention": false,
+    "notes": "Should retrieve GDPR breach notification (Art 33/34), the HIPAA breach notification rule, and EU AI Act incident-reporting duties for high-risk AI systems -- a distinct angle from mh_001 (general obligations)."
+  },
+  {
+    "id": "mh_010",
+    "category": "mental_health_cross_regulation",
+    "question": "What rights does a patient have to access or correct their own records generated or used by a mental health diagnostic AI system?",
+    "expected_regulations": ["GDPR", "HIPAA", "EU AI Act"],
+    "expected_concepts": [
+      "DataSubjectRights",
+      "RightOfAccess",
+      "IndividualRight",
+      "ProtectedHealthInformation",
+      "MentalHealthData",
+      "TransparencyRequirement",
+      "InstructionsForUse"
+    ],
+    "expected_evidence_keywords": [
+      "right of access",
+      "individual right",
+      "correct",
+      "protected health information",
+      "mental health",
+      "transparency",
+      "data subject"
+    ],
+    "expected_citations": [],
+    "expects_abstention": false,
+    "notes": "Should retrieve GDPR data-subject access/rectification rights, the HIPAA individual right of access, and EU AI Act transparency/instructions-for-use provisions supporting those rights -- patient-facing rights, distinct from mh_008's design-time transparency angle."
+  },
+  {
+    "id": "mh_011",
+    "category": "mental_health_cross_regulation",
+    "question": "What obligations govern the relationship between a hospital and a third-party vendor supplying a mental health diagnostic AI system?",
+    "expected_regulations": ["GDPR", "HIPAA", "EU AI Act"],
+    "expected_concepts": [
+      "Controller",
+      "Processor",
+      "BusinessAssociate",
+      "CoveredEntity",
+      "Provider",
+      "Deployer",
+      "DataProcessingAgreement",
+      "BusinessAssociateAgreement"
+    ],
+    "expected_evidence_keywords": [
+      "controller",
+      "processor",
+      "business associate",
+      "covered entity",
+      "provider",
+      "deployer",
+      "agreement"
+    ],
+    "expected_citations": [],
+    "expects_abstention": false,
+    "notes": "Should retrieve GDPR controller/processor obligations, HIPAA business-associate-agreement duties, and EU AI Act provider/deployer role obligations -- an inter-organisational-relationship angle not covered by any existing question."
+  },
+  {
+    "id": "mh_012",
+    "category": "mental_health_cross_regulation",
+    "question": "How should data retention be handled for a mental health diagnostic AI system given GDPR storage limitation alongside EU AI Act logging requirements?",
+    "expected_regulations": ["GDPR", "HIPAA", "EU AI Act"],
+    "expected_concepts": [
+      "StorageLimitation",
+      "RightToErasure",
+      "RecordKeeping",
+      "LoggingRequirement",
+      "ProtectedHealthInformation",
+      "MentalHealthData",
+      "HighRiskAISystem"
+    ],
+    "expected_evidence_keywords": [
+      "storage limitation",
+      "erasure",
+      "record keeping",
+      "logs",
+      "protected health information",
+      "mental health",
+      "high-risk AI system"
+    ],
+    "expected_citations": [],
+    "expects_abstention": false,
+    "notes": "Should retrieve GDPR storage-limitation/erasure provisions, HIPAA retention duties, and EU AI Act automatic log-keeping requirements for high-risk systems, surfacing the retention-vs-erasure tension across all three regimes at once."
+  },
+  {
+    "id": "mh_013",
+    "category": "mental_health_cross_regulation",
+    "question": "What obligations apply to the data used to train or validate a mental health diagnostic AI system before deployment?",
+    "expected_regulations": ["GDPR", "HIPAA", "EU AI Act"],
+    "expected_concepts": [
+      "TrainingData",
+      "DataGovernance",
+      "SpecialCategoryData",
+      "LawfulBasis",
+      "ProtectedHealthInformation",
+      "DataQuality",
+      "Deidentification"
+    ],
+    "expected_evidence_keywords": [
+      "training data",
+      "data governance",
+      "special category",
+      "lawful basis",
+      "protected health information",
+      "de-identification",
+      "validation"
+    ],
+    "expected_citations": [],
+    "expects_abstention": false,
+    "notes": "Should retrieve GDPR lawful-basis requirements for processing special-category data, HIPAA de-identification/authorization for research or model-development use of PHI, and EU AI Act Article 10 data-governance requirements for training/validation/testing data -- a development-time angle, distinct from the deployment-time focus of every existing question."
   }
 ]

@@ -73,9 +73,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 3.751,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 2.96,
     "status": "ok",
     "error": "",
     "notes": "Should retrieve GDPR data subject rights evidence.",
@@ -498,9 +501,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 0.959,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 0.753,
     "status": "ok",
     "error": "",
     "notes": "Should connect controller obligations to special category health data.",
@@ -924,9 +930,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 2.227,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 1.827,
     "status": "ok",
     "error": "",
     "notes": "Should retrieve GDPR Article 9 processing conditions.",
@@ -1342,9 +1351,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 1.51,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 1.626,
     "status": "ok",
     "error": "",
     "notes": "Should retrieve DPIA definition and trigger evidence.",
@@ -1751,9 +1763,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 1.061,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 1.207,
     "status": "ok",
     "error": "",
     "notes": "Should retrieve GDPR automated decision-making and profiling obligations.",
@@ -2171,9 +2186,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 0.875,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 0.725,
     "status": "ok",
     "error": "",
     "notes": "Should favor permission and exception evidence over authorization-required evidence.",
@@ -2595,9 +2613,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 1.415,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 1.503,
     "status": "ok",
     "error": "",
     "notes": "Should retrieve business associate obligations and related safeguards.",
@@ -3009,9 +3030,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 3.325,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 3.643,
     "status": "ok",
     "error": "",
     "notes": "Should retrieve HIPAA Security Rule safeguard evidence.",
@@ -3429,9 +3453,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 3.534,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 3.644,
     "status": "ok",
     "error": "",
     "notes": "Should retrieve individual rights under the HIPAA Privacy Rule.",
@@ -3847,9 +3874,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 2.815,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 2.896,
     "status": "ok",
     "error": "",
     "notes": "Should explain authorization as a permission mechanism and distinguish exceptions.",
@@ -4258,9 +4288,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 1.458,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 1.274,
     "status": "ok",
     "error": "",
     "notes": "Should retrieve concrete provider obligations for high-risk AI systems.",
@@ -4685,9 +4718,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 3.734,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 3.451,
     "status": "ok",
     "error": "",
     "notes": "Should retrieve deployer obligations and operational use requirements.",
@@ -5110,9 +5146,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 2.904,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 3.051,
     "status": "ok",
     "error": "",
     "notes": "Should retrieve technical documentation and record keeping evidence.",
@@ -5536,9 +5575,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 0.736,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 0.848,
     "status": "ok",
     "error": "",
     "notes": "Should retrieve human oversight requirements for high-risk AI systems.",
@@ -5962,9 +6004,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 1.117,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 1.231,
     "status": "ok",
     "error": "",
     "notes": "Should retrieve monitoring and incident follow-up obligations.",
@@ -6388,9 +6433,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 2.058,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 2.138,
     "status": "ok",
     "error": "",
     "notes": "Should retrieve evidence from GDPR and HIPAA and distinguish data concepts.",
@@ -6821,9 +6869,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 0.974,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 1.238,
     "status": "ok",
     "error": "",
     "notes": "Should retrieve privacy and AI governance evidence.",
@@ -7262,9 +7313,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 0.803,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 0.862,
     "status": "ok",
     "error": "",
     "notes": "Should test cross-regulation retrieval for a provider using patient data.",
@@ -7711,9 +7765,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 1.706,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 1.717,
     "status": "ok",
     "error": "",
     "notes": "Should retrieve actor definitions from all three regimes.",
@@ -8156,9 +8213,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 3.547,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 3.772,
     "status": "ok",
     "error": "",
     "notes": "Should retrieve documentation and evidence concepts across regulations.",
@@ -8601,9 +8661,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 2.588,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 2.642,
     "status": "ok",
     "error": "",
     "notes": "Question should retrieve evidence from all three regulations and connect it to the mental-health diagnostics use case.",
@@ -9045,9 +9108,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 0.631,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 0.684,
     "status": "ok",
     "error": "",
     "notes": "Should retrieve GDPR evidence and mental-health use-case context.",
@@ -9477,9 +9543,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 3.388,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 3.376,
     "status": "ok",
     "error": "",
     "notes": "Should retrieve HIPAA evidence for PHI and mental-health data context.",
@@ -9909,9 +9978,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 0.987,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 0.755,
     "status": "ok",
     "error": "",
     "notes": "Should retrieve high-risk AI requirements for a clinical diagnostic system.",
@@ -10349,9 +10421,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 1.616,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 1.653,
     "status": "ok",
     "error": "",
     "notes": "Should retrieve safeguards for outputs and regulated health data.",
@@ -10785,9 +10860,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 1.639,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 1.79,
     "status": "ok",
     "error": "",
     "notes": "Should retrieve EU AI Act oversight and GDPR human intervention evidence.",
@@ -11212,9 +11290,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 1.628,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 1.724,
     "status": "ok",
     "error": "",
     "notes": "Should retrieve data protection risk concepts linked to screening data.",
@@ -11646,9 +11727,12 @@
     "has_citations": "not_applicable",
     "answer_relevance_score": "not_applicable",
     "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
     "evidence_grounding": "not_applicable",
     "overall_score": "not_applicable",
-    "latency_seconds": 1.095,
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 1.587,
     "status": "ok",
     "error": "",
     "notes": "Should retrieve transparency and explanation evidence for mental-health diagnostics.",
@@ -12001,6 +12085,2299 @@
           "explainability",
           "meaningful information",
           "mental health"
+        ]
+      }
+    }
+  },
+  {
+    "question_id": "mh_009",
+    "category": "mental_health_cross_regulation",
+    "mode": "graph",
+    "question": "What breach or incident notification obligations arise if a mental health diagnostic AI system suffers a data security incident?",
+    "expected_regulations": [
+      "GDPR",
+      "HIPAA",
+      "EU AI Act"
+    ],
+    "retrieved_regulations": [
+      "GDPR",
+      "HIPAA",
+      "EU AI Act"
+    ],
+    "matched_regulations": [
+      "GDPR",
+      "HIPAA",
+      "EU AI Act"
+    ],
+    "missed_regulations": [],
+    "expected_concepts": [
+      "SecurityIncident",
+      "PersonalDataBreach",
+      "ProtectedHealthInformation",
+      "MentalHealthData",
+      "BreachNotification",
+      "IncidentReporting",
+      "HighRiskAISystem",
+      "Regulator"
+    ],
+    "matched_concepts": [
+      "ProtectedHealthInformation",
+      "HighRiskAISystem"
+    ],
+    "missed_concepts": [
+      "SecurityIncident",
+      "PersonalDataBreach",
+      "MentalHealthData",
+      "BreachNotification",
+      "IncidentReporting",
+      "Regulator"
+    ],
+    "expected_evidence_keywords": [
+      "breach",
+      "security incident",
+      "notification",
+      "protected health information",
+      "mental health",
+      "incident reporting",
+      "supervisory authority"
+    ],
+    "matched_evidence_keywords": [
+      "protected health information"
+    ],
+    "missed_evidence_keywords": [
+      "breach",
+      "security incident",
+      "notification",
+      "mental health",
+      "incident reporting",
+      "supervisory authority"
+    ],
+    "answer": "not_applicable",
+    "citations": "not_applicable",
+    "source_documents": [
+      "eu_ai_act.pdf",
+      "gdpr.pdf",
+      "hipaa.pdf"
+    ],
+    "explicit_regulations": [],
+    "inferred_regulations": [],
+    "target_source_documents": [],
+    "coverage_sources_present": [],
+    "coverage_sources_missing": [],
+    "mental_health_query": false,
+    "mental_health_intent_labels": [],
+    "retrieval_recall": 0.464,
+    "concept_coverage": 0.25,
+    "evidence_keyword_coverage": 0.143,
+    "regulation_coverage": 1.0,
+    "citation_coverage": "not_applicable",
+    "has_citations": "not_applicable",
+    "answer_relevance_score": "not_applicable",
+    "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
+    "evidence_grounding": "not_applicable",
+    "overall_score": "not_applicable",
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 4.743,
+    "status": "ok",
+    "error": "",
+    "notes": "Should retrieve GDPR breach notification (Art 33/34), the HIPAA breach notification rule, and EU AI Act incident-reporting duties for high-risk AI systems -- a distinct angle from mh_001 (general obligations).",
+    "retrieved_evidence": [
+      {
+        "statement": "Provide Safeguards Information",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "the measures and safeguards provided to protect the rights and freedoms of data subjects pursuant to this Regulation",
+        "citation": "this Regulation",
+        "score": 296.0,
+        "semantic": false
+      },
+      {
+        "statement": "Use Processors with Guarantees",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "when entrusting a processor with processing activities, the controller should use only processors providing sufficient guarantees, in particular in terms of expert knowledge, reliability and resources, to implement technical and organisational measures which will meet the requirements of this Regulation, including for the security of processing.",
+        "citation": "this Regulation",
+        "score": 284.0,
+        "semantic": false
+      },
+      {
+        "statement": "Criminal Justice Exception",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "The protection of natural persons with regard to the processing of personal data by competent authorities for the purposes of the prevention, investigation, detection or prosecution of criminal offences or the execution of criminal penalties, including the safeguarding against and the prevention of threats to public security and the free",
+        "citation": "GDPR",
+        "score": 266.0,
+        "semantic": false
+      },
+      {
+        "statement": "Business Associate Disclosure",
+        "source_group": "hipaa",
+        "source_document": "hipaa.pdf",
+        "evidence_text": "A Covered Entity may disclose PHI to a Business Associate and may allow a Business \nAssociate to create or receive PHI on its behalf, if the Covered Entity obtains satisfactory \nassurance that the Business Associate will appropriately safeguard the information.",
+        "citation": "A Covered Entity may disclose PHI to a Business Associate and may allow a Business \nAssociate to create or receive PHI on its behalf, if the Covered Entity obtains satisfactory \nassurance that the Business Associate will appropriately safeguard the information.",
+        "score": 224.0,
+        "semantic": false
+      },
+      {
+        "statement": "Minimum Necessary Rule",
+        "source_group": "hipaa",
+        "source_document": "hipaa.pdf",
+        "evidence_text": "When using or disclosing PHI or when requesting PHI from another Covered Entity, a \nCovered Entity must make reasonable efforts to limit protected health information to the \nminimum necessary to accomplish the intended purpose of the use, disclosure or request.",
+        "citation": "When using or disclosing PHI or when requesting PHI from another Covered Entity, a \nCovered Entity must make reasonable efforts to limit protected health information to the \nminimum necessary to accomplish the intended purpose of the use, disclosure or request.",
+        "score": 224.0,
+        "semantic": false
+      },
+      {
+        "statement": "Protected Health Information Use and Disclosure Restriction",
+        "source_group": "hipaa",
+        "source_document": "hipaa.pdf",
+        "evidence_text": "A Covered Entity may not use or disclose protected health information except as permitted or required under HIPAA.",
+        "citation": "",
+        "score": 202.0,
+        "semantic": false
+      },
+      {
+        "statement": "provider.provide.instructions.for.use",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "This is to ensure that the deplo yer is aware and takes them into account when using the high-r isk AI syste m.",
+        "citation": "provider",
+        "score": 615.0,
+        "semantic": false
+      },
+      {
+        "statement": "Adopt Appropriate Risk Management Measures",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "The risk-manag ement system should adop t the most appropr iate risk-manag ement measures in light of the state of the art in AI.",
+        "citation": "",
+        "score": 517.0,
+        "semantic": false
+      },
+      {
+        "statement": "Conformity assessment for high-risk AI systems",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "In order to ensure a high level of trustw orthiness of high-r isk AI systems, those systems should be subject to a conf ormity assessment prior to their placing on th",
+        "citation": "",
+        "score": 550.0,
+        "semantic": false
+      },
+      {
+        "statement": "post-market monitoring",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "implementing post-market monitoring",
+        "citation": "",
+        "score": 520.0,
+        "semantic": false
+      },
+      {
+        "statement": "Consider Cybersecurity Risks in Assessment",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "the assessment of the cybersecur ity risks, associated to a product with digital elements classif ied as high-r isk AI syste m according to this Regulation, carried out under a regulation of the European Parliament and of the Council on horizontal cybersecur ity requirements for products with digital elements, should consider risks to the cyber resilience of an AI system as regard s attem pts by unauthor ised third",
+        "citation": "this Regulation",
+        "score": 568.0,
+        "semantic": false
+      },
+      {
+        "statement": "Human Oversight Design",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "High-r isk AI systems should be designed and developed in such a way that natural persons can oversee their \n        functioning, ensure that they are used as intended and that their imp acts are addressed over the system’s lifecy cle.",
+        "citation": "(73)",
+        "score": 539.0,
+        "semantic": false
+      },
+      {
+        "statement": "Provider Quality Management System",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "The provider should establish a sound quality management system, ensure the accom plishment of the req",
+        "citation": "(81)",
+        "score": 508.0,
+        "semantic": false
+      },
+      {
+        "statement": "requirements.apply.to.high_risk_ai_systems",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Requirements should apply to high-r isk AI syste ms as regard s risk management, the quality and relevance of data sets used, technical documentation and record-k eeping, transparency and the provision of information to deplo yers, human oversight, and robustness, accuracy and cybersecur ity.",
+        "citation": "high-r isk AI syste ms",
+        "score": 703.0,
+        "semantic": false
+      },
+      {
+        "statement": "consistent_performance",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "High-risk AI systems should perform consistently throughout their lifecycle and meet an appropriate level of accuracy , robustness and cybersecurity, in light of their intended purpose and in accordance with the generally acknowledged state of the art.",
+        "citation": "",
+        "score": 565.0,
+        "semantic": false
+      },
+      {
+        "statement": "conformity_assessment_procedure",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "The conf ormity assessment procedure provid ed by this Regulation should apply in relation to the essential cybersecurity requirements of a product with digital elements covered by a regulation of the European Parliament and of the Council on horizontal cybersecur ity requirements for products with digital elements and classified as a high-r isk AI system under this Regulation.",
+        "citation": "this Regulation",
+        "score": 563.0,
+        "semantic": false
+      },
+      {
+        "statement": "Implement Cybersecurity Measures",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "To ensure a level of cybersecur ity appropr iate to the risks, suitable measures, such as secur ity controls, should theref ore be take n by the provid ers of high-r isk AI systems, also taking into account as appropr iate the underlying ICT infrastr ucture.",
+        "citation": "this Regulation",
+        "score": 560.0,
+        "semantic": false
+      },
+      {
+        "statement": "cybersecurity_risk_assessment",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "ments for products with digital elements, should consider risks to the cyber resilience of an AI system as regard s attem pts by unauthor ised third parties to alter its use, behavio ur or perf ormance, including AI specif ic vulnerabilities such as data poisoning or adversar ial attacks, as well as, as relevant, risks to fundamental rights as required by this Regulation.",
+        "citation": "this Regulation",
+        "score": 551.0,
+        "semantic": false
+      },
+      {
+        "statement": "Technical Documentation",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Such information should include the general charact eristics, capabilities and limitations of the system, algor ithms, data, training, testing and validation processes used as well as documentation on the relevant risk-manag ement system and drawn in a clear and comp rehensive form.",
+        "citation": "",
+        "score": 547.0,
+        "semantic": false
+      },
+      {
+        "statement": "information_content_circumstances",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Those \nwould cover information on possible kno wn and foreseeable circumstances related to the use of the high-r isk AI \nsyste m, including deplo yer action that may influence syste m behavio ur and perfor mance, under which the AI system \ncan lead to risks to health, safety, and fundamental rights, on the changes that have been pre-deter mined and \nassessed for conf ormity by the provider and on the relevant human oversight measures, including the measures to \nfacilitate the inter pretation of the outputs of the AI syste m by the deplo yers.",
+        "citation": "OJ L, 12.7.2024\n20/144 ELI: http://data.europa.eu/eli/reg/2024/1689/oj",
+        "score": 544.0,
+        "semantic": false
+      },
+      {
+        "statement": "Technical Documentation and Records",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "This requires keeping records and the availability of technical documentation, containing information which is necessary to assess the compliance of the AI system with the relevant requirements and facilitate post market monitoring.",
+        "citation": "",
+        "score": 542.0,
+        "semantic": false
+      },
+      {
+        "statement": "Human Oversight Measures Identification",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "To \n        that end, appropr iate human oversight measures should be identifie d by the provider of the syste m before its placing \n        on the market or putting into service.",
+        "citation": "(73)",
+        "score": 539.0,
+        "semantic": false
+      },
+      {
+        "statement": "Instructions for Use Accessibility",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Instr uctions for use should be made available in a language which can be easily understood by targ et deplo yers, as \n        determined by the Member State concer ned.",
+        "citation": "(73)",
+        "score": 539.0,
+        "semantic": false
+      },
+      {
+        "statement": "deployer_record_keeping",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "certain other obliga tions should be provided for with regard to monitoring of the functioning of the AI systems and with regard to record-keeping, as appropr iate",
+        "citation": "",
+        "score": 537.0,
+        "semantic": false
+      },
+      {
+        "statement": "Operational Constraints",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "In particular , where appropr iate, such measures should guarantee that the \n        syste m is subject to in-built operational constraints that cannot be overr idden by the system itself and is responsive \n        to the human operat or, and that the natural persons to whom human oversight has been assigned have the necessar y \n        com petence, training and author ity to carry out that role.",
+        "citation": "(73)",
+        "score": 535.0,
+        "semantic": false
+      },
+      {
+        "statement": "Mitigation Measures",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "should determine measures to be taken in the case of a materialis ation of those risks, including for exam ple gove rnance arrangements in that specific context of use, such as arrang ements for human oversight according to the instr uctions of use or, complai nt handling and redress procedures",
+        "citation": "Article",
+        "score": 534.0,
+        "semantic": false
+      },
+      {
+        "statement": "Voluntary nature of cybersecurity scheme",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "This remains without prejudice to the voluntar y nature of that cybersecur ity scheme.",
+        "citation": "",
+        "score": 526.0,
+        "semantic": false
+      },
+      {
+        "statement": "human_oversight_competence",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "It is also essential, as appropriate, to ensure that high-risk AI systems include mechanisms to guide and inform a natural person to whom human oversight has been assigned to make informed decisions if, when and how to intervene in order to avoid negative consequences or risks, or stop the system if it does not perform as intended.",
+        "citation": "",
+        "score": 525.0,
+        "semantic": false
+      },
+      {
+        "statement": "cybersecurity protection",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "ensure an adequate level of cybersecurity protection for the model and its physical infrastructure",
+        "citation": "",
+        "score": 524.0,
+        "semantic": false
+      },
+      {
+        "statement": "Demonstrate Compliance via Cybersecurity Regulation",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "high-r isk AI syste ms which fall within the scope of a regulation of the European Parliament and of the Council on horizontal cybersecur ity requirements for products with digital elements, in accordance with that regulation may demonstrate com pliance with the cybersecur ity requirements of this Regulation by fulfilling the essential cybersecur ity requirements set out in that regulation.",
+        "citation": "that regulation",
+        "score": 523.0,
+        "semantic": false
+      }
+    ],
+    "retrieval_debug": {
+      "mode": "graph",
+      "row_count": 30,
+      "query_plan": {
+        "category": "compliance_question",
+        "intent": "obligations",
+        "terms": [
+          "ai system",
+          "mental health diagnostic ai system",
+          "diagnostic ai",
+          "obligation",
+          "notification",
+          "breach",
+          "incident",
+          "arise",
+          "mental",
+          "health",
+          "diagnostic",
+          "system",
+          "suffers",
+          "data",
+          "security"
+        ],
+        "phrases": [
+          "ai system",
+          "mental health diagnostic ai system",
+          "diagnostic ai",
+          "obligation",
+          "notification"
+        ]
+      },
+      "top_rows": []
+    },
+    "match_audit": {
+      "regulations": {
+        "expected": [
+          "GDPR",
+          "HIPAA",
+          "EU AI Act"
+        ],
+        "matched": [
+          "GDPR",
+          "HIPAA",
+          "EU AI Act"
+        ],
+        "missed": []
+      },
+      "concepts": {
+        "expected": [
+          "SecurityIncident",
+          "PersonalDataBreach",
+          "ProtectedHealthInformation",
+          "MentalHealthData",
+          "BreachNotification",
+          "IncidentReporting",
+          "HighRiskAISystem",
+          "Regulator"
+        ],
+        "matched": [
+          "ProtectedHealthInformation",
+          "HighRiskAISystem"
+        ],
+        "missed": [
+          "SecurityIncident",
+          "PersonalDataBreach",
+          "MentalHealthData",
+          "BreachNotification",
+          "IncidentReporting",
+          "Regulator"
+        ]
+      },
+      "evidence_keywords": {
+        "expected": [
+          "breach",
+          "security incident",
+          "notification",
+          "protected health information",
+          "mental health",
+          "incident reporting",
+          "supervisory authority"
+        ],
+        "matched": [
+          "protected health information"
+        ],
+        "missed": [
+          "breach",
+          "security incident",
+          "notification",
+          "mental health",
+          "incident reporting",
+          "supervisory authority"
+        ]
+      }
+    }
+  },
+  {
+    "question_id": "mh_010",
+    "category": "mental_health_cross_regulation",
+    "mode": "graph",
+    "question": "What rights does a patient have to access or correct their own records generated or used by a mental health diagnostic AI system?",
+    "expected_regulations": [
+      "GDPR",
+      "HIPAA",
+      "EU AI Act"
+    ],
+    "retrieved_regulations": [
+      "GDPR",
+      "EU AI Act"
+    ],
+    "matched_regulations": [
+      "GDPR",
+      "EU AI Act"
+    ],
+    "missed_regulations": [
+      "HIPAA"
+    ],
+    "expected_concepts": [
+      "DataSubjectRights",
+      "RightOfAccess",
+      "IndividualRight",
+      "ProtectedHealthInformation",
+      "MentalHealthData",
+      "TransparencyRequirement",
+      "InstructionsForUse"
+    ],
+    "matched_concepts": [
+      "TransparencyRequirement",
+      "InstructionsForUse"
+    ],
+    "missed_concepts": [
+      "DataSubjectRights",
+      "RightOfAccess",
+      "IndividualRight",
+      "ProtectedHealthInformation",
+      "MentalHealthData"
+    ],
+    "expected_evidence_keywords": [
+      "right of access",
+      "individual right",
+      "correct",
+      "protected health information",
+      "mental health",
+      "transparency",
+      "data subject"
+    ],
+    "matched_evidence_keywords": [
+      "transparency",
+      "data subject"
+    ],
+    "missed_evidence_keywords": [
+      "right of access",
+      "individual right",
+      "correct",
+      "protected health information",
+      "mental health"
+    ],
+    "answer": "not_applicable",
+    "citations": "not_applicable",
+    "source_documents": [
+      "eu_ai_act.pdf",
+      "gdpr.pdf"
+    ],
+    "explicit_regulations": [],
+    "inferred_regulations": [],
+    "target_source_documents": [],
+    "coverage_sources_present": [],
+    "coverage_sources_missing": [],
+    "mental_health_query": false,
+    "mental_health_intent_labels": [],
+    "retrieval_recall": 0.413,
+    "concept_coverage": 0.286,
+    "evidence_keyword_coverage": 0.286,
+    "regulation_coverage": 0.667,
+    "citation_coverage": "not_applicable",
+    "has_citations": "not_applicable",
+    "answer_relevance_score": "not_applicable",
+    "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
+    "evidence_grounding": "not_applicable",
+    "overall_score": "not_applicable",
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 1.744,
+    "status": "ok",
+    "error": "",
+    "notes": "Should retrieve GDPR data-subject access/rectification rights, the HIPAA individual right of access, and EU AI Act transparency/instructions-for-use provisions supporting those rights -- patient-facing rights, distinct from mh_008's design-time transparency angle.",
+    "retrieved_evidence": [
+      {
+        "statement": "requirements.apply.to.high_risk_ai_systems",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Requirements should apply to high-r isk AI syste ms as regard s risk management, the quality and relevance of data sets used, technical documentation and record-k eeping, transparency and the provision of information to deplo yers, human oversight, and robustness, accuracy and cybersecur ity.",
+        "citation": "high-r isk AI syste ms",
+        "score": 439.0,
+        "semantic": false
+      },
+      {
+        "statement": "Allow Training Without Data Transmission",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "allows training of AI systems without the transmission between parties or copying of the raw or structured data themselves",
+        "citation": "this Regulation",
+        "score": 434.0,
+        "semantic": false
+      },
+      {
+        "statement": "Technical Documentation and Records",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "This requires keeping records and the availability of technical documentation, containing information which is necessary to assess the compliance of the AI system with the relevant requirements and facilitate post market monitoring.",
+        "citation": "",
+        "score": 434.0,
+        "semantic": false
+      },
+      {
+        "statement": "marketing and profiling of children",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "Such specific protection should, in particular, apply to the use of personal data of children for the purposes of marketing or creating personality or user profiles and the collection of personal data with regard to children when using services offered directly to a child.",
+        "citation": "Article",
+        "score": 288.0,
+        "semantic": false
+      },
+      {
+        "statement": "Behavior Monitoring Assessment",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "In order to determine whether a processing activity can be considered to monitor the behaviour of data subjects, it should be ascertained whether natural persons are tracked on the internet including potential subsequent use of personal data processing techniques which consist of profiling a natural person, particularly in order to take decisions concerning her or him or for analysing or predicting her or his personal preferences, behaviours and attitudes.",
+        "citation": "",
+        "score": 270.0,
+        "semantic": false
+      },
+      {
+        "statement": "Intention to Offer Goods/Services",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "The processing of personal data of data subjects who are in the Union by a controller or processor not established in the Union should also be subject to this Regulation when it is related to the monitoring of the behaviour of such data subjects in so far as their behaviour takes place within the Union.",
+        "citation": "",
+        "score": 270.0,
+        "semantic": false
+      },
+      {
+        "statement": "document_human_oversight_measures",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "the human oversight measures referred to in Article 14, including the technical measures put in place to facilitate the inter pretation of the outputs of the high-r isk AI syste ms by the deplo yers",
+        "citation": "Article 14",
+        "score": 428.0,
+        "semantic": false
+      },
+      {
+        "statement": "Conformity assessment for high-risk AI systems",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "In order to ensure a high level of trustw orthiness of high-r isk AI systems, those systems should be subject to a conf ormity assessment prior to their placing on th",
+        "citation": "",
+        "score": 423.0,
+        "semantic": false
+      },
+      {
+        "statement": "Consider Cybersecurity Risks in Assessment",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "the assessment of the cybersecur ity risks, associated to a product with digital elements classif ied as high-r isk AI syste m according to this Regulation, carried out under a regulation of the European Parliament and of the Council on horizontal cybersecur ity requirements for products with digital elements, should consider risks to the cyber resilience of an AI system as regard s attem pts by unauthor ised third",
+        "citation": "this Regulation",
+        "score": 403.0,
+        "semantic": false
+      },
+      {
+        "statement": "Deemed Compliant with EU Declaration of Conformity",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "When high-r isk AI systems fulfil the essential requirements of a regulation of the European Parliament and of the Council on horizontal cybersecur ity requirements for products with digital elements, they should be deemed compliant with the cybersecur ity requirements set out in this Regulation in so far as the achievement of those requirements is demonstrated in the EU declaration of conf ormity or parts thereof issued under that regulation.",
+        "citation": "that regulation",
+        "score": 403.0,
+        "semantic": false
+      },
+      {
+        "statement": "Implement Cybersecurity Measures",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "To ensure a level of cybersecur ity appropr iate to the risks, suitable measures, such as secur ity controls, should theref ore be take n by the provid ers of high-r isk AI systems, also taking into account as appropr iate the underlying ICT infrastr ucture.",
+        "citation": "this Regulation",
+        "score": 403.0,
+        "semantic": false
+      },
+      {
+        "statement": "Technical Documentation - Monitoring",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Detailed information about the monitoring, functioning and control of the AI system, in particular with regard to: its capabilities and limitations in performance, including the degrees of accuracy for specific persons or groups of persons on which the system is intended to be used and the overall expected level of accuracy in relation to its intended purpose; the foreseeable unintended outcomes and sources of risks to health and safety , fundamental rights and discrimination in view of the intended purpose of the AI system; the human oversight measures needed in accordance with Article 14, including the technical measures put in place to facilitate the interpretation of the outputs of AI systems by the deployers; specifications on input data, as appropriate;",
+        "citation": "Article 14",
+        "score": 402.0,
+        "semantic": false
+      },
+      {
+        "statement": "High-risk AI system identification",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "it is appropriate to classify them as high-r isk if, in light of their intended purpose, they pose a high risk of harm to the health and safety or the fundamental rights of persons, taking into account both the sever ity of the possible harm and its probability of occur rence and they are used in a number of specifically pre-defi ned areas specified in this Regulation.",
+        "citation": "this Regulation",
+        "score": 399.0,
+        "semantic": false
+      },
+      {
+        "statement": "CE Marking Requirement",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "High-r isk AI systems should bear the CE marking to indicate their conf ormity with this Regulation so that they can \nmove freely within the intern al mark et.",
+        "citation": "OJ L, 12.7.2024\n32/144 ELI: http://data.europa.eu/eli/reg/2024/1689/oj",
+        "score": 396.0,
+        "semantic": false
+      },
+      {
+        "statement": "Digital CE Marking",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "For high-r isk AI systems only provid ed \ndigitally , a digital CE marking should be used.",
+        "citation": "OJ L, 12.7.2024\n32/144 ELI: http://data.europa.eu/eli/reg/2024/1689/oj",
+        "score": 396.0,
+        "semantic": false
+      },
+      {
+        "statement": "Physical CE Marking",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "For high-r isk AI systems embedded in a product, a physica l CE marking \nshould be affixed, and may be comp lemented by a digital CE marking.",
+        "citation": "OJ L, 12.7.2024\n32/144 ELI: http://data.europa.eu/eli/reg/2024/1689/oj",
+        "score": 396.0,
+        "semantic": false
+      },
+      {
+        "statement": "algorithm changes not substantial modification",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "however, changes occurring to the algorithm and the performance of AI systems which continue to ‘learn’ after being placed on the market or put into service, namely automatically adapting how functions are carried out, should not constitute a substantial modification, provided that those changes have been pre-determined by the provider and assessed at the moment of the conformity assessment.",
+        "citation": "",
+        "score": 392.0,
+        "semantic": false
+      },
+      {
+        "statement": "cooperate with high-risk AI system providers",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "the provider s of such syste ms should, irrespective of whether they may be used as high-r isk AI \nsyste ms as such by other providers or as compo nents of high-r isk AI syste ms and unless provid ed other wise under \nthis Regulation, closely cooperate with the providers of the relevant high-r isk AI systems to enable their compliance \nwith the relevant obligations under this Regulation and with the compet ent author ities established under this \nRegulation.",
+        "citation": "this Regulation",
+        "score": 391.0,
+        "semantic": false
+      },
+      {
+        "statement": "information_content_circumstances",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Those \nwould cover information on possible kno wn and foreseeable circumstances related to the use of the high-r isk AI \nsyste m, including deplo yer action that may influence syste m behavio ur and perfor mance, under which the AI system \ncan lead to risks to health, safety, and fundamental rights, on the changes that have been pre-deter mined and \nassessed for conf ormity by the provider and on the relevant human oversight measures, including the measures to \nfacilitate the inter pretation of the outputs of the AI syste m by the deplo yers.",
+        "citation": "OJ L, 12.7.2024\n20/144 ELI: http://data.europa.eu/eli/reg/2024/1689/oj",
+        "score": 391.0,
+        "semantic": false
+      },
+      {
+        "statement": "Human Oversight Design",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "High-r isk AI systems should be designed and developed in such a way that natural persons can oversee their \n        functioning, ensure that they are used as intended and that their imp acts are addressed over the system’s lifecy cle.",
+        "citation": "(73)",
+        "score": 389.0,
+        "semantic": false
+      },
+      {
+        "statement": "Human Oversight Measures Identification",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "To \n        that end, appropr iate human oversight measures should be identifie d by the provider of the syste m before its placing \n        on the market or putting into service.",
+        "citation": "(73)",
+        "score": 389.0,
+        "semantic": false
+      },
+      {
+        "statement": "enable_human_oversight",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "For the purpose of imp lementing paragraphs 1, 2 and 3, the high-r isk AI system shall be provided to the deplo yer in such a way that natural persons to whom human oversight is assigned are enabled, as appropr iate and propor tionate :",
+        "citation": "Article 14, 4",
+        "score": 388.0,
+        "semantic": false
+      },
+      {
+        "statement": "human_oversight_aim",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Human oversight shall aim to prevent or minimise the risks to health, safety or fundamental rights that may emerge when a high-r isk AI syste m is used in accordance with its intended purpose or under conditions of reasonably foreseeable misuse, in particular where such risks persist despite the application of other requirements set out in this Section.",
+        "citation": "Article 14, 2",
+        "score": 388.0,
+        "semantic": false
+      },
+      {
+        "statement": "provide information and assistance",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Those parties have an imp ortant role to play in the value chain towards the provid er of the high-r isk \nAI syste m into which their AI systems, tools, services, comp onents or processes are integrat ed, and should provide \nby written agreement this provid er with the necessar y information, capabilities, technical access and other assistance \nbased on the generally ackno wledged state of the art, in order to enable the provid er to fully comply with the",
+        "citation": "the generally ackno wledged state of the art",
+        "score": 388.0,
+        "semantic": false
+      },
+      {
+        "statement": "Mitigation Measures",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "should determine measures to be taken in the case of a materialis ation of those risks, including for exam ple gove rnance arrangements in that specific context of use, such as arrang ements for human oversight according to the instr uctions of use or, complai nt handling and redress procedures",
+        "citation": "Article",
+        "score": 385.0,
+        "semantic": false
+      },
+      {
+        "statement": "Operational Constraints",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "In particular , where appropr iate, such measures should guarantee that the \n        syste m is subject to in-built operational constraints that cannot be overr idden by the system itself and is responsive \n        to the human operat or, and that the natural persons to whom human oversight has been assigned have the necessar y \n        com petence, training and author ity to carry out that role.",
+        "citation": "(73)",
+        "score": 385.0,
+        "semantic": false
+      },
+      {
+        "statement": "human_oversight_description",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "a descr iption of the imp lementation of human oversight measures, according to the instr uctions for use",
+        "citation": "Article 13(e)",
+        "score": 385.0,
+        "semantic": false
+      },
+      {
+        "statement": "human_oversight_competence",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "It is also essential, as appropriate, to ensure that high-risk AI systems include mechanisms to guide and inform a natural person to whom human oversight has been assigned to make informed decisions if, when and how to intervene in order to avoid negative consequences or risks, or stop the system if it does not perform as intended.",
+        "citation": "",
+        "score": 381.0,
+        "semantic": false
+      },
+      {
+        "statement": "AI system characteristic",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "A key character istic of AI syste ms is their capability to infer . This capability to infer refers to the process of obtaining the outputs, such as predictions, cont ent, recommendations, or decisions, which can influence physica l and virt",
+        "citation": "",
+        "score": 380.0,
+        "semantic": false
+      },
+      {
+        "statement": "AI system definition",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "The notion of ‘AI system’ in this Regulation should be clearly defined and should be closely aligned with the work of international organisations working on AI to ensure legal certainty , facilitate inter national conve rgence and wide accep tance, while providing the flexibility to accommodate the rapid technologi cal developments in this field.",
+        "citation": "",
+        "score": 380.0,
+        "semantic": false
+      }
+    ],
+    "retrieval_debug": {
+      "mode": "graph",
+      "row_count": 30,
+      "query_plan": {
+        "category": "compliance_question",
+        "intent": "lookup",
+        "terms": [
+          "ai system",
+          "mental health diagnostic ai system",
+          "diagnostic ai",
+          "rights",
+          "does",
+          "patient",
+          "access",
+          "correct",
+          "own",
+          "records",
+          "generated",
+          "used",
+          "mental",
+          "health",
+          "diagnostic",
+          "system"
+        ],
+        "phrases": [
+          "ai system",
+          "mental health diagnostic ai system",
+          "diagnostic ai"
+        ]
+      },
+      "top_rows": []
+    },
+    "match_audit": {
+      "regulations": {
+        "expected": [
+          "GDPR",
+          "HIPAA",
+          "EU AI Act"
+        ],
+        "matched": [
+          "GDPR",
+          "EU AI Act"
+        ],
+        "missed": [
+          "HIPAA"
+        ]
+      },
+      "concepts": {
+        "expected": [
+          "DataSubjectRights",
+          "RightOfAccess",
+          "IndividualRight",
+          "ProtectedHealthInformation",
+          "MentalHealthData",
+          "TransparencyRequirement",
+          "InstructionsForUse"
+        ],
+        "matched": [
+          "TransparencyRequirement",
+          "InstructionsForUse"
+        ],
+        "missed": [
+          "DataSubjectRights",
+          "RightOfAccess",
+          "IndividualRight",
+          "ProtectedHealthInformation",
+          "MentalHealthData"
+        ]
+      },
+      "evidence_keywords": {
+        "expected": [
+          "right of access",
+          "individual right",
+          "correct",
+          "protected health information",
+          "mental health",
+          "transparency",
+          "data subject"
+        ],
+        "matched": [
+          "transparency",
+          "data subject"
+        ],
+        "missed": [
+          "right of access",
+          "individual right",
+          "correct",
+          "protected health information",
+          "mental health"
+        ]
+      }
+    }
+  },
+  {
+    "question_id": "mh_011",
+    "category": "mental_health_cross_regulation",
+    "mode": "graph",
+    "question": "What obligations govern the relationship between a hospital and a third-party vendor supplying a mental health diagnostic AI system?",
+    "expected_regulations": [
+      "GDPR",
+      "HIPAA",
+      "EU AI Act"
+    ],
+    "retrieved_regulations": [
+      "GDPR",
+      "EU AI Act"
+    ],
+    "matched_regulations": [
+      "GDPR",
+      "EU AI Act"
+    ],
+    "missed_regulations": [
+      "HIPAA"
+    ],
+    "expected_concepts": [
+      "Controller",
+      "Processor",
+      "BusinessAssociate",
+      "CoveredEntity",
+      "Provider",
+      "Deployer",
+      "DataProcessingAgreement",
+      "BusinessAssociateAgreement"
+    ],
+    "matched_concepts": [
+      "Controller",
+      "Processor",
+      "Provider",
+      "Deployer"
+    ],
+    "missed_concepts": [
+      "BusinessAssociate",
+      "CoveredEntity",
+      "DataProcessingAgreement",
+      "BusinessAssociateAgreement"
+    ],
+    "expected_evidence_keywords": [
+      "controller",
+      "processor",
+      "business associate",
+      "covered entity",
+      "provider",
+      "deployer",
+      "agreement"
+    ],
+    "matched_evidence_keywords": [
+      "controller",
+      "processor",
+      "provider",
+      "deployer"
+    ],
+    "missed_evidence_keywords": [
+      "business associate",
+      "covered entity",
+      "agreement"
+    ],
+    "answer": "not_applicable",
+    "citations": "not_applicable",
+    "source_documents": [
+      "eu_ai_act.pdf",
+      "gdpr.pdf"
+    ],
+    "explicit_regulations": [],
+    "inferred_regulations": [],
+    "target_source_documents": [],
+    "coverage_sources_present": [],
+    "coverage_sources_missing": [],
+    "mental_health_query": false,
+    "mental_health_intent_labels": [],
+    "retrieval_recall": 0.579,
+    "concept_coverage": 0.5,
+    "evidence_keyword_coverage": 0.571,
+    "regulation_coverage": 0.667,
+    "citation_coverage": "not_applicable",
+    "has_citations": "not_applicable",
+    "answer_relevance_score": "not_applicable",
+    "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
+    "evidence_grounding": "not_applicable",
+    "overall_score": "not_applicable",
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 1.811,
+    "status": "ok",
+    "error": "",
+    "notes": "Should retrieve GDPR controller/processor obligations, HIPAA business-associate-agreement duties, and EU AI Act provider/deployer role obligations -- an inter-organisational-relationship angle not covered by any existing question.",
+    "retrieved_evidence": [
+      {
+        "statement": "Technical Documentation - Monitoring",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Detailed information about the monitoring, functioning and control of the AI system, in particular with regard to: its capabilities and limitations in performance, including the degrees of accuracy for specific persons or groups of persons on which the system is intended to be used and the overall expected level of accuracy in relation to its intended purpose; the foreseeable unintended outcomes and sources of risks to health and safety , fundamental rights and discrimination in view of the intended purpose of the AI system; the human oversight measures needed in accordance with Article 14, including the technical measures put in place to facilitate the interpretation of the outputs of AI systems by the deployers; specifications on input data, as appropriate;",
+        "citation": "Article 14",
+        "score": 572.0,
+        "semantic": false
+      },
+      {
+        "statement": "Adopt Appropriate Risk Management Measures",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "The risk-manag ement system should adop t the most appropr iate risk-manag ement measures in light of the state of the art in AI.",
+        "citation": "",
+        "score": 482.0,
+        "semantic": false
+      },
+      {
+        "statement": "conformity assessment documentation handover",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "required for the fulfilment of the obligations set out in this Regulation, in particular regarding the compliance with the conformity assessment of high-risk AI systems.",
+        "citation": "this Regulation",
+        "score": 502.0,
+        "semantic": false
+      },
+      {
+        "statement": "Intention to Offer Goods/Services",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "The processing of personal data of data subjects who are in the Union by a controller or processor not established in the Union should also be subject to this Regulation when it is related to the monitoring of the behaviour of such data subjects in so far as their behaviour takes place within the Union.",
+        "citation": "",
+        "score": 263.0,
+        "semantic": false
+      },
+      {
+        "statement": "Behavior Monitoring Assessment",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "In order to determine whether a processing activity can be considered to monitor the behaviour of data subjects, it should be ascertained whether natural persons are tracked on the internet including potential subsequent use of personal data processing techniques which consist of profiling a natural person, particularly in order to take decisions concerning her or him or for analysing or predicting her or his personal preferences, behaviours and attitudes.",
+        "citation": "",
+        "score": 260.0,
+        "semantic": false
+      },
+      {
+        "statement": "Record Keeping - Processing Activities",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "It should also be for Union or Member State law to determine whether the controller performing a task carried out in the public interest or in the exercise of official authority should be a public authority or another natural or legal person governed by public law, or, where it is in the public interest to do so, including for health purposes such as public health and social protection and the management of health care services, by private law, such as a professional association.",
+        "citation": "",
+        "score": 257.0,
+        "semantic": false
+      },
+      {
+        "statement": "Establish Post-Market Monitoring System",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "establish a robust post-mark et monito ring syste m",
+        "citation": "(81)",
+        "score": 476.0,
+        "semantic": false
+      },
+      {
+        "statement": "Consider Cybersecurity Risks in Assessment",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "the assessment of the cybersecur ity risks, associated to a product with digital elements classif ied as high-r isk AI syste m according to this Regulation, carried out under a regulation of the European Parliament and of the Council on horizontal cybersecur ity requirements for products with digital elements, should consider risks to the cyber resilience of an AI system as regard s attem pts by unauthor ised third",
+        "citation": "this Regulation",
+        "score": 515.0,
+        "semantic": false
+      },
+      {
+        "statement": "Technical Documentation - Human Oversight Assessment",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "assessment of the human oversight measures needed in accordance with Article 14, including an assessment of the technical measures needed to facilitate the interpretation of the outputs of AI systems by the deployers, in accordance with Article 13(3), point (d)",
+        "citation": "Article 14",
+        "score": 506.0,
+        "semantic": false
+      },
+      {
+        "statement": "Establish Quality Management System",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "the provider should establish a sound quality manag ement syste m",
+        "citation": "(81)",
+        "score": 468.0,
+        "semantic": false
+      },
+      {
+        "statement": "requirements.apply.to.high_risk_ai_systems",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Requirements should apply to high-r isk AI syste ms as regard s risk management, the quality and relevance of data sets used, technical documentation and record-k eeping, transparency and the provision of information to deplo yers, human oversight, and robustness, accuracy and cybersecur ity.",
+        "citation": "high-r isk AI syste ms",
+        "score": 641.0,
+        "semantic": false
+      },
+      {
+        "statement": "provider.provide.instructions.for.use",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "This is to ensure that the deplo yer is aware and takes them into account when using the high-r isk AI syste m.",
+        "citation": "provider",
+        "score": 553.0,
+        "semantic": false
+      },
+      {
+        "statement": "document_human_oversight_measures",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "the human oversight measures referred to in Article 14, including the technical measures put in place to facilitate the inter pretation of the outputs of the high-r isk AI syste ms by the deplo yers",
+        "citation": "Article 14",
+        "score": 537.0,
+        "semantic": false
+      },
+      {
+        "statement": "Technical Documentation and Records",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "This requires keeping records and the availability of technical documentation, containing information which is necessary to assess the compliance of the AI system with the relevant requirements and facilitate post market monitoring.",
+        "citation": "",
+        "score": 532.0,
+        "semantic": false
+      },
+      {
+        "statement": "consistent_performance",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "High-risk AI systems should perform consistently throughout their lifecycle and meet an appropriate level of accuracy , robustness and cybersecurity, in light of their intended purpose and in accordance with the generally acknowledged state of the art.",
+        "citation": "",
+        "score": 528.0,
+        "semantic": false
+      },
+      {
+        "statement": "conformity_assessment_procedure",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "The conf ormity assessment procedure provid ed by this Regulation should apply in relation to the essential cybersecurity requirements of a product with digital elements covered by a regulation of the European Parliament and of the Council on horizontal cybersecur ity requirements for products with digital elements and classified as a high-r isk AI system under this Regulation.",
+        "citation": "this Regulation",
+        "score": 511.0,
+        "semantic": false
+      },
+      {
+        "statement": "Implement Cybersecurity Measures",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "To ensure a level of cybersecur ity appropr iate to the risks, suitable measures, such as secur ity controls, should theref ore be take n by the provid ers of high-r isk AI systems, also taking into account as appropr iate the underlying ICT infrastr ucture.",
+        "citation": "this Regulation",
+        "score": 507.0,
+        "semantic": false
+      },
+      {
+        "statement": "human_oversight_description",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "a descr iption of the imp lementation of human oversight measures, according to the instr uctions for use",
+        "citation": "Article 13(e)",
+        "score": 505.0,
+        "semantic": false
+      },
+      {
+        "statement": "information_content_circumstances",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Those \nwould cover information on possible kno wn and foreseeable circumstances related to the use of the high-r isk AI \nsyste m, including deplo yer action that may influence syste m behavio ur and perfor mance, under which the AI system \ncan lead to risks to health, safety, and fundamental rights, on the changes that have been pre-deter mined and \nassessed for conf ormity by the provider and on the relevant human oversight measures, including the measures to \nfacilitate the inter pretation of the outputs of the AI syste m by the deplo yers.",
+        "citation": "OJ L, 12.7.2024\n20/144 ELI: http://data.europa.eu/eli/reg/2024/1689/oj",
+        "score": 505.0,
+        "semantic": false
+      },
+      {
+        "statement": "Human Oversight Design",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "High-r isk AI systems should be designed and developed in such a way that natural persons can oversee their \n        functioning, ensure that they are used as intended and that their imp acts are addressed over the system’s lifecy cle.",
+        "citation": "(73)",
+        "score": 503.0,
+        "semantic": false
+      },
+      {
+        "statement": "Human Oversight Measures Identification",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "To \n        that end, appropr iate human oversight measures should be identifie d by the provider of the syste m before its placing \n        on the market or putting into service.",
+        "citation": "(73)",
+        "score": 503.0,
+        "semantic": false
+      },
+      {
+        "statement": "Instructions for Use Accessibility",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Instr uctions for use should be made available in a language which can be easily understood by targ et deplo yers, as \n        determined by the Member State concer ned.",
+        "citation": "(73)",
+        "score": 503.0,
+        "semantic": false
+      },
+      {
+        "statement": "Operational Constraints",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "In particular , where appropr iate, such measures should guarantee that the \n        syste m is subject to in-built operational constraints that cannot be overr idden by the system itself and is responsive \n        to the human operat or, and that the natural persons to whom human oversight has been assigned have the necessar y \n        com petence, training and author ity to carry out that role.",
+        "citation": "(73)",
+        "score": 499.0,
+        "semantic": false
+      },
+      {
+        "statement": "Conformity assessment for high-risk AI systems",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "In order to ensure a high level of trustw orthiness of high-r isk AI systems, those systems should be subject to a conf ormity assessment prior to their placing on th",
+        "citation": "",
+        "score": 498.0,
+        "semantic": false
+      },
+      {
+        "statement": "Technical Documentation",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Such information should include the general charact eristics, capabilities and limitations of the system, algor ithms, data, training, testing and validation processes used as well as documentation on the relevant risk-manag ement system and drawn in a clear and comp rehensive form.",
+        "citation": "",
+        "score": 498.0,
+        "semantic": false
+      },
+      {
+        "statement": "deployer_record_keeping",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "certain other obliga tions should be provided for with regard to monitoring of the functioning of the AI systems and with regard to record-keeping, as appropr iate",
+        "citation": "",
+        "score": 498.0,
+        "semantic": false
+      },
+      {
+        "statement": "cybersecurity_risk_assessment",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "ments for products with digital elements, should consider risks to the cyber resilience of an AI system as regard s attem pts by unauthor ised third parties to alter its use, behavio ur or perf ormance, including AI specif ic vulnerabilities such as data poisoning or adversar ial attacks, as well as, as relevant, risks to fundamental rights as required by this Regulation.",
+        "citation": "this Regulation",
+        "score": 495.0,
+        "semantic": false
+      },
+      {
+        "statement": "deployer_human_oversight",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Deplo yers shall assign human oversight to natural persons who have the necessar y compet ence, training and author ity, as well as the necessar y suppor t.",
+        "citation": "",
+        "score": 487.0,
+        "semantic": false
+      },
+      {
+        "statement": "Mitigation Measures",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "should determine measures to be taken in the case of a materialis ation of those risks, including for exam ple gove rnance arrangements in that specific context of use, such as arrang ements for human oversight according to the instr uctions of use or, complai nt handling and redress procedures",
+        "citation": "Article",
+        "score": 486.0,
+        "semantic": false
+      },
+      {
+        "statement": "enable_human_oversight",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "For the purpose of imp lementing paragraphs 1, 2 and 3, the high-r isk AI system shall be provided to the deplo yer in such a way that natural persons to whom human oversight is assigned are enabled, as appropr iate and propor tionate :",
+        "citation": "Article 14, 4",
+        "score": 486.0,
+        "semantic": false
+      }
+    ],
+    "retrieval_debug": {
+      "mode": "graph",
+      "row_count": 30,
+      "query_plan": {
+        "category": "compliance_question",
+        "intent": "obligations",
+        "terms": [
+          "ai system",
+          "mental health diagnostic ai system",
+          "diagnostic ai",
+          "obligation",
+          "govern",
+          "relationship",
+          "between",
+          "hospital",
+          "third-party",
+          "vendor",
+          "supplying",
+          "mental",
+          "health",
+          "diagnostic",
+          "system"
+        ],
+        "phrases": [
+          "ai system",
+          "mental health diagnostic ai system",
+          "diagnostic ai",
+          "obligation"
+        ]
+      },
+      "top_rows": []
+    },
+    "match_audit": {
+      "regulations": {
+        "expected": [
+          "GDPR",
+          "HIPAA",
+          "EU AI Act"
+        ],
+        "matched": [
+          "GDPR",
+          "EU AI Act"
+        ],
+        "missed": [
+          "HIPAA"
+        ]
+      },
+      "concepts": {
+        "expected": [
+          "Controller",
+          "Processor",
+          "BusinessAssociate",
+          "CoveredEntity",
+          "Provider",
+          "Deployer",
+          "DataProcessingAgreement",
+          "BusinessAssociateAgreement"
+        ],
+        "matched": [
+          "Controller",
+          "Processor",
+          "Provider",
+          "Deployer"
+        ],
+        "missed": [
+          "BusinessAssociate",
+          "CoveredEntity",
+          "DataProcessingAgreement",
+          "BusinessAssociateAgreement"
+        ]
+      },
+      "evidence_keywords": {
+        "expected": [
+          "controller",
+          "processor",
+          "business associate",
+          "covered entity",
+          "provider",
+          "deployer",
+          "agreement"
+        ],
+        "matched": [
+          "controller",
+          "processor",
+          "provider",
+          "deployer"
+        ],
+        "missed": [
+          "business associate",
+          "covered entity",
+          "agreement"
+        ]
+      }
+    }
+  },
+  {
+    "question_id": "mh_012",
+    "category": "mental_health_cross_regulation",
+    "mode": "graph",
+    "question": "How should data retention be handled for a mental health diagnostic AI system given GDPR storage limitation alongside EU AI Act logging requirements?",
+    "expected_regulations": [
+      "GDPR",
+      "HIPAA",
+      "EU AI Act"
+    ],
+    "retrieved_regulations": [
+      "GDPR",
+      "EU AI Act"
+    ],
+    "matched_regulations": [
+      "GDPR",
+      "EU AI Act"
+    ],
+    "missed_regulations": [
+      "HIPAA"
+    ],
+    "expected_concepts": [
+      "StorageLimitation",
+      "RightToErasure",
+      "RecordKeeping",
+      "LoggingRequirement",
+      "ProtectedHealthInformation",
+      "MentalHealthData",
+      "HighRiskAISystem"
+    ],
+    "matched_concepts": [
+      "RecordKeeping",
+      "HighRiskAISystem"
+    ],
+    "missed_concepts": [
+      "StorageLimitation",
+      "RightToErasure",
+      "LoggingRequirement",
+      "ProtectedHealthInformation",
+      "MentalHealthData"
+    ],
+    "expected_evidence_keywords": [
+      "storage limitation",
+      "erasure",
+      "record keeping",
+      "logs",
+      "protected health information",
+      "mental health",
+      "high-risk AI system"
+    ],
+    "matched_evidence_keywords": [
+      "record keeping",
+      "high-risk AI system"
+    ],
+    "missed_evidence_keywords": [
+      "storage limitation",
+      "erasure",
+      "logs",
+      "protected health information",
+      "mental health"
+    ],
+    "answer": "not_applicable",
+    "citations": "not_applicable",
+    "source_documents": [
+      "eu_ai_act.pdf",
+      "gdpr.pdf"
+    ],
+    "explicit_regulations": [],
+    "inferred_regulations": [],
+    "target_source_documents": [],
+    "coverage_sources_present": [],
+    "coverage_sources_missing": [],
+    "mental_health_query": false,
+    "mental_health_intent_labels": [],
+    "retrieval_recall": 0.413,
+    "concept_coverage": 0.286,
+    "evidence_keyword_coverage": 0.286,
+    "regulation_coverage": 0.667,
+    "citation_coverage": "not_applicable",
+    "has_citations": "not_applicable",
+    "answer_relevance_score": "not_applicable",
+    "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
+    "evidence_grounding": "not_applicable",
+    "overall_score": "not_applicable",
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 4.645,
+    "status": "ok",
+    "error": "",
+    "notes": "Should retrieve GDPR storage-limitation/erasure provisions, HIPAA retention duties, and EU AI Act automatic log-keeping requirements for high-risk systems, surfacing the retention-vs-erasure tension across all three regimes at once.",
+    "retrieved_evidence": [
+      {
+        "statement": "Automated Decision-Making Information",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "the right to obtain human intervention, express their views, and contest a decision based on automated processing, including profiling",
+        "citation": "",
+        "score": 702.0,
+        "semantic": false
+      },
+      {
+        "statement": "Right to Information - Automated Decision-Making",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "hthe existence of automated decision-making, including profiling, [F128which is subject to the requirement to provide safeguards under Article 22C ] and, at least in those cases, meaningful information about the logic involved, as well as the significance and the envisaged consequences of such processing for the data subject.",
+        "citation": "GDPR",
+        "score": 695.0,
+        "semantic": false
+      },
+      {
+        "statement": "Information on Automated Decision-Making",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "the existence of automated decision-making, including profiling, [F118which is subject to the requirement to provide safeguards under Article 22C ] and, at least in those cases, meaningful information about the logic involved, as well as the significance and the envisaged consequences of such processing for the data subject.",
+        "citation": "",
+        "score": 689.0,
+        "semantic": false
+      },
+      {
+        "statement": "Technical Documentation - Monitoring",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Detailed information about the monitoring, functioning and control of the AI system, in particular with regard to: its capabilities and limitations in performance, including the degrees of accuracy for specific persons or groups of persons on which the system is intended to be used and the overall expected level of accuracy in relation to its intended purpose; the foreseeable unintended outcomes and sources of risks to health and safety , fundamental rights and discrimination in view of the intended purpose of the AI system; the human oversight measures needed in accordance with Article 14, including the technical measures put in place to facilitate the interpretation of the outputs of AI systems by the deployers; specifications on input data, as appropriate;",
+        "citation": "Article 14",
+        "score": 616.0,
+        "semantic": false
+      },
+      {
+        "statement": "Adopt Appropriate Risk Management Measures",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "The risk-manag ement system should adop t the most appropr iate risk-manag ement measures in light of the state of the art in AI.",
+        "citation": "",
+        "score": 504.0,
+        "semantic": false
+      },
+      {
+        "statement": "Conformity assessment for high-risk AI systems",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "In order to ensure a high level of trustw orthiness of high-r isk AI systems, those systems should be subject to a conf ormity assessment prior to their placing on th",
+        "citation": "",
+        "score": 515.0,
+        "semantic": false
+      },
+      {
+        "statement": "Establish Post-Market Monitoring System",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "establish a robust post-mark et monito ring syste m",
+        "citation": "(81)",
+        "score": 487.0,
+        "semantic": false
+      },
+      {
+        "statement": "Consider Cybersecurity Risks in Assessment",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "the assessment of the cybersecur ity risks, associated to a product with digital elements classif ied as high-r isk AI syste m according to this Regulation, carried out under a regulation of the European Parliament and of the Council on horizontal cybersecur ity requirements for products with digital elements, should consider risks to the cyber resilience of an AI system as regard s attem pts by unauthor ised third",
+        "citation": "this Regulation",
+        "score": 500.0,
+        "semantic": false
+      },
+      {
+        "statement": "Technical Documentation - Human Oversight Assessment",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "assessment of the human oversight measures needed in accordance with Article 14, including an assessment of the technical measures needed to facilitate the interpretation of the outputs of AI systems by the deployers, in accordance with Article 13(3), point (d)",
+        "citation": "Article 14",
+        "score": 537.0,
+        "semantic": false
+      },
+      {
+        "statement": "Provider Quality Management System",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "The provider should establish a sound quality management system, ensure the accom plishment of the req",
+        "citation": "(81)",
+        "score": 473.0,
+        "semantic": false
+      },
+      {
+        "statement": "consider_defense_rights",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "The imp act of the use of AI tools on the defe nce rights of suspects should not be ignored, in particular the difficulty in obtaining meaningful information on the functioning of those systems and the resulting difficulty in challenging their results in cour t",
+        "citation": "",
+        "score": 700.0,
+        "semantic": false
+      },
+      {
+        "statement": "profiling",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "‘profiling’ means profiling as defined in Article 4, point (4), of Regulation (EU) 2016/679",
+        "citation": "",
+        "score": 699.0,
+        "semantic": false
+      },
+      {
+        "statement": "requirements.apply.to.high_risk_ai_systems",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Requirements should apply to high-r isk AI syste ms as regard s risk management, the quality and relevance of data sets used, technical documentation and record-k eeping, transparency and the provision of information to deplo yers, human oversight, and robustness, accuracy and cybersecur ity.",
+        "citation": "high-r isk AI syste ms",
+        "score": 691.0,
+        "semantic": false
+      },
+      {
+        "statement": "Right to Explanation",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Affected persons should have the right to obtain an explanation where a deplo yer’s decision is based mainly upon \nthe output from certain high-r isk AI syste ms that fall within the scope of this Regulation and where that decision \nproduces legal effects or similarly significantly affects those persons in a way that they consider to have an adverse",
+        "citation": "OJ L, 12.7.2024",
+        "score": 681.0,
+        "semantic": false
+      },
+      {
+        "statement": "qualification of AI systems",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "AI syste ms intended to be used by alternative dispute resolution bodies for those purposes should also be considered to be high-r isk when the outcomes of the alter native dispute resolution proceedings produce legal effects for the parties",
+        "citation": "",
+        "score": 669.0,
+        "semantic": false
+      },
+      {
+        "statement": "Allow Profiling Under Conditions",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "Automated decision-making and profiling based on special categories of personal data should be allowed only under specific conditions",
+        "citation": "",
+        "score": 662.0,
+        "semantic": false
+      },
+      {
+        "statement": "human intervention",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "the right to obtain human intervention",
+        "citation": "GDPR",
+        "score": 635.0,
+        "semantic": false
+      },
+      {
+        "statement": "appropriate procedures",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "the controller should use appropriate mathematical or statistical procedures for the profiling",
+        "citation": "GDPR",
+        "score": 631.0,
+        "semantic": false
+      },
+      {
+        "statement": "Information Communication Requirement",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "Every data subject should therefore have the right to know and obtain communication in particular with regard to the purposes for which the personal data are processed, where possible the period for which the personal data are processed, the recipients of the personal data, the logic involved in any automatic personal data processing and, at least when based on profiling, the consequences of such processing.",
+        "citation": "Article",
+        "score": 629.0,
+        "semantic": false
+      },
+      {
+        "statement": "Profiling Permission",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "However, decision-making based on such processing, including profiling, should be allowed where expressly authorised by Union or Member State law to which the controller is subject, including for fraud and tax-evasion monitoring and prevention purposes conducted in accordance with the regulations, standards and recommendations of Union institutions or national oversight bodies and to ensure the security and reliability of a service provided by the controller.",
+        "citation": "",
+        "score": 627.0,
+        "semantic": false
+      },
+      {
+        "statement": "Right to Object to Direct Marketing",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "the data subject should have the right to object to such processing, including profiling to the extent that it is related to such direct marketing, whether with regard to initial or further processing, at any time and free of charge.",
+        "citation": "",
+        "score": 623.0,
+        "semantic": false
+      },
+      {
+        "statement": "Automated Decision Making Regulation",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "Automated individual decision-making, including profiling",
+        "citation": "",
+        "score": 622.0,
+        "semantic": false
+      },
+      {
+        "statement": "Requires DPIA for high-risk processing",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "A data protection impact assessment should also be made where personal data are processed for taking decisions regarding specific natural persons following any systematic and extensive evaluation of personal aspects relating to natural persons based on profiling those data or following the processing of special categories of personal data, biometric data, or data on criminal convictions and offences or related security measures.",
+        "citation": "GDPR Article 25",
+        "score": 618.0,
+        "semantic": false
+      },
+      {
+        "statement": "Data Subject Access Right",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "A data subject should have the right of access to personal data which have been collected concerning him or her, and to exercise that right easily and at reasonable intervals",
+        "citation": "Article",
+        "score": 617.0,
+        "semantic": false
+      },
+      {
+        "statement": "Behavior Monitoring Assessment",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "In order to determine whether a processing activity can be considered to monitor the behaviour of data subjects, it should be ascertained whether natural persons are tracked on the internet including potential subsequent use of personal data processing techniques which consist of profiling a natural person, particularly in order to take decisions concerning her or him or for analysing or predicting her or his personal preferences, behaviours and attitudes.",
+        "citation": "",
+        "score": 616.0,
+        "semantic": false
+      },
+      {
+        "statement": "Law Enforcement AI Systems Permitted - Risk Assessment",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "AI systems intended to be used by law enforcement authorities or on their behalf or by Union institutions, bodies, offices or agencies in support of law enforcement authorities for assessing the risk of a natural person offending or re-offending not solely on the basis of the profiling of natural persons as referred to in Article 3(4) of Directive (EU) 2016/680, or to assess personality traits and characteristics or past",
+        "citation": "OJ L, 12.7.2024 EN ELI: http://data.europa.eu/eli/reg/2024/1689/oj 127/144",
+        "score": 616.0,
+        "semantic": false
+      },
+      {
+        "statement": "Right to Object",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "The data subject shall have the right to object, on grounds relating to his or her particular situation, at any time to processing of personal data concerning him or her which is based on point (e) [F140, (ea) ] or (f) of Article 6(1), including profiling based on those provisions.",
+        "citation": "Article 6(1)",
+        "score": 615.0,
+        "semantic": false
+      },
+      {
+        "statement": "Right to Object to Profiling for Direct Marketing",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "which includes profiling to the extent that it is related to such direct marketing",
+        "citation": "",
+        "score": 611.0,
+        "semantic": false
+      },
+      {
+        "statement": "Prohibition of Profiling-Based Risk Assessment",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "risk assessments carried out with regard to natural persons in order to assess the likelihood of their offending or to predict the occur rence of an actual or pote ntial criminal offence based solely on prof iling them or on assessing their personality traits and character istics should be prohibited",
+        "citation": "",
+        "score": 609.0,
+        "semantic": false
+      },
+      {
+        "statement": "profiling",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "‘profiling’ means any form of automated processing of personal data consisting of the use of personal data to evaluate certain personal aspects relating to a natural person, in",
+        "citation": "",
+        "score": 602.0,
+        "semantic": false
+      }
+    ],
+    "retrieval_debug": {
+      "mode": "graph",
+      "row_count": 30,
+      "query_plan": {
+        "category": "compliance_question",
+        "intent": "obligations",
+        "terms": [
+          "ai system",
+          "logging",
+          "gdpr",
+          "mental health diagnostic ai system",
+          "diagnostic ai",
+          "requirement",
+          "eu ai act",
+          "data",
+          "retention",
+          "handled",
+          "mental",
+          "health",
+          "diagnostic",
+          "system",
+          "given",
+          "storage",
+          "limitation",
+          "alongside",
+          "act"
+        ],
+        "phrases": [
+          "ai system",
+          "logging",
+          "gdpr",
+          "mental health diagnostic ai system",
+          "diagnostic ai",
+          "requirement",
+          "eu ai act"
+        ]
+      },
+      "top_rows": []
+    },
+    "match_audit": {
+      "regulations": {
+        "expected": [
+          "GDPR",
+          "HIPAA",
+          "EU AI Act"
+        ],
+        "matched": [
+          "GDPR",
+          "EU AI Act"
+        ],
+        "missed": [
+          "HIPAA"
+        ]
+      },
+      "concepts": {
+        "expected": [
+          "StorageLimitation",
+          "RightToErasure",
+          "RecordKeeping",
+          "LoggingRequirement",
+          "ProtectedHealthInformation",
+          "MentalHealthData",
+          "HighRiskAISystem"
+        ],
+        "matched": [
+          "RecordKeeping",
+          "HighRiskAISystem"
+        ],
+        "missed": [
+          "StorageLimitation",
+          "RightToErasure",
+          "LoggingRequirement",
+          "ProtectedHealthInformation",
+          "MentalHealthData"
+        ]
+      },
+      "evidence_keywords": {
+        "expected": [
+          "storage limitation",
+          "erasure",
+          "record keeping",
+          "logs",
+          "protected health information",
+          "mental health",
+          "high-risk AI system"
+        ],
+        "matched": [
+          "record keeping",
+          "high-risk AI system"
+        ],
+        "missed": [
+          "storage limitation",
+          "erasure",
+          "logs",
+          "protected health information",
+          "mental health"
+        ]
+      }
+    }
+  },
+  {
+    "question_id": "mh_013",
+    "category": "mental_health_cross_regulation",
+    "mode": "graph",
+    "question": "What obligations apply to the data used to train or validate a mental health diagnostic AI system before deployment?",
+    "expected_regulations": [
+      "GDPR",
+      "HIPAA",
+      "EU AI Act"
+    ],
+    "retrieved_regulations": [
+      "GDPR",
+      "EU AI Act"
+    ],
+    "matched_regulations": [
+      "GDPR",
+      "EU AI Act"
+    ],
+    "missed_regulations": [
+      "HIPAA"
+    ],
+    "expected_concepts": [
+      "TrainingData",
+      "DataGovernance",
+      "SpecialCategoryData",
+      "LawfulBasis",
+      "ProtectedHealthInformation",
+      "DataQuality",
+      "Deidentification"
+    ],
+    "matched_concepts": [],
+    "missed_concepts": [
+      "TrainingData",
+      "DataGovernance",
+      "SpecialCategoryData",
+      "LawfulBasis",
+      "ProtectedHealthInformation",
+      "DataQuality",
+      "Deidentification"
+    ],
+    "expected_evidence_keywords": [
+      "training data",
+      "data governance",
+      "special category",
+      "lawful basis",
+      "protected health information",
+      "de-identification",
+      "validation"
+    ],
+    "matched_evidence_keywords": [
+      "validation"
+    ],
+    "missed_evidence_keywords": [
+      "training data",
+      "data governance",
+      "special category",
+      "lawful basis",
+      "protected health information",
+      "de-identification"
+    ],
+    "answer": "not_applicable",
+    "citations": "not_applicable",
+    "source_documents": [
+      "eu_ai_act.pdf",
+      "gdpr.pdf"
+    ],
+    "explicit_regulations": [],
+    "inferred_regulations": [],
+    "target_source_documents": [],
+    "coverage_sources_present": [],
+    "coverage_sources_missing": [],
+    "mental_health_query": false,
+    "mental_health_intent_labels": [],
+    "retrieval_recall": 0.27,
+    "concept_coverage": 0.0,
+    "evidence_keyword_coverage": 0.143,
+    "regulation_coverage": 0.667,
+    "citation_coverage": "not_applicable",
+    "has_citations": "not_applicable",
+    "answer_relevance_score": "not_applicable",
+    "faithfulness_score": "not_applicable",
+    "citation_accuracy": "not_applicable",
+    "evidence_grounding": "not_applicable",
+    "overall_score": "not_applicable",
+    "expects_abstention": false,
+    "abstention_correct": false,
+    "latency_seconds": 1.913,
+    "status": "ok",
+    "error": "",
+    "notes": "Should retrieve GDPR lawful-basis requirements for processing special-category data, HIPAA de-identification/authorization for research or model-development use of PHI, and EU AI Act Article 10 data-governance requirements for training/validation/testing data -- a development-time angle, distinct from the deployment-time focus of every existing question.",
+    "retrieved_evidence": [
+      {
+        "statement": "Technical Documentation - Monitoring",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Detailed information about the monitoring, functioning and control of the AI system, in particular with regard to: its capabilities and limitations in performance, including the degrees of accuracy for specific persons or groups of persons on which the system is intended to be used and the overall expected level of accuracy in relation to its intended purpose; the foreseeable unintended outcomes and sources of risks to health and safety , fundamental rights and discrimination in view of the intended purpose of the AI system; the human oversight measures needed in accordance with Article 14, including the technical measures put in place to facilitate the interpretation of the outputs of AI systems by the deployers; specifications on input data, as appropriate;",
+        "citation": "Article 14",
+        "score": 578.0,
+        "semantic": false
+      },
+      {
+        "statement": "Adopt Appropriate Risk Management Measures",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "The risk-manag ement system should adop t the most appropr iate risk-manag ement measures in light of the state of the art in AI.",
+        "citation": "",
+        "score": 482.0,
+        "semantic": false
+      },
+      {
+        "statement": "Conformity assessment for high-risk AI systems",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "In order to ensure a high level of trustw orthiness of high-r isk AI systems, those systems should be subject to a conf ormity assessment prior to their placing on th",
+        "citation": "",
+        "score": 510.0,
+        "semantic": false
+      },
+      {
+        "statement": "Intention to Offer Goods/Services",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "The processing of personal data of data subjects who are in the Union by a controller or processor not established in the Union should also be subject to this Regulation when it is related to the monitoring of the behaviour of such data subjects in so far as their behaviour takes place within the Union.",
+        "citation": "",
+        "score": 269.0,
+        "semantic": false
+      },
+      {
+        "statement": "Behavior Monitoring Assessment",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "In order to determine whether a processing activity can be considered to monitor the behaviour of data subjects, it should be ascertained whether natural persons are tracked on the internet including potential subsequent use of personal data processing techniques which consist of profiling a natural person, particularly in order to take decisions concerning her or him or for analysing or predicting her or his personal preferences, behaviours and attitudes.",
+        "citation": "",
+        "score": 266.0,
+        "semantic": false
+      },
+      {
+        "statement": "marketing and profiling of children",
+        "source_group": "gdpr",
+        "source_document": "gdpr.pdf",
+        "evidence_text": "Such specific protection should, in particular, apply to the use of personal data of children for the purposes of marketing or creating personality or user profiles and the collection of personal data with regard to children when using services offered directly to a child.",
+        "citation": "Article",
+        "score": 246.0,
+        "semantic": false
+      },
+      {
+        "statement": "Establish Post-Market Monitoring System",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "establish a robust post-mark et monito ring syste m",
+        "citation": "(81)",
+        "score": 476.0,
+        "semantic": false
+      },
+      {
+        "statement": "Consider Cybersecurity Risks in Assessment",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "the assessment of the cybersecur ity risks, associated to a product with digital elements classif ied as high-r isk AI syste m according to this Regulation, carried out under a regulation of the European Parliament and of the Council on horizontal cybersecur ity requirements for products with digital elements, should consider risks to the cyber resilience of an AI system as regard s attem pts by unauthor ised third",
+        "citation": "this Regulation",
+        "score": 518.0,
+        "semantic": false
+      },
+      {
+        "statement": "Technical Documentation - Human Oversight Assessment",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "assessment of the human oversight measures needed in accordance with Article 14, including an assessment of the technical measures needed to facilitate the interpretation of the outputs of AI systems by the deployers, in accordance with Article 13(3), point (d)",
+        "citation": "Article 14",
+        "score": 515.0,
+        "semantic": false
+      },
+      {
+        "statement": "Establish Quality Management System",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "the provider should establish a sound quality manag ement syste m",
+        "citation": "(81)",
+        "score": 468.0,
+        "semantic": false
+      },
+      {
+        "statement": "requirements.apply.to.high_risk_ai_systems",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Requirements should apply to high-r isk AI syste ms as regard s risk management, the quality and relevance of data sets used, technical documentation and record-k eeping, transparency and the provision of information to deplo yers, human oversight, and robustness, accuracy and cybersecur ity.",
+        "citation": "high-r isk AI syste ms",
+        "score": 650.0,
+        "semantic": false
+      },
+      {
+        "statement": "provider.provide.instructions.for.use",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "This is to ensure that the deplo yer is aware and takes them into account when using the high-r isk AI syste m.",
+        "citation": "provider",
+        "score": 562.0,
+        "semantic": false
+      },
+      {
+        "statement": "document_human_oversight_measures",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "the human oversight measures referred to in Article 14, including the technical measures put in place to facilitate the inter pretation of the outputs of the high-r isk AI syste ms by the deplo yers",
+        "citation": "Article 14",
+        "score": 546.0,
+        "semantic": false
+      },
+      {
+        "statement": "Technical Documentation and Records",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "This requires keeping records and the availability of technical documentation, containing information which is necessary to assess the compliance of the AI system with the relevant requirements and facilitate post market monitoring.",
+        "citation": "",
+        "score": 538.0,
+        "semantic": false
+      },
+      {
+        "statement": "consistent_performance",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "High-risk AI systems should perform consistently throughout their lifecycle and meet an appropriate level of accuracy , robustness and cybersecurity, in light of their intended purpose and in accordance with the generally acknowledged state of the art.",
+        "citation": "",
+        "score": 534.0,
+        "semantic": false
+      },
+      {
+        "statement": "conformity_assessment_procedure",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "The conf ormity assessment procedure provid ed by this Regulation should apply in relation to the essential cybersecurity requirements of a product with digital elements covered by a regulation of the European Parliament and of the Council on horizontal cybersecur ity requirements for products with digital elements and classified as a high-r isk AI system under this Regulation.",
+        "citation": "this Regulation",
+        "score": 517.0,
+        "semantic": false
+      },
+      {
+        "statement": "information_content_circumstances",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Those \nwould cover information on possible kno wn and foreseeable circumstances related to the use of the high-r isk AI \nsyste m, including deplo yer action that may influence syste m behavio ur and perfor mance, under which the AI system \ncan lead to risks to health, safety, and fundamental rights, on the changes that have been pre-deter mined and \nassessed for conf ormity by the provider and on the relevant human oversight measures, including the measures to \nfacilitate the inter pretation of the outputs of the AI syste m by the deplo yers.",
+        "citation": "OJ L, 12.7.2024\n20/144 ELI: http://data.europa.eu/eli/reg/2024/1689/oj",
+        "score": 514.0,
+        "semantic": false
+      },
+      {
+        "statement": "Human Oversight Design",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "High-r isk AI systems should be designed and developed in such a way that natural persons can oversee their \n        functioning, ensure that they are used as intended and that their imp acts are addressed over the system’s lifecy cle.",
+        "citation": "(73)",
+        "score": 512.0,
+        "semantic": false
+      },
+      {
+        "statement": "Human Oversight Measures Identification",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "To \n        that end, appropr iate human oversight measures should be identifie d by the provider of the syste m before its placing \n        on the market or putting into service.",
+        "citation": "(73)",
+        "score": 512.0,
+        "semantic": false
+      },
+      {
+        "statement": "Instructions for Use Accessibility",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Instr uctions for use should be made available in a language which can be easily understood by targ et deplo yers, as \n        determined by the Member State concer ned.",
+        "citation": "(73)",
+        "score": 512.0,
+        "semantic": false
+      },
+      {
+        "statement": "Implement Cybersecurity Measures",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "To ensure a level of cybersecur ity appropr iate to the risks, suitable measures, such as secur ity controls, should theref ore be take n by the provid ers of high-r isk AI systems, also taking into account as appropr iate the underlying ICT infrastr ucture.",
+        "citation": "this Regulation",
+        "score": 510.0,
+        "semantic": false
+      },
+      {
+        "statement": "Operational Constraints",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "In particular , where appropr iate, such measures should guarantee that the \n        syste m is subject to in-built operational constraints that cannot be overr idden by the system itself and is responsive \n        to the human operat or, and that the natural persons to whom human oversight has been assigned have the necessar y \n        com petence, training and author ity to carry out that role.",
+        "citation": "(73)",
+        "score": 508.0,
+        "semantic": false
+      },
+      {
+        "statement": "Technical Documentation",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Such information should include the general charact eristics, capabilities and limitations of the system, algor ithms, data, training, testing and validation processes used as well as documentation on the relevant risk-manag ement system and drawn in a clear and comp rehensive form.",
+        "citation": "",
+        "score": 507.0,
+        "semantic": false
+      },
+      {
+        "statement": "human_oversight_description",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "a descr iption of the imp lementation of human oversight measures, according to the instr uctions for use",
+        "citation": "Article 13(e)",
+        "score": 505.0,
+        "semantic": false
+      },
+      {
+        "statement": "deployer_record_keeping",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "certain other obliga tions should be provided for with regard to monitoring of the functioning of the AI systems and with regard to record-keeping, as appropr iate",
+        "citation": "",
+        "score": 504.0,
+        "semantic": false
+      },
+      {
+        "statement": "conformity assessment documentation handover",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "required for the fulfilment of the obligations set out in this Regulation, in particular regarding the compliance with the conformity assessment of high-risk AI systems.",
+        "citation": "this Regulation",
+        "score": 502.0,
+        "semantic": false
+      },
+      {
+        "statement": "cybersecurity_risk_assessment",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "ments for products with digital elements, should consider risks to the cyber resilience of an AI system as regard s attem pts by unauthor ised third parties to alter its use, behavio ur or perf ormance, including AI specif ic vulnerabilities such as data poisoning or adversar ial attacks, as well as, as relevant, risks to fundamental rights as required by this Regulation.",
+        "citation": "this Regulation",
+        "score": 501.0,
+        "semantic": false
+      },
+      {
+        "statement": "deployer_human_oversight",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Deplo yers shall assign human oversight to natural persons who have the necessar y compet ence, training and author ity, as well as the necessar y suppor t.",
+        "citation": "",
+        "score": 493.0,
+        "semantic": false
+      },
+      {
+        "statement": "enable_human_oversight",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "For the purpose of imp lementing paragraphs 1, 2 and 3, the high-r isk AI system shall be provided to the deplo yer in such a way that natural persons to whom human oversight is assigned are enabled, as appropr iate and propor tionate :",
+        "citation": "Article 14, 4",
+        "score": 492.0,
+        "semantic": false
+      },
+      {
+        "statement": "human_oversight_aim",
+        "source_group": "eu_ai_act",
+        "source_document": "eu_ai_act.pdf",
+        "evidence_text": "Human oversight shall aim to prevent or minimise the risks to health, safety or fundamental rights that may emerge when a high-r isk AI syste m is used in accordance with its intended purpose or under conditions of reasonably foreseeable misuse, in particular where such risks persist despite the application of other requirements set out in this Section.",
+        "citation": "Article 14, 2",
+        "score": 492.0,
+        "semantic": false
+      }
+    ],
+    "retrieval_debug": {
+      "mode": "graph",
+      "row_count": 30,
+      "query_plan": {
+        "category": "compliance_question",
+        "intent": "obligations",
+        "terms": [
+          "ai system",
+          "mental health diagnostic ai system",
+          "diagnostic ai",
+          "obligation",
+          "data",
+          "used",
+          "train",
+          "validate",
+          "mental",
+          "health",
+          "diagnostic",
+          "system",
+          "before",
+          "deployment"
+        ],
+        "phrases": [
+          "ai system",
+          "mental health diagnostic ai system",
+          "diagnostic ai",
+          "obligation"
+        ]
+      },
+      "top_rows": []
+    },
+    "match_audit": {
+      "regulations": {
+        "expected": [
+          "GDPR",
+          "HIPAA",
+          "EU AI Act"
+        ],
+        "matched": [
+          "GDPR",
+          "EU AI Act"
+        ],
+        "missed": [
+          "HIPAA"
+        ]
+      },
+      "concepts": {
+        "expected": [
+          "TrainingData",
+          "DataGovernance",
+          "SpecialCategoryData",
+          "LawfulBasis",
+          "ProtectedHealthInformation",
+          "DataQuality",
+          "Deidentification"
+        ],
+        "matched": [],
+        "missed": [
+          "TrainingData",
+          "DataGovernance",
+          "SpecialCategoryData",
+          "LawfulBasis",
+          "ProtectedHealthInformation",
+          "DataQuality",
+          "Deidentification"
+        ]
+      },
+      "evidence_keywords": {
+        "expected": [
+          "training data",
+          "data governance",
+          "special category",
+          "lawful basis",
+          "protected health information",
+          "de-identification",
+          "validation"
+        ],
+        "matched": [
+          "validation"
+        ],
+        "missed": [
+          "training data",
+          "data governance",
+          "special category",
+          "lawful basis",
+          "protected health information",
+          "de-identification"
         ]
       }
     }
