@@ -22,3 +22,4 @@ Neo4j-*.txt
 neo4j/
 neo4j_data/
 data/neo4j/
+.claude/

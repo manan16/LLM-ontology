@@ -27,6 +27,39 @@ class Settings(BaseSettings):
     chunk_overlap_chars: int = Field(default=150, alias="CHUNK_OVERLAP_CHARS")
     log_level: str = Field(default="DEBUG", alias="LOG_LEVEL")
 
+    # Semantic retrieval (embeddings + Neo4j vector index). embedding_model is the
+    # LOCAL sentence-transformers/BGE model used for retrieval; it is NOT the same as
+    # ragas_embedding_model below (an Ollama-served model used only by
+    # evaluation/ragas_supplement.py). The two are not interchangeable and must not
+    # be merged.
+    embedding_model: str = Field(default="BAAI/bge-base-en-v1.5", alias="EMBEDDING_MODEL")
+    # Ollama-served embedding model used ONLY by evaluation/ragas_supplement.py for
+    # RAGAS answer_relevancy scoring via the OpenAI-compatible /v1/embeddings endpoint.
+    # Separate from embedding_model (local BGE retrieval model) -- do not merge them.
+    ragas_embedding_model: str = Field(default="nomic-embed-text", alias="RAGAS_EMBEDDING_MODEL")
+    # Empty string means "auto": use cuda when available, otherwise cpu.
+    embedding_device: str = Field(default="", alias="EMBEDDING_DEVICE")
+    embedding_batch_size: int = Field(default=32, alias="EMBEDDING_BATCH_SIZE")
+    # BGE models expect this instruction prefix on *queries* (not passages).
+    embedding_query_prefix: str = Field(
+        default="Represent this sentence for searching relevant passages: ",
+        alias="EMBEDDING_QUERY_PREFIX",
+    )
+    vector_index_name: str = Field(default="source_chunk_embedding", alias="VECTOR_INDEX_NAME")
+    vector_dimensions: int = Field(default=768, alias="VECTOR_DIMENSIONS")
+    vector_similarity: str = Field(default="cosine", alias="VECTOR_SIMILARITY")
+    semantic_top_k: int = Field(default=10, alias="SEMANTIC_TOP_K")
+    semantic_retrieval_enabled: bool = Field(default=True, alias="SEMANTIC_RETRIEVAL_ENABLED")
+
+    # Hybrid ranking weights for the confirmed state. hybrid_score =
+    # semantic_weight * semantic_score + graph_weight * graph_relevance_score.
+    # No lexical/BM25 term — that retriever is not in this stack.
+    # Graph is weighted higher (0.6 vs 0.4) so structurally verified graph
+    # evidence leads by default; dense semantic similarity is supplementary
+    # context that can still surface strong passages above weak graph rows.
+    hybrid_semantic_weight: float = Field(default=0.4, alias="HYBRID_SEMANTIC_WEIGHT")
+    hybrid_graph_weight: float = Field(default=0.6, alias="HYBRID_GRAPH_WEIGHT")
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

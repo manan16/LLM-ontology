@@ -95,10 +95,26 @@ AI_OBLIGATION_GROUPS = OrderedDict(
 )
 
 
-def build_context(rows: list[dict[str, Any]], max_chars: int = 8000) -> str:
-    """Convert compact retriever rows into evidence-focused LLM context."""
+UNCONFIRMED_METADATA_BLOCK = (
+    "[Metadata]\n"
+    "Evidence type: semantic_only\n"
+    "Confidence: unconfirmed\n"
+    "Note: The passages below were retrieved by vector similarity and are NOT "
+    "confirmed against the compliance knowledge graph. Present them as possibly "
+    "related context, not as a definitive compliance determination."
+)
+
+
+def build_context(rows: list[dict[str, Any]], max_chars: int = 8000, unconfirmed: bool = False) -> str:
+    """Convert compact retriever rows into evidence-focused LLM context.
+
+    When ``unconfirmed`` is True the evidence came from semantic-only retrieval
+    (no graph confirmation); a distinct ``[Metadata]`` header is prepended so the
+    answer generator — and any human reader of the context — can tell this state
+    apart from a graph-confirmed answer.
+    """
     if not rows or max_chars <= 0:
-        return ""
+        return UNCONFIRMED_METADATA_BLOCK if unconfirmed else ""
 
     items: list[str] = []
     seen_evidence: set[str] = set()
@@ -129,7 +145,10 @@ def build_context(rows: list[dict[str, Any]], max_chars: int = 8000) -> str:
         elif seed_name:
             seen_evidence.add(f"no-evidence:{seed_name}:{_clean(row.get('related_name'))}")
 
-    return "\n\n".join(items)
+    body = "\n\n".join(items)
+    if unconfirmed:
+        return f"{UNCONFIRMED_METADATA_BLOCK}\n\n{body}" if body else UNCONFIRMED_METADATA_BLOCK
+    return body
 
 
 def context_row_ids(rows: list[dict[str, Any]], max_chars: int = 8000) -> list[str]:

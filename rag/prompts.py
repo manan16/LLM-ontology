@@ -129,3 +129,54 @@ Answer:
 
 def build_rag_prompt(question: str, context: str) -> str:
     return NEW_TEMPLATE.format(question=question, context=context)
+
+
+DETERMINATION_SYSTEM_PROMPT = (
+    "You are a compliance determination assistant. You classify the bottom-line "
+    "compliance position for a question using only the retrieved knowledge-graph "
+    "evidence and the grounded answer provided to you. You never guess from the "
+    "wording of the question."
+)
+
+DETERMINATION_TEMPLATE = """Produce a structured compliance determination for the question below.
+
+You are given:
+- the user question (for reference only),
+- the retrieved knowledge-graph evidence,
+- a grounded answer already written from that evidence.
+
+Base the determination ONLY on the retrieved evidence and the grounded answer.
+Do not use the wording of the question to decide the verdict. Do not invent
+obligations, conditions, exceptions, or actors that are absent from the evidence.
+
+Choose exactly one verdict:
+- "obligations_apply": the evidence establishes concrete duties/requirements the
+  responsible actor must satisfy.
+- "permitted_with_conditions": the evidence shows an action is permitted or
+  excepted, subject to conditions stated in that evidence.
+- "prohibited": the evidence shows the action is prohibited.
+- "insufficient_evidence": the retrieved evidence does not support any of the
+  above for this question. If you choose this, return an empty obligations list.
+
+obligations: list the concrete duties/requirements that are directly supported by
+the evidence. Each item must be a single, self-contained statement grounded in the
+evidence. Use an empty list if none are supported. Do not pad the list.
+
+summary: one or two plain-language sentences describing the determination,
+grounded in the evidence. If evidence is insufficient, say so plainly.
+
+Question (reference only):
+{question}
+
+Retrieved KG evidence:
+{context}
+
+Grounded answer:
+{answer}
+
+Return a JSON object with keys: verdict, obligations, summary.
+"""
+
+
+def build_determination_prompt(question: str, context: str, answer: str) -> str:
+    return DETERMINATION_TEMPLATE.format(question=question, context=context, answer=answer)

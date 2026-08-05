@@ -1,0 +1,82 @@
+{
+  "statement": {
+    "true_positive": 38,
+    "system_count": 97,
+    "gold_count": 73,
+    "precision": 0.3917525773195876,
+    "recall": 0.5205479452054794,
+    "f1": 0.44705882352941173
+  },
+  "node": {
+    "true_positive": 0,
+    "system_count": 0,
+    "gold_count": 81,
+    "precision": null,
+    "recall": 0.0,
+    "f1": 0.0
+  },
+  "relationship": {
+    "true_positive": 0,
+    "system_count": 20,
+    "gold_count": 72,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0
+  },
+  "error_categories": {
+    "unsupported_extraction": 51,
+    "wrong_statement_type": 24,
+    "missing_extraction": 164,
+    "incorrect_entity_type": 0,
+    "incorrect_relationship": 1,
+    "evidence_span_error": 8,
+    "dedup_normalisation_error": 0,
+    "retrieval_grounding_error": 3
+  },
+  "error_categories_by_regulation": {
+    "EU_AI_ACT": {
+      "unsupported_extraction": 8,
+      "wrong_statement_type": 8,
+      "missing_extraction": 49,
+      "incorrect_entity_type": 0,
+      "incorrect_relationship": 1,
+      "evidence_span_error": 4,
+      "dedup_normalisation_error": 0,
+      "retrieval_grounding_error": 3
+    },
+    "GDPR": {
+      "unsupported_extraction": 18,
+      "wrong_statement_type": 7,
+      "missing_extraction": 37,
+      "incorrect_entity_type": 0,
+      "incorrect_relationship": 0,
+      "evidence_span_error": 2,
+      "dedup_normalisation_error": 0,
+      "retrieval_grounding_error": 0
+    },
+    "HIPAA": {
+      "unsupported_extraction": 25,
+      "wrong_statement_type": 9,
+      "missing_extraction": 78,
+      "incorrect_entity_type": 0,
+      "incorrect_relationship": 0,
+      "evidence_span_error": 2,
+      "dedup_normalisation_error": 0,
+      "retrieval_grounding_error": 0
+    }
+  },
+  "meta": {
+    "gold_file": "evaluation/gold_sample/gold_annotations.json",
+    "system_file": "evaluation/gold_sample/raw_extractions.json",
+    "model": "gemma3:12b",
+    "gold_human_validated": true,
+    "gold_provenance": "Claude-pre-reviewed then human-validated",
+    "chunk_count": 15,
+    "failed_extraction_chunks": [],
+    "match_thresholds": {
+      "evidence_overlap_coefficient_match": 0.5,
+      "evidence_exact": 0.999,
+      "node_name_near_jaccard": 0.5
+    }
+  }
+}

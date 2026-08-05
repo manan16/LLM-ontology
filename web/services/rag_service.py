@@ -6,7 +6,17 @@ from threading import Lock
 from time import perf_counter
 from typing import Any
 
-from rag import AnswerGenerator, GraphRetriever, build_context
+from app.config import get_settings
+from rag import (
+    AnswerGenerator,
+    DeterminationGenerator,
+    GraphRetriever,
+    HybridRetriever,
+    SemanticRetriever,
+    build_context,
+    insufficient_determination,
+    unconfirmed_determination,
+)
 from rag.context_builder import context_row_ids
 from rag.query_planner import QueryPlan
 
@@ -14,7 +24,24 @@ from rag.query_planner import QueryPlan
 LOGGER = logging.getLogger(__name__)
 _retriever: GraphRetriever | None = None
 _retriever_lock = Lock()
+_semantic_retriever: SemanticRetriever | None = None
+_semantic_lock = Lock()
 NO_EVIDENCE_MESSAGE = "No sufficient regulatory evidence was found in the knowledge graph for this question."
+UNCONFIRMED_MESSAGE = (
+    "These passages are semantically related to your question but could not be confirmed "
+    "against the compliance knowledge graph. Treat them as possibly relevant context, not "
+    "as a compliance determination."
+)
+
+# Response-level classifications so the UI and callers can tell the three states
+# apart: a graph-confirmed answer, a semantic-only (unconfirmed) answer, and the
+# genuine no-evidence case.
+CONFIDENCE_CONFIRMED = "confirmed"
+CONFIDENCE_UNCONFIRMED = "unconfirmed"
+CONFIDENCE_NONE = "none"
+EVIDENCE_GRAPH = "graph_confirmed"
+EVIDENCE_SEMANTIC_ONLY = "semantic_only"
+EVIDENCE_NONE = "none"
 
 
 def answer_question(
@@ -39,21 +66,25 @@ def answer_question(
     timings["routing_ms"] = _elapsed_ms(routing_started)
 
     retrieval_started = perf_counter()
-    graph_query_started = perf_counter()
     _log_stage("retrieval_started", question=cleaned_question, limit=safe_limit)
     _log_stage("graph_query_started", question=cleaned_question, limit=safe_limit)
-    rows = retriever.retrieve(cleaned_question, limit=safe_limit)
-    timings["graph_query_ms"] = _elapsed_ms(graph_query_started)
+    hybrid = _build_hybrid_retriever(retriever)
+    retrieval = hybrid.retrieve(cleaned_question, limit=safe_limit)
+    rows = retrieval.rows
+    graph_expansion = retrieval.graph_expansion
+    timings["graph_query_ms"] = retrieval.graph_ms
+    timings["semantic_query_ms"] = retrieval.semantic_ms
     timings["retrieval_ms"] = _elapsed_ms(retrieval_started)
 
     ranking_started = perf_counter()
     _log_stage("ranking_started", rows_retrieved=len(rows))
-    context = build_context(rows)
     evidence = _extract_evidence(rows)
-    graph = _build_graph_payload(cleaned_question, rows, evidence)
+    graph_confirmed = _has_graph_confirmed_evidence(rows)
     timings["ranking_ms"] = _elapsed_ms(ranking_started)
 
+    # --- Case 1: nothing at all (neither graph nor semantic) -> no evidence ----
     if not evidence:
+        context = build_context(rows)
         elapsed_ms = _elapsed_ms(started_at)
         timings["generation_ms"] = 0
         timings["total_ms"] = elapsed_ms
@@ -66,6 +97,10 @@ def answer_question(
             "graph": _build_no_evidence_graph(cleaned_question),
             "context": context if show_context else "",
             "debug": _build_debug(retriever, rows) if debug else {},
+            "determination": insufficient_determination(NO_EVIDENCE_MESSAGE),
+            "confidence": CONFIDENCE_NONE,
+            "evidence_type": EVIDENCE_NONE,
+            "graph_expansion": {},
             "metrics": {
                 **_build_metrics(rows, evidence, safe_limit, elapsed_ms, model, timings),
                 "no_evidence": True,
@@ -73,10 +108,63 @@ def answer_question(
             "response_source": "no_evidence",
         }
 
+    # --- Case 2: semantic-only -> answer WITHOUT a confident determination -----
+    # Graph expansion (Task 1) surfaced no confirmed entities/obligations, so we
+    # must not stamp a verdict from vector-similarity chunks alone. We still keep
+    # the semantic hits and present them as possibly-related context.
+    if not graph_confirmed:
+        graph = _build_graph_payload(cleaned_question, rows, evidence)
+        context = build_context(rows, unconfirmed=True)
+
+        generation_started = perf_counter()
+        _log_stage("generation_started", evidence_items=len(evidence), evidence_type=EVIDENCE_SEMANTIC_ONLY)
+        answer = AnswerGenerator(model=model).generate(cleaned_question, context)
+        timings["generation_ms"] = _elapsed_ms(generation_started)
+        # Determination LLM is deliberately skipped for semantic-only evidence.
+        _log_stage("determination_skipped", reason="semantic_only_unconfirmed")
+
+        elapsed_ms = _elapsed_ms(started_at)
+        timings["total_ms"] = elapsed_ms
+        _log_stage("pipeline_completed", **timings)
+        return {
+            "question": cleaned_question,
+            "answer": answer,
+            "evidence": evidence,
+            "graph": graph,
+            "context": context if show_context else "",
+            "debug": _build_debug(retriever, rows) if debug else {},
+            "determination": unconfirmed_determination(UNCONFIRMED_MESSAGE),
+            "confidence": CONFIDENCE_UNCONFIRMED,
+            "evidence_type": EVIDENCE_SEMANTIC_ONLY,
+            "graph_expansion": graph_expansion,
+            "metrics": {
+                **_build_metrics(rows, evidence, safe_limit, elapsed_ms, model, timings),
+                "unconfirmed": True,
+                "evidence_type": EVIDENCE_SEMANTIC_ONLY,
+            },
+            "response_source": "semantic_only",
+        }
+
+    # --- Case 3: graph-confirmed -> full answer + determination verdict --------
+    # Rank (not just concatenate) the merged graph + semantic evidence via the
+    # weighted hybrid score. This is the only place ranking is applied; state
+    # determination above is unaffected.
+    rows = hybrid.rank_rows(rows)
+    context = build_context(rows)
+    evidence = _extract_evidence(rows)
+    graph = _build_graph_payload(cleaned_question, rows, evidence)
+
     generation_started = perf_counter()
     _log_stage("generation_started", evidence_items=len(evidence))
     answer = AnswerGenerator(model=model).generate(cleaned_question, context)
     timings["generation_ms"] = _elapsed_ms(generation_started)
+
+    determination_started = perf_counter()
+    _log_stage("determination_started", evidence_items=len(evidence))
+    determination = DeterminationGenerator(model=model).generate(cleaned_question, context, answer)
+    timings["determination_ms"] = _elapsed_ms(determination_started)
+    _log_stage("determination_completed", verdict=determination.get("verdict"))
+
     elapsed_ms = _elapsed_ms(started_at)
     timings["total_ms"] = elapsed_ms
     _log_stage("pipeline_completed", **timings)
@@ -88,6 +176,10 @@ def answer_question(
         "graph": graph,
         "context": context if show_context else "",
         "debug": _build_debug(retriever, rows) if debug else {},
+        "determination": determination,
+        "confidence": CONFIDENCE_CONFIRMED,
+        "evidence_type": EVIDENCE_GRAPH,
+        "graph_expansion": graph_expansion,
         "metrics": _build_metrics(rows, evidence, safe_limit, elapsed_ms, model, timings),
         "response_source": "live",
     }
@@ -105,8 +197,60 @@ def _get_retriever() -> GraphRetriever:
     return _retriever
 
 
+def _get_semantic_retriever() -> SemanticRetriever | None:
+    """Return the shared SemanticRetriever, or None if it cannot be initialized."""
+    global _semantic_retriever
+    if not get_settings().semantic_retrieval_enabled:
+        return None
+    if _semantic_retriever is None:
+        with _semantic_lock:
+            if _semantic_retriever is None:
+                try:
+                    LOGGER.info("Creating shared SemanticRetriever for web RAG service")
+                    _semantic_retriever = SemanticRetriever()
+                except Exception:
+                    LOGGER.exception("Semantic retriever unavailable; falling back to graph-only retrieval")
+                    return None
+    return _semantic_retriever
+
+
+def _build_hybrid_retriever(retriever: GraphRetriever) -> HybridRetriever:
+    """Construct a per-request HybridRetriever around the shared graph retriever.
+
+    The semantic side is resolved through ``_get_semantic_retriever`` at call
+    time (via the ``semantic_provider`` callable), so tests that monkeypatch it —
+    and the graceful "semantic unavailable -> graph-only" fallback — keep working.
+    """
+    return HybridRetriever(
+        graph_retriever=retriever,
+        semantic_provider=_get_semantic_retriever,
+        settings=get_settings(),
+    )
+
+
+def _has_graph_confirmed_evidence(rows: list[dict[str, Any]]) -> bool:
+    """True if at least one *non-semantic* (graph-retrieved) row carries evidence.
+
+    Semantic rows are marked with ``semantic=True`` by SemanticRetriever. Only
+    graph rows count as confirmation against the compliance graph — this is the
+    signal that gates whether a confident determination may be produced.
+    """
+    for row in rows:
+        if row.get("semantic"):
+            continue
+        if _clean(row.get("evidence_text")) or _clean(row.get("source_chunk_text")):
+            return True
+    return False
+
+
 def close_retriever() -> None:
-    global _retriever
+    global _retriever, _semantic_retriever
+    if _semantic_retriever is not None:
+        semantic_client = getattr(_semantic_retriever, "neo4j_client", None)
+        semantic_close = getattr(semantic_client, "close", None)
+        if callable(semantic_close):
+            semantic_close()
+        _semantic_retriever = None
     if _retriever is None:
         return
     neo4j_client = getattr(_retriever, "neo4j_client", None)
@@ -137,17 +281,24 @@ def _extract_evidence(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if key in seen:
             continue
         seen.add(key)
-        evidence_items.append(
-            {
-                "id": len(evidence_items) + 1,
-                "statement": statement,
-                "source_document": source_document,
-                "evidence_text": evidence_text,
-                "citation": _clean(row.get("citation")),
-                "score": row.get("score"),
-                "source_group": _source_group(row),
-            }
-        )
+        item = {
+            "id": len(evidence_items) + 1,
+            "statement": statement,
+            "source_document": source_document,
+            "evidence_text": evidence_text,
+            "citation": _clean(row.get("citation")),
+            "score": row.get("score"),
+            "source_group": _source_group(row),
+            # Per-item provenance so the UI can mark semantic-only cards as
+            # "possibly related" rather than graph-confirmed.
+            "evidence_type": EVIDENCE_SEMANTIC_ONLY if row.get("semantic") else EVIDENCE_GRAPH,
+        }
+        # Weighted hybrid scores are present once the confirmed-state ranking has
+        # run (HybridRetriever.rank_rows); absent in the other states.
+        for score_field in ("semantic_score", "graph_relevance_score", "hybrid_score"):
+            if row.get(score_field) is not None:
+                item[score_field] = row.get(score_field)
+        evidence_items.append(item)
     return evidence_items
 
 
@@ -351,6 +502,7 @@ def _build_metrics(
         "routing_ms": stage_timings.get("routing_ms", 0),
         "retrieval_ms": stage_timings.get("retrieval_ms", 0),
         "graph_query_ms": stage_timings.get("graph_query_ms", 0),
+        "semantic_query_ms": stage_timings.get("semantic_query_ms", 0),
         "ranking_ms": stage_timings.get("ranking_ms", 0),
         "generation_ms": stage_timings.get("generation_ms", 0),
         "total_ms": stage_timings.get("total_ms", elapsed_ms),

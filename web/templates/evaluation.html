@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" data-direction="schematic" data-density="comfortable">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KEP · Evaluation Report</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;550;600;650;700&family=JetBrains+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Spectral:wght@400;500;600&display=swap" rel="stylesheet" />
+  <!-- ../static/... resolves to /static/... when served by Flask and to web/static/... when opened directly -->
+  <link rel="stylesheet" href="../static/css/kep.css" />
+</head>
+<body>
+  {% macro sclass(v) -%}
+    {%- if v is none -%}s-na{%- elif v >= 0.85 -%}s-good{%- elif v >= 0.7 -%}s-mid{%- else -%}s-low{%- endif -%}
+  {%- endmacro %}
+  {% macro fmt(v) -%}{% if v is none %}—{% else %}{{ "%.2f"|format(v) }}{% endif %}{%- endmacro %}
+
+  <div class="app">
+    <header class="hdr">
+      <div class="hdr-brand">
+        <div class="hdr-logo">K</div>
+        <div class="hdr-title">KEP <span class="sub">· Compliance Graph-RAG</span></div>
+      </div>
+      <nav class="hdr-nav">
+        <a href="/">Console</a>
+        <a href="/evaluation" class="on">Evaluation</a>
+      </nav>
+      <div class="hdr-spacer"></div>
+      <div class="hdr-status"><span class="eyebrow">Golden-question report</span></div>
+    </header>
+
+    <div class="eval-page">
+    {% if not report.available %}
+      <div class="eval-wrap">
+        <div class="notice warn">
+          <div class="notice-glyph">∅</div>
+          <div>
+            <div class="notice-title">No evaluation results yet</div>
+            <div class="notice-body">
+              {{ report.message }} Run the batch evaluation to generate the report:
+              <div class="eval-code mono">python evaluation/run_evaluation.py</div>
+              Expected output file: <span class="mono muted">{{ report.path }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <div class="eval-wrap">
+        <div class="sec-head"><span class="eyebrow">Evaluation report</span><span class="ln"></span><span class="eyebrow">{{ report.summary.total }} golden questions · {{ report.mode }} retrieval · generated {{ report.generated_at }}</span></div>
+
+        <!-- a. Summary -->
+        <div class="mgrid eval-summary">
+          <div class="mcell"><div class="mcell-v">{{ report.summary.total }}</div><div class="mcell-k">questions evaluated</div></div>
+          <div class="mcell"><div class="mcell-v">{{ "%.3f"|format(report.summary.mean_overall) if report.summary.mean_overall is not none else "—" }}</div><div class="mcell-k">mean overall score</div></div>
+          <div class="mcell"><div class="mcell-v">{{ "%.1f"|format(report.summary.mean_latency) if report.summary.mean_latency is not none else "—" }}<span class="u">s</span></div><div class="mcell-k">mean latency</div></div>
+          <div class="mcell"><div class="mcell-v" style="color:{{ 'var(--danger)' if report.summary.error_count else 'var(--good)' }}">{{ report.summary.error_count }}</div><div class="mcell-k">failed rows (status=error)</div></div>
+        </div>
+
+        {# a2. Retrieval-mode comparison — omitted entirely when no ablation runs exist. #}
+        {% if ablation %}
+        <div class="sec-head"><span class="eyebrow">Retrieval mode comparison</span><span class="ln"></span><span class="eyebrow">semantic · graph · hybrid over the same golden set</span></div>
+
+        <div class="mgrid eval-summary abl-cards">
+          {% for m in ablation.modes %}
+          <div class="mcell{{ ' abl-prod' if m.production }}">
+            <div class="mcell-v {{ sclass(m.retrieval_recall) }}">{{ "%.3f"|format(m.retrieval_recall) if m.retrieval_recall is not none else "—" }}</div>
+            <div class="mcell-k">{{ m.label }} · mean recall{% if m.production %} · production{% endif %}</div>
+            <div class="abl-sub mono muted">
+              {{ m.count }} questions ·
+              {% if m.overall_score is not none %}overall {{ "%.3f"|format(m.overall_score) }}{% else %}retrieval-only{% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="abl-tabs" id="ablationTabs">
+          {% for mt in ablation.metrics %}
+          <button class="abl-tab{{ ' on' if loop.first }}" data-metric="{{ mt.key }}" title="{{ mt.key }}">{{ mt.label }}{% if mt.hybrid_only %} <span class="muted">·hybrid</span>{% endif %}</button>
+          {% endfor %}
+        </div>
+
+        {% for mt in ablation.metrics %}
+        <div class="abl-panel" data-metric-panel="{{ mt.key }}" {% if not loop.first %}hidden{% endif %}>
+          <div class="eval-table-wrap">
+            <table class="eval-table abl-table">
+              <thead>
+                <tr>
+                  <th data-type="text">Category</th>
+                  {% for m in ablation.modes %}
+                  <th class="num">{{ m.label }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for c in mt.categories %}
+                <tr>
+                  <td class="abl-cat">{{ c.label }} <span class="muted mono">· {{ c.counts.hybrid or c.counts.semantic or c.counts.graph }}</span></td>
+                  {% for cell in c.cells %}
+                  <td class="num {{ 'abl-na' if cell.not_applicable else sclass(cell.value) }}{{ ' abl-best' if cell.best }}">
+                    {% if cell.not_applicable %}n/a{% else %}{{ "%.3f"|format(cell.value) if cell.value is not none else "—" }}{% endif %}
+                  </td>
+                  {% endfor %}
+                </tr>
+                {% endfor %}
+                <tr class="abl-overall">
+                  <td class="abl-cat">Overall</td>
+                  {% for cell in mt.overall %}
+                  <td class="num {{ 'abl-na' if cell.not_applicable else sclass(cell.value) }}{{ ' abl-best' if cell.best }}">
+                    {% if cell.not_applicable %}n/a{% else %}{{ "%.3f"|format(cell.value) if cell.value is not none else "—" }}{% endif %}
+                  </td>
+                  {% endfor %}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          {% if mt.hybrid_only %}
+          <div class="abl-note muted mono">{{ mt.label }} needs answer generation — the retrieval-only semantic and graph modes report n/a rather than a 0 score.</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+
+        {% if ablation.has_abstention %}
+        <div class="sec-head"><span class="eyebrow">Abstention accuracy</span><span class="ln"></span><span class="eyebrow">questions annotated expects_abstention</span></div>
+        <div class="eval-cats">
+          {% for a in ablation.abstention %}
+          <div class="eval-cat">
+            <div class="eval-cat-label">{{ a.label }} <span class="muted mono">· {{ a.correct }}/{{ a.count }}</span></div>
+            <div class="eval-cat-bar"><span class="score-bar eval-bar"><span class="score-fill {{ sclass(a.accuracy) }}" style="width:{{ (a.accuracy * 100)|round(1) if a.accuracy is not none else 0 }}%"></span></span></div>
+            <div class="eval-cat-val mono {{ sclass(a.accuracy) }}">{{ "%.3f"|format(a.accuracy) if a.accuracy is not none else "—" }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% endif %}
+
+        <!-- b. Category breakdown -->
+        <div class="sec-head"><span class="eyebrow">Category breakdown</span><span class="ln"></span><span class="eyebrow">mean overall</span></div>
+        <div class="eval-cats">
+          {% for c in report.categories %}
+          <div class="eval-cat">
+            <div class="eval-cat-label">{{ c.label }} <span class="muted mono">· {{ c.count }}</span></div>
+            <div class="eval-cat-bar"><span class="score-bar eval-bar"><span class="score-fill {{ sclass(c.mean_overall) }}" style="width:{{ (c.mean_overall * 100)|round(1) if c.mean_overall is not none else 0 }}%"></span></span></div>
+            <div class="eval-cat-val mono {{ sclass(c.mean_overall) }}">{{ "%.3f"|format(c.mean_overall) if c.mean_overall is not none else "—" }}</div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- c. Per-question table -->
+        <div class="sec-head"><span class="eyebrow">Per-question metrics</span><span class="ln"></span><span class="eyebrow">click a row for detail · click a header to sort</span></div>
+        <div class="eval-table-wrap">
+          <table class="eval-table" id="evalTable">
+            <thead>
+              <tr>
+                <th data-type="text">Question</th>
+                <th data-type="text">Category</th>
+                <th data-type="num" class="num sortable">Overall</th>
+                {% for key, label in report.metrics %}
+                <th data-type="num" class="num sortable" title="{{ key }}">{{ label }}</th>
+                {% endfor %}
+                <th data-type="text">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in report.rows %}
+              <tr class="eval-row" data-id="{{ r.question_id }}">
+                <td class="eval-q">
+                  <span class="eval-qid mono">{{ r.question_id }}</span>
+                  <span class="eval-qtext" title="{{ r.question }}">{{ r.question }}</span>
+                </td>
+                <td><span class="tag">{{ r.category_label }}</span></td>
+                <td class="num" data-v="{{ r.overall_score if r.overall_score is not none else -1 }}">
+                  <span class="eval-score {{ sclass(r.overall_score) }}">{{ "%.3f"|format(r.overall_score) if r.overall_score is not none else "—" }}</span>
+                </td>
+                {% for key, label in report.metrics %}
+                {% set mv = r.metrics[key] %}
+                <td class="num {{ sclass(mv) }}" data-v="{{ mv if mv is not none else -1 }}">{{ fmt(mv) }}</td>
+                {% endfor %}
+                <td>
+                  {% if r.status == 'ok' %}<span class="eval-status ok">ok</span>
+                  {% else %}<span class="eval-status err" title="{{ r.error }}">{{ r.status }}</span>{% endif %}
+                </td>
+              </tr>
+              <tr class="eval-detail" data-detail="{{ r.question_id }}" hidden>
+                <td colspan="{{ 4 + report.metrics|length }}">
+                  <div class="eval-detail-body">
+                    {% if r.status != 'ok' and r.error %}
+                    <div class="notice error"><div class="notice-glyph">!</div><div><div class="notice-title">Row failed</div><div class="notice-body">{{ r.error }}</div></div></div>
+                    {% endif %}
+                    <div class="eval-question-full">
+                      <div class="eyebrow">Question <span class="eval-qid mono">{{ r.question_id }}</span></div>
+                      <div class="eval-qfull">{{ r.question }}</div>
+                    </div>
+                    <div class="eval-detail-grid">
+                      <div class="eval-detail-col">
+                        <div class="eyebrow">Answer</div>
+                        <div class="eval-answer">{{ r.answer or "—" }}</div>
+                      </div>
+                      <div class="eval-detail-col">
+                        <div class="kv">
+                          <div class="kv-row"><span class="kv-k">verdict inputs</span><span class="kv-v">{{ r.category_label }} · latency {{ "%.1f"|format(r.latency_seconds) if r.latency_seconds is not none else "—" }}s</span></div>
+                          <div class="kv-row"><span class="kv-k">regulations</span><span class="kv-v">exp {{ r.expected_regulations|join(", ") or "—" }} · got {{ r.retrieved_regulations|join(", ") or "—" }}</span></div>
+                          {% if r.notes %}<div class="kv-row"><span class="kv-k">notes</span><span class="kv-v">{{ r.notes }}</span></div>{% endif %}
+                        </div>
+                        <div class="eyebrow" style="margin-top:14px">Citations · {{ r.citations|length }}</div>
+                        <div class="pill-row">{% for c in r.citations %}<span class="pill">{{ c }}</span>{% else %}<span class="muted mono">none</span>{% endfor %}</div>
+
+                        <div class="eyebrow" style="margin-top:14px">Concepts · matched {{ r.matched_concepts|length }}/{{ r.expected_concepts|length }}</div>
+                        <div class="pill-row">
+                          {% for c in r.expected_concepts %}
+                          <span class="pill {{ 'accent' if c in r.matched_concepts else 'miss' }}">{{ c }}</span>
+                          {% else %}<span class="muted mono">none expected</span>{% endfor %}
+                        </div>
+
+                        <div class="eyebrow" style="margin-top:14px">Evidence keywords · matched {{ r.matched_evidence_keywords|length }}/{{ r.expected_evidence_keywords|length }}</div>
+                        <div class="pill-row">
+                          {% for k in r.expected_evidence_keywords %}
+                          <span class="pill {{ 'accent' if k in r.matched_evidence_keywords else 'miss' }}">{{ k }}</span>
+                          {% else %}<span class="muted mono">none expected</span>{% endfor %}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="eval-foot muted mono">Read-only report over pre-computed results · {{ report.path }}</div>
+      </div>
+    {% endif %}
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+  <script src="../static/js/kep-eval.js"></script>
+</body>
+</html>
