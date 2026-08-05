@@ -49,6 +49,8 @@
     hotEvidence: null,
     graph: null,      // KepGraph instance
     stepTimer: null,
+    resetArmed: false, // reset button waiting for confirmation click
+    resetTimer: null,
   };
 
   // ========================================================================
@@ -167,7 +169,11 @@
 
     left.innerHTML = `<div class="lp">
       <button class="lp-new" id="newQuery">+ New query</button>
-      <div class="lp-sec-title"><span class="eyebrow">Session history</span><span class="eyebrow">${state.history.length}</span></div>
+      <div class="lp-sec-title"><span class="eyebrow">Session history</span>
+        ${state.history.length
+          ? `<button class="lp-reset${state.resetArmed ? " arm" : ""}" id="resetBtn" title="Clear all queries from this session">${state.resetArmed ? "confirm?" : "reset · " + state.history.length}</button>`
+          : `<span class="eyebrow">0</span>`}
+      </div>
       ${state.history.length ? items : '<div class="session-meta" style="padding:8px 4px 18px;color:var(--fg-2)">No queries yet — ask one to begin.</div>'}
       <div class="lp-foot">
         <div class="metricline"><span class="k">retriever</span><span class="v">GraphRetriever</span></div>
@@ -177,6 +183,8 @@
     </div>`;
 
     $("#newQuery").addEventListener("click", newQuery);
+    const resetBtn = $("#resetBtn");
+    if (resetBtn) resetBtn.addEventListener("click", onResetClick);
     left.querySelectorAll("[data-hid]").forEach((b) => b.addEventListener("click", () => selectHistory(b.getAttribute("data-hid"))));
     updateNeoStat();
   }
@@ -363,18 +371,23 @@
   }
 
   // ---- determination (backend-derived verdict / obligations / summary) -----
+  // Fixed colour-per-verdict mapping, keyed ONLY on the backend-supplied
+  // determination verdict (never derived client-side from answer text). Three
+  // fixed tones: teal for graph-confirmed states (obligations_apply /
+  // permitted_with_conditions), rust-orange for prohibited, gray for the
+  // insufficient_evidence / unavailable / unconfirmed system states.
   const VERDICT_META = {
-    obligations_apply:         { badge: "obligation",   label: "Obligations apply" },
-    permitted_with_conditions: { badge: "permit",       label: "Permitted · conditions" },
-    prohibited:                { badge: "prohibit",     label: "Prohibited" },
-    insufficient_evidence:     { badge: "insufficient", label: "Insufficient evidence" },
-    unavailable:               { badge: "insufficient", label: "Determination unavailable" },
-    unconfirmed:               { badge: "insufficient", label: "Unconfirmed · not in graph" },
+    obligations_apply:         { badge: "confirmed",  label: "Obligations apply" },
+    permitted_with_conditions: { badge: "confirmed",  label: "Permitted · conditions" },
+    prohibited:                { badge: "prohibited", label: "Prohibited" },
+    insufficient_evidence:     { badge: "muted",      label: "Insufficient evidence" },
+    unavailable:               { badge: "muted",      label: "Determination unavailable" },
+    unconfirmed:               { badge: "muted",      label: "Unconfirmed · not in graph" },
   };
   function determinationBlock(vm) {
     const d = vm.determination;
     if (!d || !d.verdict) return "";
-    const meta = VERDICT_META[d.verdict] || { badge: "insufficient", label: d.verdict };
+    const meta = VERDICT_META[d.verdict] || { badge: "muted", label: d.verdict };
     const obligations = Array.isArray(d.obligations) ? d.obligations : [];
     const summary = d.summary ? `<span class="verdict-text">${inline(d.summary)}</span>` : "";
     const obs = obligations.length
@@ -554,6 +567,56 @@
     const ta = $("#composerInput"); if (ta) ta.focus();
   }
 
+  // ---- preloaded demo query -----------------------------------------------
+  // Seeds a ready-made question + full response into any empty session (fresh
+  // load or after a reset) so a recording can open a complete result instantly
+  // instead of waiting on a live query. Uses the bundled sample payloads, so the
+  // item carries the same "sample data" badge as the offline fallback.
+  // Seed more of them by widening the slice below.
+  const SEED_COUNT = 1;
+  function seedDemoQueries() {
+    if (state.history.length) return;
+    const examples = (window.KEP_DEMO && window.KEP_DEMO.examples) || [];
+    examples.slice(0, SEED_COUNT).reverse().forEach((ex) => {
+      if (!ex || !ex.payload) return;
+      const payload = clone(ex.payload);
+      state.history.unshift({
+        id: "q" + (++state.seq), question: ex.question, regulation: ex.regulation,
+        status: "done", time: nowLabel(), payload, vm: adapt(payload), demo: true,
+      });
+    });
+    if (state.history.length) saveHistory();
+  }
+
+  // ---- reset session ------------------------------------------------------
+  // Two-step (click to arm, click again to confirm) so a stray click mid-demo
+  // can't wipe the history. Clears queries only — the example questions in the
+  // composer are static and stay put, ready for the next run-through.
+  function onResetClick() {
+    if (!state.resetArmed) {
+      state.resetArmed = true;
+      renderLeft();
+      state.resetTimer = setTimeout(() => { state.resetArmed = false; state.resetTimer = null; renderLeft(); }, 3000);
+      return;
+    }
+    resetSession();
+  }
+  function resetSession() {
+    if (state.resetTimer) { clearTimeout(state.resetTimer); state.resetTimer = null; }
+    state.resetArmed = false;
+    stopStepper();
+    state.history = [];
+    state.activeId = null;
+    state.seq = 0;
+    state.hotEvidence = null;
+    state.graph = null;
+    state.inspectorTab = "plan";
+    try { localStorage.removeItem(HKEY); } catch (e) { /* disabled storage — non-fatal */ }
+    seedDemoQueries();                   // reset lands back on the demo-ready state
+    renderLeft(); renderCenter(); renderRight();
+    const ta = $("#composerInput"); if (ta) ta.focus();
+  }
+
   function selectHistory(id) {
     const item = state.history.find((h) => h.id === id); if (!item) return;
     state.activeId = id; state.hotEvidence = null; state.inspectorTab = "plan";
@@ -692,6 +755,7 @@
     applyTheme();
     wireHeader();
     loadHistory();
+    seedDemoQueries();
     renderLeft(); renderCenter(); renderRight();
     checkHealth();
   }

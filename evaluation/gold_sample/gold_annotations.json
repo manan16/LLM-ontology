@@ -1,0 +1,2017 @@
+{
+  "description": "HUMAN-REVIEWED annotations. Claude produced an initial pass (statement-type corrections, relationship-direction flags, node additions, hand-annotation of the failed chunk) with reasoning shown per item; a human reviewer has since read through and confirmed/overridden Claude's corrections. This file is now the gold standard for H1/H2 scoring.",
+  "schema": "Appendix B.1 (source_locator / evidence_text / statement_type / nodes / relationships / ambiguity_note)",
+  "validated": true,
+  "count": 15,
+  "records": [
+    {
+      "regulation": "GDPR",
+      "chunk_id": "gdpr:sec-0016:0:11436987f5",
+      "section_title": "30 Regulation (EU) 2016/679 of the European Parliament and of the Council of 27...",
+      "chunk_text": "30 Regulation (EU) 2016/679 of the European Parliament and of the Council of 27...\nDocument Generated: 2026-06-03\nChanges to legislation: Regulation (EU) 2016/679 of the European Parliament and of the Council \nis up to date with all changes known to be in force on or before 03 June 2026. There are changes \nthat may be brought into force at a future date. Changes that have been made appear in the content \nand are referenced with annotations. (See end of Document for details) View outstanding changes\nof their data in the Union once those data have been transferred so that that they will \ncontinue to benefit from fundamental rights and safeguards.\n(115)Some third countries adopt laws, regulations and other legal acts which purport \nto directly regulate the processing activities of natural and legal persons under the \njurisdiction of the Member States. This may include judgments of courts or tribunals \nor decisions of administrative authorities in third countries requiring a controller \nor processor to transfer or disclose personal data, and which are not based on an \ninternational agreement, such as a mutual legal assistance treaty, in force between \nthe requesting third country and the Union or a Member State. The extraterritorial \napplication of those laws, regulations and other legal acts may be in breach of \ninternational law and may impede the attainment of the protection of natural persons \nensured in the Union by this Regulation. Transfers should only be allowed where the \nconditions of this Regulation for a transfer to third countries are met. This may be the \ncase, inter alia, where disclosure is necessary for an important ground of public interest \nrecognised in Union or Member State law to which the controller is subject.",
+      "chunk_summary_draft": "Regulation (EU) 2016/679 outlines conditions under which transfers of personal data to third countries are allowed, emphasizing that such transfers should only occur if they meet the Regulation's conditions.",
+      "annotations": [
+        {
+          "source_locator": "",
+          "evidence_text": "Some third countries adopt laws, regulations and other legal acts which purport to directly regulate the processing activities of natural and legal persons under the jurisdiction of the Member States. This may include judgments of courts or tribunals or decisions of administrative authorities in third countries requiring a controller or processor to transfer or disclose personal data, and which are not based on an international agreement, such as a mutual legal assistance treaty, in force between the requesting third country and the Union or a Member State.",
+          "statement_type": "risk",
+          "nodes": [
+            {
+              "node_type": "Risk",
+              "canonical_name": "Extraterritorial application of third-country law",
+              "raw_text": "laws, regulations and other legal acts which purport to directly regulate",
+              "confidence": 0.7
+            }
+          ],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_original_type": "prohibition",
+          "claude_note": "Removed MITIGATES_RISK relationship -- nothing in this sentence mitigates a risk, it IS the risk description. See annotation 3, which describes the consequence of this same risk."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Transfers should only be allowed where the conditions of this Regulation for a transfer to third countries are met.",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "LegalBasis",
+              "canonical_name": "Conditions for transfer to third countries",
+              "raw_text": "the conditions of this Regulation for a transfer to third countries",
+              "confidence": 0.75
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "HAS_CONDITION",
+              "source_canonical_name": "Conditions for Transfers to Third Countries",
+              "source_node_type": "Requirement",
+              "target_canonical_name": "Regulation (EU) 2016/679 Conditions",
+              "target_node_type": "LegalBasis"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "Type 'requirement' kept -- reasonable, but this is recital language ('should') not operative Article text ('shall'). Lower confidence / non-binding wording worth noting if used as gold. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "This may be the case, inter alia, where disclosure is necessary for an important ground of public interest recognised in Union or Member State law to which the controller is subject.",
+          "statement_type": "exception",
+          "nodes": [
+            {
+              "node_type": "Exception",
+              "canonical_name": "Important ground of public interest",
+              "raw_text": "an important ground of public interest recognised in Union or Member State law",
+              "confidence": 0.7
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "HAS_CONDITION",
+              "source_canonical_name": "Necessary for Important Grounds of Public Interest",
+              "source_node_type": "Requirement",
+              "target_canonical_name": "Important Grounds of Public Interest Recognised in Union or Member State Law",
+              "target_node_type": "LegalBasis"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_original_type": "requirement",
+          "claude_note": "RETYPED requirement -> exception: This elaborates a specific carve-out ('important ground of public interest') to the transfer condition in annotation 1, not a freestanding requirement -- fits 'exception' more precisely per the schema's category definitions. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "The extraterritorial application of those laws, regulations and other legal acts may be in breach of international law and may impede the attainment of the protection of natural persons ensured in the Union by this Regulation.",
+          "statement_type": "risk",
+          "nodes": [
+            {
+              "node_type": "Risk",
+              "canonical_name": "Breach of international law and impediment to data-subject protection",
+              "raw_text": "may be in breach of international law and may impede the attainment of the protection of natural persons",
+              "confidence": 0.7
+            }
+          ],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_original_type": "prohibition",
+          "claude_note": "Removed MITIGATES_RISK -- same reasoning as annotation 0."
+        }
+      ],
+      "needs_review": false,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note. | CHUNK-LEVEL: this is GDPR Recital 115 (non-binding preamble), not an operative Article. Two of four draft statements were mistyped as 'prohibition' when they are 'risk' descriptions -- part of a broader recital-mistyping pattern also seen in gdpr:sec-0006:3."
+    },
+    {
+      "regulation": "GDPR",
+      "chunk_id": "gdpr:sec-0019:3:77902c1dfc",
+      "section_title": "36 Regulation (EU) 2016/679 of the European Parliament and of the Council of 27...",
+      "chunk_text": "l remedies relating to the application of this Regulation, national \ncourts which consider a decision on the question necessary to enable them to give\n\n[Page 37]\nRegulation (EU) 2016/679 of the European Parliament and of the Council of 27...\nDocument Generated: 2026-06-0337\nChanges to legislation: Regulation (EU) 2016/679 of the European Parliament and of the Council \nis up to date with all changes known to be in force on or before 03 June 2026. There are changes \nthat may be brought into force at a future date. Changes that have been made appear in the content \nand are referenced with annotations. (See end of Document for details) View outstanding changes\njudgment, may, or in the case provided for in Article 267 TFEU, must, request the Court \nof Justice to give a preliminary ruling on the interpretation of Union law, including \nthis Regulation. Furthermore, where a decision of a supervisory authority implementing \na decision of the Board is challenged before a national court and the validity of the \ndecision of the Board is at issue, that national court does not have the power to declare \nthe Board's decision invalid but must refer the question of validity to the Court of Justice \nin accordance with Article 267 TFEU as interpreted by the Court of Justice, where it \nconsiders the decision invalid. However, a national court may not refer a question on \nthe validity of the decision of the Board at the request of a natural or legal person which \nhad the opportunity to bring an action for annulment of that decision, in particular if it \nwas directly and individually concerned by that decision, but had not done so within \nthe period laid down in Article 263 TFEU.\n(144) Where a court seized of proceedings against a decision by a supervisory authority has \nreason to believe th",
+      "chunk_summary_draft": "This chunk discusses the procedures for national courts to seek preliminary rulings from the Court of Justice regarding interpretations of Union law, including GDPR. It also outlines the limitations on referring questions about the validity of decisions made by the Board.",
+      "annotations": [
+        {
+          "source_locator": "",
+          "evidence_text": "a national court may not refer a question on the validity of the decision of the Board at the request of a natural or legal person which had the opportunity to bring an action for annulment of that decision, in particular if it was directly and individually concerned by that decision, but had not done so within the period laid down in Article 263 TFEU.",
+          "statement_type": "prohibition",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "National Court",
+              "raw_text": "national court",
+              "confidence": 0.8
+            },
+            {
+              "node_type": "Actor",
+              "canonical_name": "Court of Justice of the European Union",
+              "raw_text": "Court of Justice",
+              "confidence": 0.85
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "LIMITED_BY",
+              "source_canonical_name": "national_court_referral_limitation",
+              "source_node_type": "Prohibition",
+              "target_canonical_name": "Article_263_TFEU_deadline",
+              "target_node_type": "Deadline"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "Type 'prohibition' is defensible ('may not refer'). Relationship uses snake_case canonical names ('national_court_referral_limitation') inconsistent with the natural-language convention used elsewhere (e.g. chunk sec-0016:0's 'Prohibited Extraterritorial Application of Laws') -- normalize casing convention before treating as gold. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "national courts which consider a decision on the question necessary to enable them to give judgment, may, or in the case provided for in Article 267 TFEU, must, request the Court of Justice to give a preliminary ruling on the interpretation of Union law, including this Regulation.",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "National Court",
+              "raw_text": "national courts",
+              "confidence": 0.8
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "REQUIRES_AUTHORIZATION",
+              "source_canonical_name": "national_court_preliminary_ruling_request",
+              "source_node_type": "Requirement",
+              "target_canonical_name": "Article_267_TFEU_authorization",
+              "target_node_type": "Authorization"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "SYSTEMIC ISSUE (see summary): REQUIRES_AUTHORIZATION doesn't fit -- this is a discretionary/mandatory referral duty ('may... must... request the Court of Justice'), not an authorization requirement. No clean existing relationship type captures 'X may/must request a ruling from Y'; consider dropping the relationship or using a generic APPLIES_TO to the Court of Justice as recipient. Left as-is pending your decision on the IMPOSES_ON/APPLIES_TO direction convention -- do not treat as auto-corrected. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Furthermore, where a decision of a supervisory authority implementing a decision of the Board is challenged before a national court and the validity of the decision of the Board is at issue, that national court does not have the power to declare the Board's decision invalid but must refer the question of validity to the Court of Justice in accordance with Article 267 TFEU as interpreted by the Court of Justice.",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "National Court",
+              "raw_text": "national court",
+              "confidence": 0.8
+            },
+            {
+              "node_type": "Actor",
+              "canonical_name": "European Data Protection Board",
+              "raw_text": "the Board",
+              "confidence": 0.75
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "REQUIRES_AUTHORIZATION",
+              "source_canonical_name": "national_court_board_decision_referral",
+              "source_node_type": "Requirement",
+              "target_canonical_name": "Article_267_TFEU_authorization",
+              "target_node_type": "Authorization"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "SYSTEMIC ISSUE (see summary): Same REQUIRES_AUTHORIZATION mismatch as annotation 1. Left as-is pending your decision on the IMPOSES_ON/APPLIES_TO direction convention -- do not treat as auto-corrected. | Nodes added by Claude from explicit text mentions -- please verify."
+        }
+      ],
+      "needs_review": false,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note. | CHUNK-LEVEL FLAG: this chunk is about EU judicial referral procedure under Article 267 TFEU, not GDPR duties on a regulated actor (Controller/Processor/Provider). Low relevance to the compliance ontology's intended use case (a healthcare AI vendor won't query 'when must a national court refer to the CJEU'). Worth deciding whether this is legitimately in-scope for the golden/stress question sets, or whether the chunker is pulling in adjacent procedural recitals that dilute extraction-quality signal. This is a retrieval/corpus-scoping observation, not strictly an extraction error."
+    },
+    {
+      "regulation": "GDPR",
+      "chunk_id": "gdpr:sec-0078:0:d46a526c26",
+      "section_title": "3 The basis for the processing referred to in point (c) F46... of paragraph 1 shall be laid",
+      "chunk_text": "3 The basis for the processing referred to in point (c) F46... of paragraph 1 shall be laid \ndown by [F47domestic law ].\n[F48The basis for the processing referred to in point (e) of paragraph 1 must be laid down \nby domestic law or relevant international law (see section 9A of the 2018 Act). ]\nThe purpose of the processing shall be determined in that legal basis or, as regards \nthe processing referred to in point (e) of paragraph 1, shall be necessary for the \nperformance of a task [F49of the controller ] carried out in the public interest or [F50a \ntask carried out ] in the exercise of official authority vested in the controller. That \nlegal basis may contain specific provisions to adapt the application of rules of this \nRegulation, inter alia: the general conditions governing the lawfulness of processing \nby the controller; the types of data which are subject to the processing; the data \nsubjects concerned; the entities to, and the purposes for which, the personal data may \nbe disclosed; the purpose limitation; storage periods; and processing operations and \nprocessing procedures, including measures to ensure lawful and fair processing such \nas those for other specific processing situations as provided for in Chapter IX. [F51The \ndomestic law ][F52or relevant international law ] shall meet an objective of public interest \nand be proportionate to the legitimate aim pursued.\nF534 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .\n[F545 For the purposes of paragraph 1(ea), processing is necessary for the purposes of a \nrecognised legitimate interest only if it meets a condition in Annex 1.",
+      "chunk_summary_draft": null,
+      "annotations": [
+        {
+          "source_locator": "GDPR (UK-retained/amended), Art. 6(1)(c)-area, chunk gdpr:sec-0078:0",
+          "evidence_text": "The basis for the processing referred to in point (c) of paragraph 1 shall be laid down by domestic law.",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "LegalBasis",
+              "canonical_name": "Domestic law basis for processing (Art 6(1)(c))",
+              "raw_text": "domestic law",
+              "confidence": 0.75
+            }
+          ],
+          "relationships": [],
+          "needs_review": false,
+          "claude_note": "Hand-annotated by Claude (chunk failed extraction). Evidence text cleaned of the [F46]/[F47] legislative-amendment bracket markers -- verify this cleaning is what you want; the raw model output on other chunks left these markers IN the evidence_text verbatim (see e.g. this same chunk's original evidence artefact noted in an earlier review pass), which is itself an Evidence-span-error candidate worth deciding a policy on."
+        },
+        {
+          "source_locator": "GDPR (UK-retained/amended), Art. 6(1)(e)-area, chunk gdpr:sec-0078:0",
+          "evidence_text": "The basis for the processing referred to in point (e) of paragraph 1 must be laid down by domestic law or relevant international law (see section 9A of the 2018 Act).",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "LegalBasis",
+              "canonical_name": "Domestic or international law basis for processing (Art 6(1)(e))",
+              "raw_text": "domestic law or relevant international law",
+              "confidence": 0.75
+            },
+            {
+              "node_type": "Citation",
+              "canonical_name": "Section 9A of the 2018 Act",
+              "raw_text": "section 9A of the 2018 Act",
+              "confidence": 0.8
+            }
+          ],
+          "relationships": [],
+          "needs_review": false,
+          "claude_note": "Hand-annotated by Claude."
+        },
+        {
+          "source_locator": "GDPR (UK-retained/amended), chunk gdpr:sec-0078:0",
+          "evidence_text": "The purpose of the processing shall be determined in that legal basis.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [
+            {
+              "relationship_type": "HAS_CONDITION",
+              "source_canonical_name": "Purpose of processing",
+              "source_node_type": "ProcessingActivity",
+              "target_canonical_name": "Legal basis",
+              "target_node_type": "LegalBasis"
+            }
+          ],
+          "needs_review": false,
+          "claude_note": "Hand-annotated by Claude."
+        },
+        {
+          "source_locator": "GDPR (UK-retained/amended), chunk gdpr:sec-0078:0",
+          "evidence_text": "That legal basis may contain specific provisions to adapt the application of rules of this Regulation, inter alia: the general conditions governing the lawfulness of processing by the controller; the types of data which are subject to the processing; the data subjects concerned; the entities to, and the purposes for which, the personal data may be disclosed; the purpose limitation; storage periods; and processing operations and processing procedures.",
+          "statement_type": "permission",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Controller",
+              "raw_text": "the controller",
+              "confidence": 0.8
+            }
+          ],
+          "relationships": [],
+          "needs_review": false,
+          "claude_note": "Hand-annotated by Claude. This lists several sub-topics (lawfulness conditions, data types, data subjects, disclosure entities, purpose limitation, storage periods, processing procedures) that could each become a separate DataCategory/ProcessingActivity node -- kept as one statement for annotation efficiency; split further if your F1 scoring wants finer granularity."
+        },
+        {
+          "source_locator": "GDPR (UK-retained/amended), chunk gdpr:sec-0078:0",
+          "evidence_text": "The domestic law or relevant international law shall meet an objective of public interest and be proportionate to the legitimate aim pursued.",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "Control",
+              "canonical_name": "Proportionality requirement on legal basis",
+              "raw_text": "shall meet an objective of public interest and be proportionate to the legitimate aim pursued",
+              "confidence": 0.75
+            }
+          ],
+          "relationships": [],
+          "needs_review": false,
+          "claude_note": "Hand-annotated by Claude. Debatable requirement-vs-control typing; flagging rather than asserting confidence."
+        },
+        {
+          "source_locator": "GDPR (UK-retained/amended), Art 6(1)(ea)-area, chunk gdpr:sec-0078:0",
+          "evidence_text": "For the purposes of paragraph 1(ea), processing is necessary for the purposes of a recognised legitimate interest only if it meets a condition in Annex 1.",
+          "statement_type": "exception",
+          "nodes": [
+            {
+              "node_type": "Exception",
+              "canonical_name": "Recognised legitimate interest condition (Annex 1)",
+              "raw_text": "only if it meets a condition in Annex 1",
+              "confidence": 0.75
+            }
+          ],
+          "relationships": [],
+          "needs_review": false,
+          "claude_note": "Hand-annotated by Claude."
+        }
+      ],
+      "needs_review": false,
+      "reviewer_notes": "HAND-ANNOTATED by Claude in full -- this chunk failed extraction (malformed JSON, context-cap truncation, per the Task-1 report). 6 statements identified from the raw chunk text. This is a genuine H2 failure-mode data point (documented malformed-JSON failure under the production default model) -- keep it in the sample rather than substituting a different chunk, per your earlier decision."
+    },
+    {
+      "regulation": "GDPR",
+      "chunk_id": "gdpr:sec-0353:0:75fd6cbb1d",
+      "section_title": "2 Where [F193the Commissioner ] is of the opinion that the intended processing referred",
+      "chunk_text": "2 Where [F193the Commissioner ] is of the opinion that the intended processing referred \nto in paragraph 1 would infringe this Regulation, in particular where the controller has \ninsufficiently identified or mitigated the risk, [F193the Commissioner ] shall, within period of \nup to eight weeks of receipt of the request for consultation, provide written advice to the \ncontroller and, where applicable to the processor, and may use any of its powers referred to \nin Article 58. That period may be extended by six weeks, taking into account the complexity \nof the intended processing. [F194The Commissioner ] shall inform the controller and, where \napplicable, the processor, of any such extension within one month of receipt of the request \nfor consultation together with the reasons for the delay. Those periods may be suspended \nuntil [F195the Commissioner has obtained information the Commissioner ] has requested for the \npurposes of the consultation.",
+      "chunk_summary_draft": "The GDPR provides a timeframe and process for the Commissioner to advise controllers and processors on potential infringements, including extensions and suspensions.",
+      "annotations": [
+        {
+          "source_locator": "",
+          "evidence_text": "[F193the Commissioner ] shall, within period of up to eight weeks of receipt of the request for consultation, provide written advice to the controller and, where applicable to the processor, and may use any of its powers referred to in Article 58.",
+          "statement_type": "obligation",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Commissioner",
+              "raw_text": "the Commissioner",
+              "confidence": 0.9
+            },
+            {
+              "node_type": "Actor",
+              "canonical_name": "Controller",
+              "raw_text": "the controller",
+              "confidence": 0.85
+            },
+            {
+              "node_type": "Actor",
+              "canonical_name": "Processor",
+              "raw_text": "the processor",
+              "confidence": 0.85
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "Commissioner",
+              "source_node_type": "Actor",
+              "target_canonical_name": "Controller, Processor",
+              "target_node_type": "Actor"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "SYSTEMIC ISSUE (see summary): IMPOSES_ON Commissioner -> Controller/Processor has the duty-bearer backwards: it is the COMMISSIONER who must provide written advice within 8 weeks, not the Controller/Processor. Controller and Processor are recipients of the advice, not the party bound by this duty. Left as-is pending your decision on the IMPOSES_ON/APPLIES_TO direction convention -- do not treat as auto-corrected. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "[F194The Commissioner ] shall inform the controller and, where applicable, the processor, of any such extension within one month of receipt of the request for consultation together with the reasons for the delay.",
+          "statement_type": "obligation",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Commissioner",
+              "raw_text": "The Commissioner",
+              "confidence": 0.9
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "Commissioner",
+              "source_node_type": "Actor",
+              "target_canonical_name": "Controller, Processor",
+              "target_node_type": "Actor"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "SYSTEMIC ISSUE (see summary): Same direction issue as annotation 0 -- Commissioner is the duty-bearer here. Left as-is pending your decision on the IMPOSES_ON/APPLIES_TO direction convention -- do not treat as auto-corrected. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Those periods may be suspended until [F195the Commissioner has obtained information the Commissioner ] has requested for the purposes of the consultation.",
+          "statement_type": "exception",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_original_type": "obligation",
+          "claude_note": "Removed IMPOSES_ON -- doesn't fit a statement where no one is obligated."
+        }
+      ],
+      "needs_review": false,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note. | Note evidence_text on all 3 annotations carries UK legislation.gov.uk amendment brackets verbatim ('[F193the Commissioner ]') -- same evidence-span-cleanliness question as the hand-annotated sec-0078:0 chunk. Decide a consistent policy (strip brackets vs. keep verbatim) before finalizing."
+    },
+    {
+      "regulation": "GDPR",
+      "chunk_id": "gdpr:sec-0006:3:f07803997a",
+      "section_title": "10 Regulation (EU) 2016/679 of the European Parliament and of the Council of 27...",
+      "chunk_text": "for such performance.\n(44) Processing should be lawful where it is necessary in the context of a contract or the \nintention to enter into a contract.\n\n[Page 11]\nRegulation (EU) 2016/679 of the European Parliament and of the Council of 27...\nDocument Generated: 2026-06-0311\nChanges to legislation: Regulation (EU) 2016/679 of the European Parliament and of the Council \nis up to date with all changes known to be in force on or before 03 June 2026. There are changes \nthat may be brought into force at a future date. Changes that have been made appear in the content \nand are referenced with annotations. (See end of Document for details) View outstanding changes\n(45) Where processing is carried out in accordance with a legal obligation to which the \ncontroller is subject or where processing is necessary for the performance of a task \ncarried out in the public interest or in the exercise of official authority, the processing \nshould have a basis in Union or Member State law. This Regulation does not require \na specific law for each individual processing. A law as a basis for several processing \noperations based on a legal obligation to which the controller is subject or where \nprocessing is necessary for the performance of a task carried out in the public interest \nor in the exercise of an official authority may be sufficient. It should also be for Union \nor Member State law to determine the purpose of processing. Furthermore, that law \ncould specify the general conditions of this Regulation governing the lawfulness of \npersonal data processing, establish specifications for determining the controller, the \ntype of personal data which are subject to the processing, the data subjects concerned, \nthe entities to which the personal data may be disclosed, the purpose limitations, t",
+      "chunk_summary_draft": "This chunk discusses lawful processing under GDPR, specifically when it is necessary in the context of a contract or intention to enter into a contract.",
+      "annotations": [
+        {
+          "source_locator": "Regulation (EU) 2016/679 of the European Parliament and of the Council | sec-0006 | 10 Regulation (EU) 2016/679 of the European Parliament and of the Council of 27...",
+          "evidence_text": "Processing should be lawful where it is necessary in the context of a contract or the intention to enter into a contract.",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "LegalBasis",
+              "canonical_name": "Contract or intention to enter into contract (Art 6(1)(b))",
+              "raw_text": "necessary in the context of a contract or the intention to enter into a contract",
+              "confidence": 0.75
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "HAS_CONDITION",
+              "source_canonical_name": "processing_necessary_contract",
+              "source_node_type": "Obligation",
+              "target_canonical_name": "context_of_contract",
+              "target_node_type": "Requirement"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_original_type": "obligation",
+          "claude_note": "RETYPED obligation -> requirement: Recital 44 ('Processing SHOULD be lawful where...') states a condition for lawfulness, not an obligation on an actor to actively do something. Same recital-mistyping pattern as gdpr:sec-0016:0. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "Regulation (EU) 2016/679 of the European Parliament and of the Council | sec-0006 | 10 Regulation (EU) 2016/679 of the European Parliament and of the Council of 27...",
+          "evidence_text": "Where processing is carried out in accordance with a legal obligation to which the controller is subject or where processing is necessary for the performance of a task carried out in the public interest or in the exercise of official authority, the processing should have a basis in Union or Member State law.",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "LegalBasis",
+              "canonical_name": "Legal obligation or public-interest task basis (Art 6(1)(c)/(e))",
+              "raw_text": "a legal obligation to which the controller is subject",
+              "confidence": 0.75
+            },
+            {
+              "node_type": "Actor",
+              "canonical_name": "Controller",
+              "raw_text": "the controller",
+              "confidence": 0.85
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "HAS_CONDITION",
+              "source_canonical_name": "processing_necessary_legal_obligation",
+              "source_node_type": "Obligation",
+              "target_canonical_name": "legal_obligation_controller",
+              "target_node_type": "Requirement"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_original_type": "obligation",
+          "claude_note": "RETYPED obligation -> requirement: Recital 45 ('the processing SHOULD have a basis in Union or Member State law') -- same pattern. | Nodes added by Claude from explicit text mentions -- please verify."
+        }
+      ],
+      "needs_review": false,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note. | Both statements in this chunk were typed 'obligation' in the draft; retyped to 'requirement' -- third GDPR chunk in this sample showing the same recital-vs-operative-article mistyping pattern (also sec-0016:0). Worth reporting as a generalizable H1 finding: the model appears to type recital language as strongly as operative Article language, when recitals are non-binding interpretive aids under EU/UK legislative drafting convention."
+    },
+    {
+      "regulation": "HIPAA",
+      "chunk_id": "hipaa.pdf:sec-0000:11:c233a60022",
+      "section_title": "Preamble",
+      "chunk_text": "specification(s); or change the meaning or intent of the standard\u2019s \nimplementation specification(s). \nC. Additional Requirements for Health Plans \n10\n\n[Page 11]\n6. If an entity requests a health plan to conduct a transaction as a standard \ntransaction, the health plan must do so. \n7. A health plan may not reject a transaction, or attempt to adversely affect \nthe other entity or transaction because it is a standard transaction. \n8. A health plan may not reject a standard transaction on the basis that it \ncontains data elements not needed or used by the health plan. \n9. A health plan may not offer an incentive to a health care provider to \nconduct a transaction as a direct data entry transaction. \n10. A health plan that operates as a health care clearinghouse, or requires an \nentity to use a health care clearinghouse to receive, process, or transmit a standard \ntransaction may not charge fees or costs in excess of the fees or costs for normal \ntelecommunications that the entity incurs. \n11. If a health plan receives a standard transaction and coordinates benefits \nwith another health plan or payer, it must store the coordination of benefits data it \nneeds to forward the standard transaction to the other health plan or payer. \n12. A health plan must accept and promptly process any standard transaction \nthat contains codes that are valid. \n13. A health plan must keep code sets for the current billing period and \nappeals periods still open to processing under the terms of the health plan\u2019s \ncoverage. \nD. Compliance Date \nThe Compliance Date for the Transaction Standards is October 16, 2002. However, \nrecently passed legislation allows covered entities to apply for an extension of this deadline to \ndelay compliance until October 16, 2003. The University applied for this exte",
+      "chunk_summary_draft": "This chunk outlines specific requirements and prohibitions related to the handling of standard transactions by health plans under HIPAA.",
+      "annotations": [
+        {
+          "source_locator": "",
+          "evidence_text": "If an entity requests a health plan to conduct a transaction as a standard transaction, the health plan must do so. [Page 11]",
+          "statement_type": "obligation",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Health Plan",
+              "raw_text": "the health plan",
+              "confidence": 0.9
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "health_plan",
+              "source_node_type": "Actor",
+              "target_canonical_name": "standard_transaction",
+              "target_node_type": "DataCategory"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "SYSTEMIC ISSUE (see summary): IMPOSES_ON targets an activity/object (e.g. 'standard_transaction'), not an actor. Per the schema's own definition ('A duty is imposed on a specific actor/role'), this looks like it should be APPLIES_TO (statement scoped to an activity) with a separate IMPOSES_ON pointing to 'Health Plan' as the actor bearing the duty. This exact pattern repeats across most chunks in this sample -- see cross-chunk summary before correcting each individually. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "A health plan may not reject a transaction, or attempt to adversely affect the other entity or transaction because it is a standard transaction. [Page 11]",
+          "statement_type": "prohibition",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Health Plan",
+              "raw_text": "A health plan",
+              "confidence": 0.9
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "health_plan",
+              "source_node_type": "Actor",
+              "target_canonical_name": "standard_transaction",
+              "target_node_type": "DataCategory"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "SYSTEMIC ISSUE (see summary): IMPOSES_ON targets an activity/object (e.g. 'standard_transaction'), not an actor. Per the schema's own definition ('A duty is imposed on a specific actor/role'), this looks like it should be APPLIES_TO (statement scoped to an activity) with a separate IMPOSES_ON pointing to 'Health Plan' as the actor bearing the duty. This exact pattern repeats across most chunks in this sample -- see cross-chunk summary before correcting each individually. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "A health plan may not reject a standard transaction on the basis that it contains data elements not needed or used by the health plan. [Page 11]",
+          "statement_type": "prohibition",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Health Plan",
+              "raw_text": "A health plan",
+              "confidence": 0.9
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "health_plan",
+              "source_node_type": "Actor",
+              "target_canonical_name": "standard_transaction",
+              "target_node_type": "DataCategory"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "SYSTEMIC ISSUE (see summary): IMPOSES_ON targets an activity/object (e.g. 'standard_transaction'), not an actor. Per the schema's own definition ('A duty is imposed on a specific actor/role'), this looks like it should be APPLIES_TO (statement scoped to an activity) with a separate IMPOSES_ON pointing to 'Health Plan' as the actor bearing the duty. This exact pattern repeats across most chunks in this sample -- see cross-chunk summary before correcting each individually. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "A health plan may not offer an incentive to a health care provider to conduct a transaction as a direct data entry transaction. [Page 11]",
+          "statement_type": "prohibition",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Health Plan",
+              "raw_text": "A health plan",
+              "confidence": 0.9
+            },
+            {
+              "node_type": "Actor",
+              "canonical_name": "Health Care Provider",
+              "raw_text": "a health care provider",
+              "confidence": 0.85
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "health_plan",
+              "source_node_type": "Actor",
+              "target_canonical_name": "direct_data_entry_transaction",
+              "target_node_type": "DataCategory"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "SYSTEMIC ISSUE (see summary): IMPOSES_ON targets an activity/object (e.g. 'standard_transaction'), not an actor. Per the schema's own definition ('A duty is imposed on a specific actor/role'), this looks like it should be APPLIES_TO (statement scoped to an activity) with a separate IMPOSES_ON pointing to 'Health Plan' as the actor bearing the duty. This exact pattern repeats across most chunks in this sample -- see cross-chunk summary before correcting each individually. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "A health plan that operates as a health care clearinghouse, or requires an entity to use a health care clearinghouse to receive, process, or transmit a standard transaction may not charge fees or costs in excess of the fees or costs for normal telecommunications that the entity incurs. [Page 11]",
+          "statement_type": "prohibition",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Health Plan",
+              "raw_text": "A health plan",
+              "confidence": 0.9
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "health_plan",
+              "source_node_type": "Actor",
+              "target_canonical_name": "standard_transaction",
+              "target_node_type": "DataCategory"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "SYSTEMIC ISSUE (see summary): IMPOSES_ON targets an activity/object (e.g. 'standard_transaction'), not an actor. Per the schema's own definition ('A duty is imposed on a specific actor/role'), this looks like it should be APPLIES_TO (statement scoped to an activity) with a separate IMPOSES_ON pointing to 'Health Plan' as the actor bearing the duty. This exact pattern repeats across most chunks in this sample -- see cross-chunk summary before correcting each individually. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "If a health plan receives a standard transaction and coordinates benefits with another health plan or payer, it must store the coordination of benefits data it needs to forward the standard transaction to the other health plan or payer. [Page 11]",
+          "statement_type": "obligation",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Health Plan",
+              "raw_text": "a health plan",
+              "confidence": 0.9
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "health_plan",
+              "source_node_type": "Actor",
+              "target_canonical_name": "coordinated_benefits_data",
+              "target_node_type": "DataCategory"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "SYSTEMIC ISSUE (see summary): IMPOSES_ON targets an activity/object (e.g. 'standard_transaction'), not an actor. Per the schema's own definition ('A duty is imposed on a specific actor/role'), this looks like it should be APPLIES_TO (statement scoped to an activity) with a separate IMPOSES_ON pointing to 'Health Plan' as the actor bearing the duty. This exact pattern repeats across most chunks in this sample -- see cross-chunk summary before correcting each individually. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "A health plan must accept and promptly process any standard transaction that contains codes that are valid. [Page 11]",
+          "statement_type": "obligation",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Health Plan",
+              "raw_text": "A health plan",
+              "confidence": 0.9
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "health_plan",
+              "source_node_type": "Actor",
+              "target_canonical_name": "standard_transaction_with_valid_codes",
+              "target_node_type": "DataCategory"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "SYSTEMIC ISSUE (see summary): IMPOSES_ON targets an activity/object (e.g. 'standard_transaction'), not an actor. Per the schema's own definition ('A duty is imposed on a specific actor/role'), this looks like it should be APPLIES_TO (statement scoped to an activity) with a separate IMPOSES_ON pointing to 'Health Plan' as the actor bearing the duty. This exact pattern repeats across most chunks in this sample -- see cross-chunk summary before correcting each individually. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "A health plan must keep code sets for the current billing period and appeals periods still open to processing under the terms of the health plan\u2019s coverage. [Page 11]",
+          "statement_type": "obligation",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Health Plan",
+              "raw_text": "A health plan",
+              "confidence": 0.9
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "health_plan",
+              "source_node_type": "Actor",
+              "target_canonical_name": "code_sets_for_billing_and_appeals_periods",
+              "target_node_type": "DataCategory"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "SYSTEMIC ISSUE (see summary): IMPOSES_ON targets an activity/object (e.g. 'standard_transaction'), not an actor. Per the schema's own definition ('A duty is imposed on a specific actor/role'), this looks like it should be APPLIES_TO (statement scoped to an activity) with a separate IMPOSES_ON pointing to 'Health Plan' as the actor bearing the duty. This exact pattern repeats across most chunks in this sample -- see cross-chunk summary before correcting each individually. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "The Compliance Date for the Transaction Standards is October 16, 2002. However, recently passed legislation allows covered entities to apply for an extension of this deadline to delay compliance until October 16, 2003. The University applied for this exte",
+          "statement_type": "control",
+          "nodes": [
+            {
+              "node_type": "Deadline",
+              "canonical_name": "Transaction Standards Compliance Date",
+              "raw_text": "October 16, 2002",
+              "confidence": 0.85
+            },
+            {
+              "node_type": "Actor",
+              "canonical_name": "Covered Entity",
+              "raw_text": "covered entities",
+              "confidence": 0.8
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "HAS_DEADLINE",
+              "source_canonical_name": "compliance_date",
+              "source_node_type": "Control",
+              "target_canonical_name": "october_16_2002",
+              "target_node_type": "Deadline"
+            },
+            {
+              "relationship_type": "HAS_DEADLINE",
+              "source_canonical_name": "compliance_date",
+              "source_node_type": "Control",
+              "target_canonical_name": "october_16_2003",
+              "target_node_type": "Deadline"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "type 'control' with HAS_DEADLINE x2 is reasonable and well-formed -- kept as-is, no correction needed. | Nodes added by Claude from explicit text mentions -- please verify."
+        }
+      ],
+      "needs_review": false,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    },
+    {
+      "regulation": "HIPAA",
+      "chunk_id": "hipaa.pdf:sec-0002:1:251ce7d190",
+      "section_title": "30 days, provided that it provides a written statement to the",
+      "chunk_text": "red Entity must provide the individual with a \ntimely, written denial. The denial must use plain language and \ncontain: \ni. The basis for the denial; \nii. The individual\u2019s right to submit a written statement disagreeing with the denial and how the individual may file \nsuch a statement; \niii. A statement that, if the individual does not submit a \nstatement of disagreement, the individual may request the \nCovered Entity provide the individual\u2019s request for \namendment and the denial with any future disclosures of \nthe PHI; and \niv. A description of how the individual may complain to the \n50\n\n[Page 51]\nCovered Entity or to the Secretary of DHHS. The \ndescription must include the name, or title, and phone \nnumber of the designated contact person or office. \nb. Statement of Disagreement - The Covered Entity must permit the individual to submit a written statement disagreeing with the denial \nof all or part of the amendment and the basis of such disagreement. \nThe Covered Entity may reasonably limit the length of a statement \nof disagreement. \nc. Rebuttal Statement - The Covered Entity may prepare a written rebuttal to the statement of disagreement. Whenever a rebuttal is \nprepared, a copy must be provided to the individual. \nd. Recordkeeping  - The Covered Entity must, as appropriate, identify \nthe record of PHI that is the subject of the disputed amendment and \nappend or otherwise link the request, the denial, the statement of \ndisagreement and the rebuttal to the designated record set. \ne. Future Disclosures i. If a statement of disagreement has been submitted, the \nCovered Entity must include the information appended to \nthe record, or an accurate summary of such information, \nwith any subsequent disclosure of the PHI to which the \ndisagreement relates. \nii. If the individ",
+      "chunk_summary_draft": "This chunk outlines duties related to denial and amendment requests for Protected Health Information (PHI) by Covered Entities under HIPAA.",
+      "annotations": [
+        {
+          "source_locator": "",
+          "evidence_text": "The Covered Entity must provide the individual with a timely, written denial. The denial must use plain language and contain: i. The basis for the denial; ii. The individual\u2019s right to submit a written statement disagreeing with the denial and how the individual may file such a statement; iii. A statement that, if the individual does not submit a statement of disagreement, the individual may request the Covered Entity provide the individual\u2019s request for amendment and the denial with any future disclosures of the PHI; and iv. A description of how the individual may complain to the Covered Entity or to the Secretary of DHHS.",
+          "statement_type": "obligation",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Covered Entity",
+              "raw_text": "the Covered Entity",
+              "confidence": 0.9
+            },
+            {
+              "node_type": "IndividualRight",
+              "canonical_name": "Right to written denial",
+              "raw_text": "timely, written denial",
+              "confidence": 0.75
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "Covered Entity",
+              "source_node_type": "Actor",
+              "target_canonical_name": "individual",
+              "target_node_type": "Actor"
+            },
+            {
+              "relationship_type": "HAS_CONTROL",
+              "source_canonical_name": "Covered Entity",
+              "source_node_type": "Actor",
+              "target_canonical_name": "PHI",
+              "target_node_type": "DataCategory"
+            },
+            {
+              "relationship_type": "HAS_SAFEGUARD",
+              "source_canonical_name": "Covered Entity",
+              "source_node_type": "Actor",
+              "target_canonical_name": "written_statement_of_disagreement",
+              "target_node_type": "DataCategory"
+            },
+            {
+              "relationship_type": "HAS_CONTROL",
+              "source_canonical_name": "Covered Entity",
+              "source_node_type": "Actor",
+              "target_canonical_name": "complaints_to_Covered_Entity_or_Secretary_of_DHHS",
+              "target_node_type": "DataCategory"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_original_type": "definition",
+          "claude_note": "RETYPED definition -> obligation: Draft typed all 5 as 'definition', but every one is an operative 'must' duty on the Covered Entity (provide denial, permit statement of disagreement, provide rebuttal copy, identify/link records, include information in future disclosures). None of these define a term -- they impose duties. This looks like a systematic under-use of 'obligation' in favour of 'definition' in this chunk. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "The Covered Entity must permit the individual to submit a written statement disagreeing with the denial of all or part of the amendment and the basis of such disagreement. The Covered Entity may reasonably limit the length of a statement of disagreement.",
+          "statement_type": "obligation",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Covered Entity",
+              "raw_text": "The Covered Entity",
+              "confidence": 0.9
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "Covered Entity",
+              "source_node_type": "Actor",
+              "target_canonical_name": "individual",
+              "target_node_type": "Actor"
+            },
+            {
+              "relationship_type": "HAS_CONTROL",
+              "source_canonical_name": "Covered Entity",
+              "source_node_type": "Actor",
+              "target_canonical_name": "written_statement_of_disagreement",
+              "target_node_type": "DataCategory"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_original_type": "definition",
+          "claude_note": "RETYPED definition -> obligation: Draft typed all 5 as 'definition', but every one is an operative 'must' duty on the Covered Entity (provide denial, permit statement of disagreement, provide rebuttal copy, identify/link records, include information in future disclosures). None of these define a term -- they impose duties. This looks like a systematic under-use of 'obligation' in favour of 'definition' in this chunk. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "The Covered Entity may prepare a written rebuttal to the statement of disagreement. Whenever a rebuttal is prepared, a copy must be provided to the individual.",
+          "statement_type": "obligation",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Covered Entity",
+              "raw_text": "The Covered Entity",
+              "confidence": 0.9
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "Covered Entity",
+              "source_node_type": "Actor",
+              "target_canonical_name": "individual",
+              "target_node_type": "Actor"
+            },
+            {
+              "relationship_type": "HAS_CONTROL",
+              "source_canonical_name": "Covered Entity",
+              "source_node_type": "Actor",
+              "target_canonical_name": "written_rebuttal",
+              "target_node_type": "DataCategory"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_original_type": "definition",
+          "claude_note": "RETYPED definition -> obligation: Draft typed all 5 as 'definition', but every one is an operative 'must' duty on the Covered Entity (provide denial, permit statement of disagreement, provide rebuttal copy, identify/link records, include information in future disclosures). None of these define a term -- they impose duties. This looks like a systematic under-use of 'obligation' in favour of 'definition' in this chunk. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "The Covered Entity must, as appropriate, identify the record of PHI that is the subject of the disputed amendment and append or otherwise link the request, the denial, the statement of disagreement and the rebuttal to the designated record set.",
+          "statement_type": "obligation",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Covered Entity",
+              "raw_text": "The Covered Entity",
+              "confidence": 0.9
+            },
+            {
+              "node_type": "ProtectedHealthInformation",
+              "canonical_name": "PHI record subject to amendment",
+              "raw_text": "the record of PHI",
+              "confidence": 0.75
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "Covered Entity",
+              "source_node_type": "Actor",
+              "target_canonical_name": "PHI",
+              "target_node_type": "DataCategory"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_original_type": "definition",
+          "claude_note": "RETYPED definition -> obligation: Draft typed all 5 as 'definition', but every one is an operative 'must' duty on the Covered Entity (provide denial, permit statement of disagreement, provide rebuttal copy, identify/link records, include information in future disclosures). None of these define a term -- they impose duties. This looks like a systematic under-use of 'obligation' in favour of 'definition' in this chunk. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "If a statement of disagreement has been submitted, the Covered Entity must include the information appended to the record, or an accurate summary of such information, with any subsequent disclosure of the PHI to which the disagreement relates.",
+          "statement_type": "obligation",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Covered Entity",
+              "raw_text": "the Covered Entity",
+              "confidence": 0.9
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "Covered Entity",
+              "source_node_type": "Actor",
+              "target_canonical_name": "PHI",
+              "target_node_type": "DataCategory"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_original_type": "definition",
+          "claude_note": "RETYPED definition -> obligation: Draft typed all 5 as 'definition', but every one is an operative 'must' duty on the Covered Entity (provide denial, permit statement of disagreement, provide rebuttal copy, identify/link records, include information in future disclosures). None of these define a term -- they impose duties. This looks like a systematic under-use of 'obligation' in favour of 'definition' in this chunk. | Nodes added by Claude from explicit text mentions -- please verify."
+        }
+      ],
+      "needs_review": false,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    },
+    {
+      "regulation": "HIPAA",
+      "chunk_id": "hipaa.pdf:sec-0000:30:37bf526edb",
+      "section_title": "Preamble",
+      "chunk_text": "the recipient and no longer protected by the Privacy regulations. \nAn authorization may contain other elements which are not inconsistent with the \n20\n\n[Page 21]\nrequired elements. A valid authorization must be written in plain language. \nIf a Covered Entity seeks an authorization from an individual for use or disclosure of \nPHI, the Covered Entity must provide the individual with a copy of the signed authorization. 3. Defective Authorizations \nAn authorization is not valid if it has any of the following defects: \nb. The expiration date has passed or the expiration event is known by \nthe Covered Entity to have occurred; \nc. The authorization has not been filled out completely with respect \nto a required element, if applicable; \nd. The authorization is known by the Covered Entity to have been \nrevoked; \ne. The authorization is a prohibited compound or conditioned \nauthorization; \nf. Any material information in the authorization is known by the \nCovered Entity to be false. \n3. Compound Authorizations \nAn authorization for use or disclosure of PHI may not be combined with any other \ndocument to create a compound authorization, except as follows: \nb. An authorization for the use or disclosure of PHI for a research \nstudy may be combined with any other type of written permission for the \nsame research study, including another authorization for the use or \ndisclosure of PHI for such research or a consent to participate in such \nresearch. \nc. An authorization for the use or disclosure of psychotherapy notes \nmay only be combined with another authorization for the use or disclosure \nof psychotherapy notes. \nd. An authorization, other than an authorization for the use or \ndisclosure of psychotherapy notes, may be combined with any other such \nauthorization, except where the Cove",
+      "chunk_summary_draft": "This chunk discusses requirements and conditions related to authorizations for use or disclosure of Protected Health Information (PHI) by Covered Entities under HIPAA.",
+      "annotations": [
+        {
+          "source_locator": "",
+          "evidence_text": "A valid authorization must be written in plain language.",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "Authorization",
+              "canonical_name": "Valid authorization plain-language requirement",
+              "raw_text": "must be written in plain language",
+              "confidence": 0.75
+            }
+          ],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "type 'requirement' reasonable -- kept. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "If a Covered Entity seeks an authorization from an individual for use or disclosure of PHI, the Covered Entity must provide the individual with a copy of the signed authorization.",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Covered Entity",
+              "raw_text": "the Covered Entity",
+              "confidence": 0.9
+            }
+          ],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "type 'requirement' reasonable -- kept. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "An authorization for use or disclosure of PHI may not be combined with any other document to create a compound authorization, except as follows:",
+          "statement_type": "prohibition",
+          "nodes": [
+            {
+              "node_type": "Authorization",
+              "canonical_name": "Compound authorization",
+              "raw_text": "compound authorization",
+              "confidence": 0.75
+            }
+          ],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "type 'prohibition' reasonable ('may not be combined') -- kept. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "An authorization for the use or disclosure of PHI for a research study may be combined with any other type of written permission for the same research study, including another authorization for the use or disclosure of PHI for such research or a consent to participate in such research.",
+          "statement_type": "exception",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "type 'exception' correct -- this is the carve-out to annotation 2's prohibition. Kept."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "An authorization for the use or disclosure of psychotherapy notes may only be combined with another authorization for the use or disclosure of psychotherapy notes.",
+          "statement_type": "exception",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_original_type": "prohibition",
+          "claude_note": "RETYPED prohibition -> exception: Draft typed 'prohibition', but 'may only be combined with another authorization for psychotherapy notes' is itself a narrower exception to the general compound-authorization prohibition (annotation 2), structurally parallel to annotation 3 which was correctly typed 'exception'."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "An authorization, other than an authorization for the use or disclosure of psychotherapy notes, may be combined with any other such authorization, except where the Cove",
+          "statement_type": "prohibition",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "TRUNCATED in the draft (evidence_text cuts off mid-sentence: '...except where the Cove'). This looks like a genuine extraction truncation -- flag as an Evidence-span error rather than silently completing it; the chunk_text itself is also cut off at this point so the full clause may not even be in this chunk's window.",
+          "claude_flag": "TRUNCATED_EVIDENCE"
+        }
+      ],
+      "needs_review": false,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    },
+    {
+      "regulation": "HIPAA",
+      "chunk_id": "hipaa.pdf:sec-0001:13:70c6faadd6",
+      "section_title": "37 ii",
+      "chunk_text": "t that, where the \nrestricted PHI is needed for emergency treatment, the Covered \nEntity may use or disclose such PHI to a health care provider to \n44\n\n[Page 45]\nprovide such treatment to the individual. If the restricted PHI is \ndisclosed for emergency treatment, the Covered Entity must \nrequest that the health care provider not further use or disclose the \ninformation. \nd. A restriction agreed to is not effective to prevent uses or disclosures permitted or required to the Secretary of DHHS for \ncompliance, for facility directories or for which authorization or an \nopportunity to agree or object is not required. \ne. Terminating a Restriction  - A Covered Entity may terminate its \nagreement to a restriction if: \niii. The individual agrees to or requests \nthe termination in writing; \niv. The individual orally agrees to the \ntermination and the oral agreement is documented; or \nv. The Covered Entity informs the \nindividual it is terminating its agreement to the restriction, except that such termination is only effective with regard to \nPHI created or received after it has so informed the \nindividual. \nf. A Covered Entity that agrees to a restriction must document that \nrestriction. \n2. Confidential Communications Requirements a. A covered health care provider must permit individuals to request \nand must accommodate reasonable requests to receive \ncommunications of PHI by alternative means or at alternative \nlocations. \nb. A health plan must permit individuals to request and must accommodate reasonable requests to receive communications of \nPHI by alternative means or at alternative locations, if the \nindividual clearly states that the disclosure of all or part of that \ninformation could endanger the individual. \nc. A Covered Entity may require an individual to make a requ",
+      "chunk_summary_draft": "This chunk discusses the use and disclosure of restricted PHI for emergency treatment, restrictions on PHI usage, termination of restrictions, and confidentiality requirements for communication of PHI.",
+      "annotations": [
+        {
+          "source_locator": "",
+          "evidence_text": "the Covered Entity may use or disclose such PHI to a health care provider to provide such treatment to the individual. If the restricted PHI is disclosed for emergency treatment, the Covered Entity must request that the health care provider not further use or disclose the information.",
+          "statement_type": "permission",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Covered Entity",
+              "raw_text": "the Covered Entity",
+              "confidence": 0.9
+            },
+            {
+              "node_type": "Actor",
+              "canonical_name": "Health Care Provider",
+              "raw_text": "a health care provider",
+              "confidence": 0.85
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "REQUIRES_AUTHORIZATION",
+              "source_canonical_name": "use_or_disclose_restricted_phi_for_emergency_treatment",
+              "source_node_type": "Actor",
+              "target_canonical_name": "emergency_treatment",
+              "target_node_type": "ProcessingActivity"
+            },
+            {
+              "relationship_type": "HAS_CONTROL",
+              "source_canonical_name": "use_or_disclose_restricted_phi_for_emergency_treatment",
+              "source_node_type": "Actor",
+              "target_canonical_name": "health_care_provider",
+              "target_node_type": "Actor"
+            },
+            {
+              "relationship_type": "HAS_CONDITION",
+              "source_canonical_name": "use_or_disclose_restricted_phi_for_emergency_treatment",
+              "source_node_type": "Actor",
+              "target_canonical_name": "not_further_use_or_disclose_information",
+              "target_node_type": "Control"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_original_type": "obligation",
+          "claude_note": "RETYPED obligation -> permission: 'the Covered Entity MAY use or disclose...for emergency treatment' is a permission, not an obligation -- nothing requires the Covered Entity to do this. (The immediately following 'must request that the provider not further disclose' IS an obligation and should probably be split into its own statement.) | SYSTEMIC ISSUE (see summary): REQUIRES_AUTHORIZATION target 'emergency_treatment' doesn't fit the relationship's meaning (requiring prior authorization) -- this describes a permitted use case, not an authorization requirement. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "A Covered Entity that agrees to a restriction must document that restriction.",
+          "statement_type": "obligation",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Covered Entity",
+              "raw_text": "A Covered Entity",
+              "confidence": 0.9
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "REQUIRES_DOCUMENTATION",
+              "source_canonical_name": "document_restriction_agreement",
+              "source_node_type": "Actor",
+              "target_canonical_name": "restriction",
+              "target_node_type": "Control"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "type 'obligation' correct ('must document'). Kept. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "A Covered Entity may terminate its agreement to a restriction if: the individual agrees to or requests the termination in writing; the individual orally agrees to the termination and the oral agreement is documented; or the Covered Entity informs the individual it is terminating its agreement to the restriction, except that such termination is only effective with regard to PHI created or received after it has so informed the individual.",
+          "statement_type": "obligation",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Covered Entity",
+              "raw_text": "A Covered Entity",
+              "confidence": 0.9
+            },
+            {
+              "node_type": "Individual",
+              "canonical_name": "Individual (data subject)",
+              "raw_text": "the individual",
+              "confidence": 0.75
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "HAS_CONDITION",
+              "source_canonical_name": "terminate_restriction_agreement",
+              "source_node_type": "Actor",
+              "target_canonical_name": "individual_agrees_to_or_requests_termination_in_writing",
+              "target_node_type": "Control"
+            },
+            {
+              "relationship_type": "HAS_CONDITION",
+              "source_canonical_name": "terminate_restriction_agreement",
+              "source_node_type": "Actor",
+              "target_canonical_name": "individual_orally_agrees_to_termination_and_documented",
+              "target_node_type": "Control"
+            },
+            {
+              "relationship_type": "HAS_CONDITION",
+              "source_canonical_name": "terminate_restriction_agreement",
+              "source_node_type": "Actor",
+              "target_canonical_name": "covered_entity_informs_individual_of_termination",
+              "target_node_type": "Control"
+            },
+            {
+              "relationship_type": "HAS_DEADLINE",
+              "source_canonical_name": "terminate_restriction_agreement",
+              "source_node_type": "Actor",
+              "target_canonical_name": "effective_with_regard_to_phi_created_or_received_after_informed",
+              "target_node_type": "Control"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "type 'obligation' is debatable -- 'may terminate...if' is closer to a conditional permission than an obligation; the conditions themselves (HAS_CONDITION x3) are correctly captured either way. Leaning 'permission' but flagging rather than asserting. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "A covered health care provider must permit individuals to request and must accommodate reasonable requests to receive communications of PHI by alternative means or at alternative locations. A health plan must permit individuals to request and must accommodate reasonable requests to receive communications of PHI by alternative means or at alternative locations, if the individual clearly states that the disclosure of all or part of that information could endanger the individual.",
+          "statement_type": "obligation",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Covered Entity",
+              "raw_text": "A covered health care provider",
+              "confidence": 0.85
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "REQUIRES_AUTHORIZATION",
+              "source_canonical_name": "permit_confidential_communications",
+              "source_node_type": "Actor",
+              "target_canonical_name": "individual_request_for_alternative_means_or_locations",
+              "target_node_type": "ProcessingActivity"
+            },
+            {
+              "relationship_type": "HAS_CONTROL",
+              "source_canonical_name": "permit_confidential_communications",
+              "source_node_type": "Actor",
+              "target_canonical_name": "alternative_means_or_locations",
+              "target_node_type": "Control"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "SYSTEMIC ISSUE (see summary): REQUIRES_AUTHORIZATION target is the individual's own request, not a third-party authorization requirement -- same relationship-type mismatch pattern as annotation 0. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "A health plan must permit individuals to request and must accommodate reasonable requests to receive communications of PHI by alternative means or at alternative locations, if the individual clearly states that the disclosure of all or part of that information could endanger the individual.",
+          "statement_type": "obligation",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Health Plan",
+              "raw_text": "A health plan",
+              "confidence": 0.9
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "REQUIRES_AUTHORIZATION",
+              "source_canonical_name": "permit_confidential_communications_for_endangerment",
+              "source_node_type": "Actor",
+              "target_canonical_name": "individual_request_for_alternative_means_or_locations_due_to_endangerment",
+              "target_node_type": "ProcessingActivity"
+            },
+            {
+              "relationship_type": "HAS_CONTROL",
+              "source_canonical_name": "permit_confidential_communications_for_endangerment",
+              "source_node_type": "Actor",
+              "target_canonical_name": "alternative_means_or_locations_due_to_endangerment",
+              "target_node_type": "Control"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "SYSTEMIC ISSUE (see summary): REQUIRES_AUTHORIZATION target is the individual's own request, not a third-party authorization requirement -- same relationship-type mismatch pattern as annotation 0. | Nodes added by Claude from explicit text mentions -- please verify."
+        }
+      ],
+      "needs_review": false,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    },
+    {
+      "regulation": "HIPAA",
+      "chunk_id": "hipaa.pdf:sec-0001:7:5127edcfe1",
+      "section_title": "37 ii",
+      "chunk_text": "uses and \ndisclosures. \nv. A statement that other uses and disclosures will be made only with the individual\u2019s written authorization and that the \n41\n\n[Page 42]\nindividual may revoke such authorization. \nb. Special Uses and Disclosures - If the \nCovered Entity intends to engage in any of the following activities, \nthe description of uses and disclosures must include a separate \nstatement, as applicable, that: \ni. The Covered Entity may contact the individual to provide \nappointment reminders or information about treatment or \nservices which may be of interest to the individual. \nii. The Covered Entity may contact the individual to raise funds for the Covered Entity; or \niii. A group health plan, or a health insurance issuer or HMO \nwith respect to a group health plan, may disclose PHI to the \nsponsor of the plan. \nb. Individual Rights  - The Notice must contain \na statement of the individual\u2019s rights with respect to PHI and a \nbrief description of how the individual may exercise these rights, \nas follows: \ni. The right to request restrictions on certain uses and \ndisclosures, and that the Covered Entity is not required to \nagree to a requested restriction; \nii. The right to receive confidential communications of PHI; \niii. The right to inspect and copy PHI; \niv. The right to amend PHI; \nv. The right to receive an accounting of disclosures; and \nvi. The right of an individual, including an individual who has agreed to receive the notice electronically, to obtain a paper \ncopy of the notice upon request. \nb. Covered Entity\u2019s Duties - The Notice must \ncontain: \ni. A statement that the Covered Entity is required by law to \nmaintain the privacy of PHI and to provide individuals with \nnotice of its legal duties and privacy practices; \nii. A statement that the Covered Entity",
+      "chunk_summary_draft": "This chunk discusses HIPAA requirements related to privacy notices, including authorization for uses and disclosures, special uses and disclosures, individual rights, and covered entity's duties.",
+      "annotations": [
+        {
+          "source_locator": "",
+          "evidence_text": "A statement that other uses and disclosures will be made only with the individual\u2019s written authorization and that the individual may revoke such authorization.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [
+            {
+              "relationship_type": "REQUIRES_AUTHORIZATION",
+              "source_canonical_name": "written_authorization",
+              "source_node_type": "Actor",
+              "target_canonical_name": "uses_and_disclosures",
+              "target_node_type": "ProcessingActivity"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "SYSTEMIC ISSUE (see summary): REQUIRES_AUTHORIZATION used for 'the description...must include a statement that...' -- this is a documentation-content requirement, not an authorization requirement. REQUIRES_DOCUMENTATION would fit better."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "the description of uses and disclosures must include a separate statement, as applicable, that: i. The Covered Entity may contact the individual to provide appointment reminders or information about treatment or services which may be of interest to the individual. ii. The Covered Entity may contact the individual to raise funds for the Covered Entity; or iii. A group health plan, or a health insurance issuer or HMO with respect to a group health plan, may disclose PHI to the sponsor of the plan.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [
+            {
+              "relationship_type": "REQUIRES_AUTHORIZATION",
+              "source_canonical_name": "appointment_reminders_or_treatment_information",
+              "source_node_type": "ProcessingActivity",
+              "target_canonical_name": "uses_and_disclosures",
+              "target_node_type": "ProcessingActivity"
+            },
+            {
+              "relationship_type": "REQUIRES_AUTHORIZATION",
+              "source_canonical_name": "fund_raising",
+              "source_node_type": "ProcessingActivity",
+              "target_canonical_name": "uses_and_disclosures",
+              "target_node_type": "ProcessingActivity"
+            },
+            {
+              "relationship_type": "REQUIRES_AUTHORIZATION",
+              "source_canonical_name": "disclosure_to_sponsor",
+              "source_node_type": "ProcessingActivity",
+              "target_canonical_name": "uses_and_disclosures",
+              "target_node_type": "ProcessingActivity"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "SYSTEMIC ISSUE (see summary): REQUIRES_AUTHORIZATION used for 'the description...must include a statement that...' -- this is a documentation-content requirement, not an authorization requirement. REQUIRES_DOCUMENTATION would fit better."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "The Notice must contain a statement of the individual\u2019s rights with respect to PHI and a brief description of how the individual may exercise these rights, as follows: i. The right to request restrictions on certain uses and disclosures, and that the Covered Entity is not required to agree to a requested restriction; ii. The right to receive confidential communications of PHI; iii. The right to inspect and copy PHI; iv. The right to amend PHI; v. The right to receive an accounting of disclosures; and vi. The right of an individual, including an individual who has agreed to receive the notice electronically, to obtain a paper copy of the notice upon request.",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "IndividualRight",
+              "canonical_name": "Right to request restrictions",
+              "raw_text": "The right to request restrictions on certain uses and disclosures",
+              "confidence": 0.8
+            },
+            {
+              "node_type": "IndividualRight",
+              "canonical_name": "Right to confidential communications",
+              "raw_text": "The right to receive confidential communications of PHI",
+              "confidence": 0.8
+            },
+            {
+              "node_type": "IndividualRight",
+              "canonical_name": "Right to inspect and copy PHI",
+              "raw_text": "The right to inspect and copy PHI",
+              "confidence": 0.8
+            },
+            {
+              "node_type": "IndividualRight",
+              "canonical_name": "Right to amend PHI",
+              "raw_text": "The right to amend PHI",
+              "confidence": 0.8
+            },
+            {
+              "node_type": "IndividualRight",
+              "canonical_name": "Right to accounting of disclosures",
+              "raw_text": "The right to receive an accounting of disclosures",
+              "confidence": 0.8
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "HAS_CONTROL",
+              "source_canonical_name": "request_restrictions",
+              "source_node_type": "IndividualRight",
+              "target_canonical_name": "uses_and_disclosures",
+              "target_node_type": "ProcessingActivity"
+            },
+            {
+              "relationship_type": "HAS_CONTROL",
+              "source_canonical_name": "confidential_communications",
+              "source_node_type": "IndividualRight",
+              "target_canonical_name": "uses_and_disclosures",
+              "target_node_type": "ProcessingActivity"
+            },
+            {
+              "relationship_type": "HAS_CONTROL",
+              "source_canonical_name": "inspect_copy_phi",
+              "source_node_type": "IndividualRight",
+              "target_canonical_name": "uses_and_disclosures",
+              "target_node_type": "ProcessingActivity"
+            },
+            {
+              "relationship_type": "HAS_CONTROL",
+              "source_canonical_name": "amend_phi",
+              "source_node_type": "IndividualRight",
+              "target_canonical_name": "uses_and_disclosures",
+              "target_node_type": "ProcessingActivity"
+            },
+            {
+              "relationship_type": "HAS_CONTROL",
+              "source_canonical_name": "accounting_of_disclosures",
+              "source_node_type": "IndividualRight",
+              "target_canonical_name": "uses_and_disclosures",
+              "target_node_type": "ProcessingActivity"
+            },
+            {
+              "relationship_type": "HAS_CONTROL",
+              "source_canonical_name": "paper_copy_request",
+              "source_node_type": "IndividualRight",
+              "target_canonical_name": "uses_and_disclosures",
+              "target_node_type": "ProcessingActivity"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "type 'requirement' reasonable; the 6 HAS_CONTROL sub-relationships each name an IndividualRight (access, amend, confidential comms, etc.) rather than a Control -- consider whether these should be separate IndividualRight nodes linked via a different relationship, since 'the right to inspect and copy PHI' is not itself a safeguard/control on the Covered Entity, it's a right held by the individual. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "The Notice must contain: i. A statement that the Covered Entity is required by law to maintain the privacy of PHI and to provide individuals with notice of its legal duties and privacy practices; ii. A statement that the Covered Entity",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Covered Entity",
+              "raw_text": "the Covered Entity",
+              "confidence": 0.9
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "HAS_CONTROL",
+              "source_canonical_name": "maintain_privacy_of_phi",
+              "source_node_type": "CoveredEntity",
+              "target_canonical_name": "uses_and_disclosures",
+              "target_node_type": "ProcessingActivity"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "type 'requirement' reasonable -- kept. | Nodes added by Claude from explicit text mentions -- please verify."
+        }
+      ],
+      "needs_review": false,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    },
+    {
+      "regulation": "EU_AI_ACT",
+      "chunk_id": "eu_ai_act.pdf:sec-0106:0:89f985c79d",
+      "section_title": "Article 57",
+      "chunk_text": "Article 57\nAI regulator y sandbo xes\n1. Member States shall ensure that their compet ent author ities establish at least one AI regulato ry sandbo x at national \nlevel, which shall be operational by 2 August 2026. That sandbo x may also be established jointly with the comp etent \nauthor ities of other Member States. The Commission may provide technical suppor t, advice and tools for the establishment \nand operation of AI regulatory sandbo xes.\nThe obligation under the first subparagraph may also be fulfilled by participating in an existing sandbo x in so far as that \nparticipation provides an equivalent level of national coverag e for the participating Member States.\n2. Additional AI regulator y sandbo xes at regional or local level, or established jointly with the compet ent author ities of \nother Member States may also be established.\n3. The European Data Prot ection Super visor may also establish an AI regulator y sandbo x for Union institutions, bodies, \noffices and agencies, and may exercise the roles and the tasks of national compet ent author ities in accordance with this \nChapt er.\n4. Member States shall ensure that the comp etent author ities referred to in paragraphs 1 and 2 allocate suffi cient \nresources to comply with this Article effectively and in a timely manner . Where appropr iate, national compet ent author ities \nshall cooperate with other relevant author ities, and may allow for the involvement of other actors within the AI ecosyste m. \nThis Article shall not affect other regulato ry sandbo xes established under Union or national law. Member States shall ensure \nan appropr iate level of cooperation between the author ities super vising those other sandbo xes and the national compet ent \nauthor ities.",
+      "chunk_summary_draft": "Establishment and operation of AI regulatory sandboxes by Member States, potential joint establishment with other authorities, and involvement of the European Data Protection Supervisor.",
+      "annotations": [
+        {
+          "source_locator": "",
+          "evidence_text": "Article 57(1) Member States shall ensure that their competent authorities establish at least one AI regulatory sandbox at national level, which shall be operational by 2 August 2026. That sandbox may also be established jointly with the competent authorities of other Member States.",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Member State",
+              "raw_text": "Member States",
+              "confidence": 0.9
+            },
+            {
+              "node_type": "Deadline",
+              "canonical_name": "2 August 2026",
+              "raw_text": "operational by 2 August 2026",
+              "confidence": 0.85
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "HAS_DEADLINE",
+              "source_canonical_name": "Establish national AI regulatory sandbox",
+              "source_node_type": "Requirement",
+              "target_canonical_name": "2 August 2026",
+              "target_node_type": "Deadline"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_flag": "SELF_LOOP_OR_MALFORMED_RELATIONSHIP",
+          "claude_note": "HAS_DEADLINE 'establish AI regulatory sandbox' -> 'AI regulatory sandbox' is a self-loop (source and target are the same concept). Should be HAS_DEADLINE [the establish-sandbox obligation] -> [2 August 2026]. Also HAS_CONDITION's target is a full sentence fragment ('may also be established jointly with...') rather than a canonical concept name -- normalization issue, not just a content error. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Article 57(2) Additional AI regulatory sandboxes at regional or local level, or established jointly with the competent authorities of other Member States may also be established.",
+          "statement_type": "permission",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Member State",
+              "raw_text": "Member States",
+              "confidence": 0.85
+            }
+          ],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "type 'requirement' questionable -- 'may also be established' is permissive language (permission), not a requirement. Retyping. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Article 57(3) The European Data Protection Supervisor may also establish an AI regulatory sandbox for Union institutions, bodies, offices and agencies, and may exercise the roles and the tasks of national competent authorities in accordance with this Chapter.",
+          "statement_type": "permission",
+          "nodes": [
+            {
+              "node_type": "Regulator",
+              "canonical_name": "European Data Protection Supervisor",
+              "raw_text": "The European Data Protection Supervisor",
+              "confidence": 0.85
+            }
+          ],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_original_type": "requirement",
+          "claude_note": "RETYPED requirement -> permission: 'may also establish' -- permissive, not a requirement. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Article 57(4) Member States shall ensure that the competent authorities referred to in paragraphs 1 and 2 allocate sufficient resources to comply with this Article effectively and in a timely manner.",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Member State",
+              "raw_text": "Member States",
+              "confidence": 0.9
+            }
+          ],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "type 'requirement' correct ('shall ensure...allocate sufficient resources'). Kept. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Article 57(4) Where appropriate, national competent authorities shall cooperate with other relevant authorities, and may allow for the involvement of other actors within the AI ecosystem.",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "Regulator",
+              "canonical_name": "National Competent Authority",
+              "raw_text": "national competent authorities",
+              "confidence": 0.85
+            }
+          ],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "type 'requirement' correct ('shall cooperate'). Kept. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Article 57(4) This Article shall not affect other regulatory sandboxes established under Union or national law. Member States shall ensure an appropriate level of cooperation between the authorities supervising those other sandboxes and the national competent authorities.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "TRUNCATED evidence_text (cuts off mid-sentence: 'the authorities s...'). Flag as Evidence-span error.",
+          "claude_flag": "TRUNCATED_EVIDENCE"
+        }
+      ],
+      "needs_review": false,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    },
+    {
+      "regulation": "EU_AI_ACT",
+      "chunk_id": "eu_ai_act.pdf:sec-0121:1:67f35b94a2",
+      "section_title": "Article 67",
+      "chunk_text": "h 2, from amongst stakeholders with recognised exper tise in the field of AI.OJ L, 12.7.2024 EN\nELI: http://data.europa.eu/eli/reg/2024/1689/oj 97/144\n\n[Page 98]\n4. The term of offic e of the members of the advisor y forum shall be two years, which may be extended by up to no more \nthan four years.\n5. The Fundamental Rights Agency , ENISA, the European Committe e for Standardization (CEN), the European \nCommitte e for Electrotec hnical Standardization (CENELEC), and the European Telecommunications Standards Institute \n(ETSI) shall be permanent members of the advisor y forum.\n6. The advisor y forum shall draw up its rules of procedure. It shall elect two co-chairs from among its members, in \naccordance with criteria set out in paragraph 2. The term of office of the co-c hairs shall be two years, renewable once.\n7. The advisor y forum shall hold meetings at least twice a year. The advisor y forum may invit e exper ts and other \nstak eholders to its meetings.\n8. The advisor y forum may prepare opinions, recommendations and written contr ibutions at the request of the Board or \nthe Commission.\n9. The advisor y forum may establish standing or temporar y sub-groups as appropr iate for the purpose of examining \nspecific questions related to the objectives of this Regulation.\n10. The advisor y forum shall prepare an annual repor t on its activities. That repor t shall be made publicly available .",
+      "chunk_summary_draft": "Establishes the advisory forum, its composition, rules of procedure, and responsibilities.",
+      "annotations": [
+        {
+          "source_locator": "",
+          "evidence_text": "The term of office of the members of the advisory forum shall be two years, which may be extended by up to no more than four years.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_original_type": "definition",
+          "claude_note": "RETYPED definition -> requirement: 'shall be two years' is an operative rule about term length, not a definition of a term. All 7 statements in this chunk were typed 'definition' in the draft -- this looks like a systematic mistyping specific to this chunk (possibly because the chunk describes institutional/procedural rules rather than actor-facing duties, which the model may have defaulted to 'definition' for)."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "The Fundamental Rights Agency, ENISA, the European Committee for Standardization (CEN), the European Committee for Electrotechnical Standardization (CENELEC), and the European Telecommunications Standards Institute (ETSI) shall be permanent members of the advisory forum.",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Fundamental Rights Agency",
+              "raw_text": "The Fundamental Rights Agency",
+              "confidence": 0.85
+            },
+            {
+              "node_type": "Actor",
+              "canonical_name": "ENISA",
+              "raw_text": "ENISA",
+              "confidence": 0.85
+            },
+            {
+              "node_type": "Actor",
+              "canonical_name": "European Committee for Standardization",
+              "raw_text": "CEN",
+              "confidence": 0.8
+            },
+            {
+              "node_type": "Actor",
+              "canonical_name": "European Committee for Electrotechnical Standardization",
+              "raw_text": "CENELEC",
+              "confidence": 0.8
+            },
+            {
+              "node_type": "Actor",
+              "canonical_name": "European Telecommunications Standards Institute",
+              "raw_text": "ETSI",
+              "confidence": 0.8
+            }
+          ],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_original_type": "definition",
+          "claude_note": "RETYPED definition -> requirement: Names the permanent members of the advisory forum -- arguably closer to 'definition' (defining forum composition) of the 7, but still an operative designation rather than a defined term. Borderline; flagging for your judgment rather than asserting high confidence either way. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "The advisory forum shall elect two co-chairs from among its members, in accordance with criteria set out in paragraph 2. The term of office of the co-chairs shall be two years, renewable once.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_original_type": "definition",
+          "claude_note": "RETYPED definition -> requirement: 'shall elect two co-chairs' -- operative rule, not a definition."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "The advisory forum shall hold meetings at least twice a year. The advisory forum may invite experts and other stakeholders to its meetings.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_original_type": "definition",
+          "claude_note": "RETYPED definition -> requirement: 'shall hold meetings at least twice a year' -- operative rule, not a definition."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "The advisory forum may prepare opinions, recommendations and written contributions at the request of the Board or the Commission.",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_original_type": "definition",
+          "claude_note": "RETYPED definition -> permission: 'may prepare opinions...' -- permissive, not definitional or a requirement."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "The advisory forum may establish standing or temporary sub-groups as appropriate for the purpose of examining specific questions related to the objectives of this Regulation.",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_original_type": "definition",
+          "claude_note": "RETYPED definition -> permission: 'may establish standing or temporary sub-groups' -- permissive."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "The advisory forum shall prepare an annual report on its activities. That report shall be made publicly available.",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Advisory Forum",
+              "raw_text": "The advisory forum",
+              "confidence": 0.85
+            }
+          ],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_original_type": "definition",
+          "claude_note": "RETYPED definition -> requirement: 'shall prepare an annual report...shall be made publicly available' -- two operative obligations, not a definition. | Nodes added by Claude from explicit text mentions -- please verify."
+        }
+      ],
+      "needs_review": false,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note. | CHUNK-LEVEL: this chunk had 0 relationships extracted (matches the run-level report) AND all 7 statements mistyped as 'definition'. This looks like a distinct failure pattern from the recital-mistyping seen in GDPR chunks -- worth reporting as a separate H1 finding: the model appears to default to 'definition' for institutional/procedural-body text (who serves how long, how a body organizes itself) even when the language is clearly operative ('shall')."
+    },
+    {
+      "regulation": "EU_AI_ACT",
+      "chunk_id": "eu_ai_act.pdf:sec-0134:0:971f7efd09",
+      "section_title": "Article 72",
+      "chunk_text": "Article 72\nPost-mark et monitorin g by providers and pos t-mark et monitor ing plan for high-r isk AI systems\n1. Providers shall establish and document a post-mark et monitoring syste m in a manner that is propor tionate to the \nnature of the AI technologies and the risks of the high-r isk AI system.\n2. The post-mark et monito ring system shall actively and systematically collect, document and analyse relevant data \nwhich may be provided by deplo yers or which may be collected through other sources on the perform ance of high-r isk AI \nsyste ms throughout their lifetime, and which allow the provider to evaluate the continuous complia nce of AI systems with \nthe requirements set out in Chap ter III, Section 2. Where relevant, post-mark et monitoring shall include an analysis of the \ninterac tion with other AI syste ms. This obligati on shall not cover sensitive operational data of deplo yers which are \nlaw-enf orcement author ities.\n3. The post-mark et monitori ng system shall be based on a post-mark et monitoring plan. The post-mark et monitoring \nplan shall be part of the technical documentation referred to in Annex IV. The Commission shall adopt an imp lementing act \nlaying down detailed provisions establishing a templat e for the post-mark et monitoring plan and the list of elements to be \nincluded in the plan by 2 Febr uary 2026. That imp lementing act shall be adop ted in accordance with the examination \nprocedure referred to in Article 98(2).\n4. For high-r isk AI syste ms covered by the Union harmonisation legislation listed in Section A of Annex I, where \na post-market monitoring system and plan are already established under that legislation, in order to ensure consiste ncy,",
+      "chunk_summary_draft": "Providers must establish a post-market monitoring system for high-risk AI systems, which should be documented and proportionate to the risks involved. The system should collect data on the performance of these systems throughout their lifetime, allowing evaluation against Chapter III, Section 2 requirements. A post-market monitoring plan is required, part of technical documentation, with an implementing act due by February 2, 2026.",
+      "annotations": [
+        {
+          "source_locator": "",
+          "evidence_text": "Article 72, sec-0134: Providers shall establish and document a post-mark et monitoring syste m in a manner that is propor tionate to the nature of the AI technologies and the risks of the high-r isk AI system.",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Provider",
+              "raw_text": "Providers",
+              "confidence": 0.9
+            },
+            {
+              "node_type": "MonitoringActivity",
+              "canonical_name": "Post-market monitoring system",
+              "raw_text": "a post-market monitoring system",
+              "confidence": 0.8
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "provider",
+              "source_node_type": "Actor",
+              "target_canonical_name": "post_market_monitoring_system",
+              "target_node_type": "Control"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "type 'requirement' correct. Kept. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Article 72, sec-0134: The post-mark et monito ring system shall actively and systematically collect, document and analyse relevant data which may be provided by deplo yers or which may be collected through other sources on the perform ance of high-r isk AI syste ms throughout their lifetime, and which allow the provider to evaluate the continuous complia nce of AI systems with the requirements set out in Chap ter III, Section 2. Where relevant, post-mark et monitoring shall include an analysis of the interaction with other AI syste ms.",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "MonitoringActivity",
+              "canonical_name": "Post-market monitoring system",
+              "raw_text": "The post-market monitoring system",
+              "confidence": 0.8
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "post_market_monitoring_system",
+              "source_node_type": "Control",
+              "target_canonical_name": "data_collection_and_analysis",
+              "target_node_type": "Control"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "SYSTEMIC ISSUE (see summary): IMPOSES_ON 'post_market_monitoring_system' -> 'data_collection_and_analysis' -- neither source nor target is an actor at all; this describes what the monitoring SYSTEM does, not a duty imposed on anyone. Consider HAS_PURPOSE or dropping IMPOSES_ON entirely here. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Article 72, sec-0134: The post-mark et monitori ng system shall be based on a post-mark et monitoring plan. The post-mark et monitoring plan shall be part of the technical documentation referred to in Annex IV.",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "TechnicalDocumentation",
+              "canonical_name": "Post-market monitoring plan",
+              "raw_text": "a post-market monitoring plan",
+              "confidence": 0.8
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "post_market_monitoring_system",
+              "source_node_type": "Control",
+              "target_canonical_name": "post_market_monitoring_plan",
+              "target_node_type": "Control"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "SYSTEMIC ISSUE (see summary): Same issue -- IMPOSES_ON between two non-actor concepts (system -> plan). | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Article 72, sec-0134: The Commission shall adopt an imp lementing act laying down detailed provisions establishing a templat e for the post-mark et monitoring plan and the list of elements to be included in the plan by 2 Febr uary 2026.",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "Regulator",
+              "canonical_name": "European Commission",
+              "raw_text": "The Commission",
+              "confidence": 0.9
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "commission",
+              "source_node_type": "Actor",
+              "target_canonical_name": "implementing_act",
+              "target_node_type": "Control"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "type 'requirement' correct, actors are correctly identified as source/target this time (Commission -> implementing act). Kept. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Article 72, sec-0134: That imp lementing act shall be adop ted in accordance with the examination procedure referred to in Article 98(2).",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "implementing_act",
+              "source_node_type": "Control",
+              "target_canonical_name": "examination_procedure",
+              "target_node_type": "Procedure"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_flag": "SELF_LOOP_OR_MALFORMED_RELATIONSHIP",
+          "claude_note": "IMPOSES_ON 'implementing_act' -> 'examination_procedure' -- neither is an actor; this describes a procedural relationship between two documents/processes, not a duty imposition. Consider DERIVED_FROM or dropping."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Article 72, sec-0134: For high-r isk AI syste ms covered by the Union harmonisation legislation listed in Section A of Annex I, where a post-market monitoring system and plan are already established under that legislation, in order to ensure consiste ncy.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [
+            {
+              "relationship_type": "LIMITED_BY",
+              "source_canonical_name": "post_market_monitoring_system",
+              "source_node_type": "Control",
+              "target_canonical_name": "union_harmonisation_legislation",
+              "target_node_type": "LegalBasis"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "type 'requirement' with LIMITED_BY is reasonable -- kept."
+        }
+      ],
+      "needs_review": false,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    },
+    {
+      "regulation": "EU_AI_ACT",
+      "chunk_id": "eu_ai_act.pdf:sec-0047:3:c4628b619f",
+      "section_title": "Article 79(1), they shall, without undue dela y, inform the provider or distr ibut or and the relevant market surveillance",
+      "chunk_text": "isk AI system for which the author isation was request ed shall be delete d.EN OJ L, 12.7.2024\n68/144 ELI: http://data.europa.eu/eli/reg/2024/1689/oj\n\n[Page 69]\nIn no case shall such high-r isk AI syste m for post-remote biometr ic identifica tion be used for law enforcement purposes in \nan untarget ed way, without any link to a criminal offence, a criminal proceeding, a genuine and present or genuine and \nforeseeable threat of a criminal offenc e, or the searc h for a specif ic missing person. It shall be ensured that no decision that \nproduces an adverse legal effect on a person may be taken by the law enforcement author ities based solely on the output of \nsuch post-remote biometr ic identifi cation syste ms.\nThis paragraph is without prejudice to Article 9 of Regulation (EU) 2016/679 and Article 10 of Directive (EU) 2016/680 \nfor the processing of biometr ic data.\nRegardless of the purpose or deplo yer, each use of such high-r isk AI syste ms shall be documented in the relevant police file \nand shall be made available to the relevant marke t surveillance author ity and the national data protection author ity upon \nrequest, excluding the disclosure of sensitive operational data related to law enforcement. This subparagraph shall be \nwithout prejudice to the powers confe rred by Directive (EU) 2016/680 on super visor y author ities.\nDeplo yers shall submit annual repor ts to the relevant marke t surveillance and national data prot ection author ities on their \nuse of post-remote biometr ic identifica tion systems, excluding the disclosure of sensitive operational data related to law \nenforcement. The repor ts may be aggrega ted to cover more than one deplo yment.\nMember States may introduce, in accordance with Union law, more restr ictive laws on the use of post-remo",
+      "chunk_summary_draft": "This chunk discusses the handling and documentation requirements for high-risk AI systems used for post-remote biometric identification, particularly in relation to law enforcement. It also outlines reporting obligations to market surveillance and data protection authorities.",
+      "annotations": [
+        {
+          "source_locator": "",
+          "evidence_text": "such high-r isk AI syste m for post-remote biometr ic identifica tion shall not be used for law enforcement purposes in an untarget ed way, without any link to a criminal offence, a criminal proceeding, a genuine and present or genuine and foreseeable threat of a criminal offenc e, or the searc h for a specif ic missing person.",
+          "statement_type": "prohibition",
+          "nodes": [
+            {
+              "node_type": "AISystem",
+              "canonical_name": "Post-remote biometric identification system",
+              "raw_text": "such high-risk AI system for post-remote biometric identification",
+              "confidence": 0.85
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "PROTECTS_RIGHT",
+              "source_canonical_name": "shall_not_be_used_for_law_enforcement_purposes_in_an_untargeted_way",
+              "source_node_type": "Prohibition",
+              "target_canonical_name": "right_to_privacy",
+              "target_node_type": "IndividualRight"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "type 'prohibition' correct. PROTECTS_RIGHT -> 'right_to_privacy' is a reasonable but NOT explicitly textual inference -- the word 'privacy' does not appear in this evidence span. Flagging as a possible mild over-inference under the schema's 'do not infer' instruction; the more literally supported target would be something like 'protection from adverse legal effects based solely on automated output' (which IS explicit in the next sentence). | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "each use of such high-r isk AI syste ms shall be documented in the relevant police file and shall be made available to the relevant marke t surveillance author ity and the national data protection author ity upon request, excluding the disclosure of sensitive operational data related to law enforcement.",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "Regulator",
+              "canonical_name": "Market Surveillance Authority",
+              "raw_text": "the relevant market surveillance authority",
+              "confidence": 0.8
+            },
+            {
+              "node_type": "Regulator",
+              "canonical_name": "National Data Protection Authority",
+              "raw_text": "the national data protection authority",
+              "confidence": 0.8
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "REQUIRES_DOCUMENTATION",
+              "source_canonical_name": "shall_be_documented_in_police_file",
+              "source_node_type": "Requirement",
+              "target_canonical_name": "police_file",
+              "target_node_type": "DocumentationRequirement"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "type 'requirement' correct. Kept. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Deplo yers shall submit annual repor ts to the relevant marke t surveillance and national data prot ection author ities on their use of post-remote biometr ic identifica tion systems, excluding the disclosure of sensitive operational data related to law enforcement.",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "Deployer",
+              "canonical_name": "Deployer",
+              "raw_text": "Deployers",
+              "confidence": 0.9
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "REQUIRES_DOCUMENTATION",
+              "source_canonical_name": "shall_submit_annual_reports_to_authorities",
+              "source_node_type": "Requirement",
+              "target_canonical_name": "annual_report",
+              "target_node_type": "DocumentationRequirement"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "type 'requirement' correct. Kept. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Member States may introduce, in accordance with Union law, more restr ictive laws on the use of post-remo",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "TRUNCATED at 200 chars in my review dump -- verify the full statement text against chunk_text before annotating; not independently re-checked here."
+        }
+      ],
+      "needs_review": false,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    },
+    {
+      "regulation": "EU_AI_ACT",
+      "chunk_id": "eu_ai_act.pdf:sec-0056:1:25a4ab2971",
+      "section_title": "Article 31",
+      "chunk_text": "of the conf ormity assessment activities that the notif ied bodies \nconduct.OJ L, 12.7.2024 EN\nELI: http://data.europa.eu/eli/reg/2024/1689/oj 71/144\n\n[Page 72]\n4. Notifi ed bodies shall be independent of the provid er of a high-r isk AI syste m in relation to which they perform \nconf ormity assessment activities. Notifi ed bodies shall also be independent of any other operat or having an economic \nintere st in high-r isk AI syste ms assessed, as well as of any competit ors of the provider . This shall not preclude the use of \nassessed high-r isk AI syste ms that are necessar y for the operations of the conf ormity assessment body , or the use of such \nhigh-r isk AI syste ms for personal purposes.\n5. Neither a conf ormity assessment body , its top-level managem ent nor the personnel responsible for carrying out its \nconf ormity assessment tasks shall be directly involved in the design, development, marke ting or use of high-r isk AI systems, \nnor shall they represent the parties engag ed in those activities. They shall not enga ge in any activity that might conf lict with \ntheir independence of judgement or integrity in relation to conf ormity assessment activities for which they are notified. \nThis shall, in particular , apply to consultancy services.\n6. Notifi ed bodies shall be organised and operat ed so as to safeguard the independence, objectivity and imp artiality of \ntheir activities. Notifi ed bodies shall document and implement a structure and procedures to safeguard impartiality and to \npromot e and apply the principles of imp artiality throughout their organisation, personnel and assessment activities.\n7. Notifi ed bodies shall have documented procedures in place ensur ing that their personnel, committ ees, subsidiar ies, \nsubcontractors and any associated b",
+      "chunk_summary_draft": "Notified bodies must be independent of the provider and other operators with economic interest or competitors. They should not engage in design, development, marketing, or use of high-risk AI systems, nor provide consultancy services that could conflict with their independence.",
+      "annotations": [
+        {
+          "source_locator": "",
+          "evidence_text": "Notifi ed bodies shall be independent of the provid er of a high-r isk AI syste m in relation to which they perform \nconf ormity assessment activities. Notifi ed bodies shall also be independent of any other operat or having an economic \nintere st in high-r isk AI syste ms assessed, as well as of any competit ors of the provider .",
+          "statement_type": "prohibition",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Notified Body",
+              "raw_text": "Notified bodies",
+              "confidence": 0.9
+            },
+            {
+              "node_type": "Provider",
+              "canonical_name": "Provider",
+              "raw_text": "the provider",
+              "confidence": 0.85
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "NotifiedBodies",
+              "source_node_type": "Actor",
+              "target_canonical_name": "ProvidersOfHighRiskAISystems",
+              "target_node_type": "Actor"
+            },
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "NotifiedBodies",
+              "source_node_type": "Actor",
+              "target_canonical_name": "OtherOperatorsWithEconomicInterestInHighRiskAISystems",
+              "target_node_type": "Actor"
+            },
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "NotifiedBodies",
+              "source_node_type": "Actor",
+              "target_canonical_name": "CompetitorsOfTheProvider",
+              "target_node_type": "Actor"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "SYSTEMIC ISSUE (see summary): IMPOSES_ON NotifiedBodies -> [Providers/Operators/Competitors] has the duty-bearer right (Notified Bodies ARE the ones who must be independent) but the relationship semantics don't fit IMPOSES_ON at all -- Notified Bodies aren't imposing anything ON providers/operators/competitors, they're required to be independent FROM them. This is a genuine schema-coverage gap: there is no 'INDEPENDENT_OF' or similar relationship type in the 35-type vocabulary (Appendix A) for this fairly common regulatory pattern (conflict-of-interest / independence requirements). Worth reporting as a specific, actionable finding rather than just re-typing to something else that doesn't fit either. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Neither a conf ormity assessment body , its top-level managem ent nor the personnel responsible for carrying out its \nconf ormity assessment tasks shall be directly involved in the design, development, marke ting or use of high-r isk AI systems, \nnor shall they represent the parties engag ed in those activities. They shall not enga ge in any activity that might conf lict with \ntheir independence of judgement or integrity in relation to conf ormity assessment activities for which they are notified. This \nshall, in particular , apply to consultancy services.",
+          "statement_type": "prohibition",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Notified Body",
+              "raw_text": "a conformity assessment body",
+              "confidence": 0.85
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "NotifiedBodies",
+              "source_node_type": "Actor",
+              "target_canonical_name": "DesignersOfHighRiskAISystems",
+              "target_node_type": "Actor"
+            },
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "NotifiedBodies",
+              "source_node_type": "Actor",
+              "target_canonical_name": "DevelopersOfHighRiskAISystems",
+              "target_node_type": "Actor"
+            },
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "NotifiedBodies",
+              "source_node_type": "Actor",
+              "target_canonical_name": "MarketersOfHighRiskAISystems",
+              "target_node_type": "Actor"
+            },
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "NotifiedBodies",
+              "source_node_type": "Actor",
+              "target_canonical_name": "UsersOfHighRiskAISystems",
+              "target_node_type": "Actor"
+            },
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "NotifiedBodies",
+              "source_node_type": "Actor",
+              "target_canonical_name": "ConsultancyServicesProviders",
+              "target_node_type": "Actor"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "SYSTEMIC ISSUE (see summary): Same schema-coverage gap as annotation 0. | Nodes added by Claude from explicit text mentions -- please verify."
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Notifi ed bodies shall be organised and operat ed so as to safeguard the independence, objectivity and imp artiality of \ntheir activities. Notifi ed bodies shall document and implement a structure and procedures to safeguard impartiality and to \npromot e and apply the principles of imp artiality throughout their organisation, personnel and assessment activities.",
+          "statement_type": "requirement",
+          "nodes": [
+            {
+              "node_type": "Actor",
+              "canonical_name": "Notified Body",
+              "raw_text": "Notified bodies",
+              "confidence": 0.9
+            }
+          ],
+          "relationships": [
+            {
+              "relationship_type": "REQUIRES_DOCUMENTATION",
+              "source_canonical_name": "NotifiedBodies",
+              "source_node_type": "Actor",
+              "target_canonical_name": "StructureAndProceduresForSafeguardingImpartiality",
+              "target_node_type": "DocumentationRequirement"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": false,
+          "claude_note": "type 'requirement' correct, REQUIRES_DOCUMENTATION fits well. Kept. | Nodes added by Claude from explicit text mentions -- please verify."
+        }
+      ],
+      "needs_review": false,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    }
+  ],
+  "claude_reviewed": true,
+  "human_validated": true
+}

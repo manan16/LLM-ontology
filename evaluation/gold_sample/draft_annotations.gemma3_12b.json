@@ -1,0 +1,1203 @@
+{
+  "description": "DRAFT annotations pre-filled from model output as a starting point. NOTHING here is human-validated. needs_review=true on every record and field. Correct chunk-by-chunk, then save as gold_annotations.json.",
+  "schema": "Appendix B.1 (source_locator / evidence_text / statement_type / nodes / relationships / ambiguity_note)",
+  "validated": false,
+  "count": 15,
+  "records": [
+    {
+      "regulation": "GDPR",
+      "chunk_id": "gdpr:sec-0016:0:11436987f5",
+      "section_title": "30 Regulation (EU) 2016/679 of the European Parliament and of the Council of 27...",
+      "chunk_text": "30 Regulation (EU) 2016/679 of the European Parliament and of the Council of 27...\nDocument Generated: 2026-06-03\nChanges to legislation: Regulation (EU) 2016/679 of the European Parliament and of the Council \nis up to date with all changes known to be in force on or before 03 June 2026. There are changes \nthat may be brought into force at a future date. Changes that have been made appear in the content \nand are referenced with annotations. (See end of Document for details) View outstanding changes\nof their data in the Union once those data have been transferred so that that they will \ncontinue to benefit from fundamental rights and safeguards.\n(115)Some third countries adopt laws, regulations and other legal acts which purport \nto directly regulate the processing activities of natural and legal persons under the \njurisdiction of the Member States. This may include judgments of courts or tribunals \nor decisions of administrative authorities in third countries requiring a controller \nor processor to transfer or disclose personal data, and which are not based on an \ninternational agreement, such as a mutual legal assistance treaty, in force between \nthe requesting third country and the Union or a Member State. The extraterritorial \napplication of those laws, regulations and other legal acts may be in breach of \ninternational law and may impede the attainment of the protection of natural persons \nensured in the Union by this Regulation. Transfers should only be allowed where the \nconditions of this Regulation for a transfer to third countries are met. This may be the \ncase, inter alia, where disclosure is necessary for an important ground of public interest \nrecognised in Union or Member State law to which the controller is subject.",
+      "chunk_summary_draft": "This section discusses situations where third-country laws attempt to regulate processing activities within EU jurisdiction and emphasizes that data transfers must adhere to GDPR conditions.",
+      "annotations": [
+        {
+          "source_locator": "GDPR | 30",
+          "evidence_text": "so that that they will continue to benefit from fundamental rights and safeguards.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "GDPR | 30",
+          "evidence_text": "This may be the case, inter alia, where disclosure is necessary for an important ground of public interest recognised in Union or Member State law to which the controller is subject.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        }
+      ],
+      "needs_review": true,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    },
+    {
+      "regulation": "GDPR",
+      "chunk_id": "gdpr:sec-0019:3:77902c1dfc",
+      "section_title": "36 Regulation (EU) 2016/679 of the European Parliament and of the Council of 27...",
+      "chunk_text": "l remedies relating to the application of this Regulation, national \ncourts which consider a decision on the question necessary to enable them to give\n\n[Page 37]\nRegulation (EU) 2016/679 of the European Parliament and of the Council of 27...\nDocument Generated: 2026-06-0337\nChanges to legislation: Regulation (EU) 2016/679 of the European Parliament and of the Council \nis up to date with all changes known to be in force on or before 03 June 2026. There are changes \nthat may be brought into force at a future date. Changes that have been made appear in the content \nand are referenced with annotations. (See end of Document for details) View outstanding changes\njudgment, may, or in the case provided for in Article 267 TFEU, must, request the Court \nof Justice to give a preliminary ruling on the interpretation of Union law, including \nthis Regulation. Furthermore, where a decision of a supervisory authority implementing \na decision of the Board is challenged before a national court and the validity of the \ndecision of the Board is at issue, that national court does not have the power to declare \nthe Board's decision invalid but must refer the question of validity to the Court of Justice \nin accordance with Article 267 TFEU as interpreted by the Court of Justice, where it \nconsiders the decision invalid. However, a national court may not refer a question on \nthe validity of the decision of the Board at the request of a natural or legal person which \nhad the opportunity to bring an action for annulment of that decision, in particular if it \nwas directly and individually concerned by that decision, but had not done so within \nthe period laid down in Article 263 TFEU.\n(144) Where a court seized of proceedings against a decision by a supervisory authority has \nreason to believe th",
+      "chunk_summary_draft": "This section outlines the process for national courts to request preliminary rulings from the Court of Justice regarding the interpretation of EU law, including GDPR. It also addresses limitations on national courts' power to declare decisions of the Board invalid and procedures for referring validity questions to the Court of Justice.",
+      "annotations": [
+        {
+          "source_locator": "GDPR | 267",
+          "evidence_text": "may, or in the case provided for in Article 267 TFEU, must, request the Court of Justice to give a preliminary ruling on the interpretation of Union law, including this Regulation.",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [
+            {
+              "relationship_type": "CITES",
+              "source_canonical_name": "Request Preliminary Ruling",
+              "source_node_type": "Permission",
+              "target_canonical_name": "Article 267 TFEU",
+              "target_node_type": "LegalBasis"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "GDPR | 267",
+          "evidence_text": "that national court does not have the power to declare the Board's decision invalid but must refer the question of validity to the Court of Justice in accordance with Article 267 TFEU as interpreted by the Court of Justice",
+          "statement_type": "prohibition",
+          "nodes": [],
+          "relationships": [
+            {
+              "relationship_type": "CITES",
+              "source_canonical_name": "Cannot Declare Board Decision Invalid",
+              "source_node_type": "Prohibition",
+              "target_canonical_name": "Article 267 TFEU",
+              "target_node_type": "LegalBasis"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "GDPR | 263",
+          "evidence_text": "a national court may not refer a question on the validity of the decision of the Board at the request of a natural or legal person which had the opportunity to bring an action for annulment of that decision, in particular if it was directly and individually concerned by that decision, but had not done so within the period laid down in Article 263 TFEU",
+          "statement_type": "prohibition",
+          "nodes": [],
+          "relationships": [
+            {
+              "relationship_type": "CITES",
+              "source_canonical_name": "Cannot Refer Validity Question (Limited Opportunity)",
+              "source_node_type": "Prohibition",
+              "target_canonical_name": "Article 263 TFEU",
+              "target_node_type": "LegalBasis"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": true
+        }
+      ],
+      "needs_review": true,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    },
+    {
+      "regulation": "GDPR",
+      "chunk_id": "gdpr:sec-0078:0:d46a526c26",
+      "section_title": "3 The basis for the processing referred to in point (c) F46... of paragraph 1 shall be laid",
+      "chunk_text": "3 The basis for the processing referred to in point (c) F46... of paragraph 1 shall be laid \ndown by [F47domestic law ].\n[F48The basis for the processing referred to in point (e) of paragraph 1 must be laid down \nby domestic law or relevant international law (see section 9A of the 2018 Act). ]\nThe purpose of the processing shall be determined in that legal basis or, as regards \nthe processing referred to in point (e) of paragraph 1, shall be necessary for the \nperformance of a task [F49of the controller ] carried out in the public interest or [F50a \ntask carried out ] in the exercise of official authority vested in the controller. That \nlegal basis may contain specific provisions to adapt the application of rules of this \nRegulation, inter alia: the general conditions governing the lawfulness of processing \nby the controller; the types of data which are subject to the processing; the data \nsubjects concerned; the entities to, and the purposes for which, the personal data may \nbe disclosed; the purpose limitation; storage periods; and processing operations and \nprocessing procedures, including measures to ensure lawful and fair processing such \nas those for other specific processing situations as provided for in Chapter IX. [F51The \ndomestic law ][F52or relevant international law ] shall meet an objective of public interest \nand be proportionate to the legitimate aim pursued.\nF534 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .\n[F545 For the purposes of paragraph 1(ea), processing is necessary for the purposes of a \nrecognised legitimate interest only if it meets a condition in Annex 1.",
+      "chunk_summary_draft": "This section outlines the legal basis for specific data processing activities, referencing domestic and international law. It details requirements for determining purpose, necessity for public interest tasks, and potential adaptations to GDPR rules.",
+      "annotations": [
+        {
+          "source_locator": "GDPR",
+          "evidence_text": "[F47domestic law ]",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [
+            {
+              "relationship_type": "CITES",
+              "source_canonical_name": "Legal Basis Requirement",
+              "source_node_type": "Requirement",
+              "target_canonical_name": "[F47domestic law ]",
+              "target_node_type": "LegalBasis"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "GDPR",
+          "evidence_text": "[F48The basis for the processing referred to in point (e) of paragraph 1 must be laid down by domestic law or relevant international law (see section 9A of the 2018 Act). ]",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [
+            {
+              "relationship_type": "CITES",
+              "source_canonical_name": "Legal Basis Requirement",
+              "source_node_type": "Requirement",
+              "target_canonical_name": "domestic law or relevant international law (see section 9A of the 2018 Act)",
+              "target_node_type": "LegalBasis"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "GDPR",
+          "evidence_text": "shall be necessary for the performance of a task [F49of the controller ] carried out in the public interest or [F50a task carried out ] in the exercise of official authority vested in the controller.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [
+            {
+              "relationship_type": "CITES",
+              "source_canonical_name": "Purpose Determination Requirement",
+              "source_node_type": "Requirement",
+              "target_canonical_name": "[F49of the controller ]",
+              "target_node_type": "Actor"
+            },
+            {
+              "relationship_type": "CITES",
+              "source_canonical_name": "Purpose Determination Requirement",
+              "source_node_type": "Requirement",
+              "target_canonical_name": "[F50a task carried out ] in the exercise of official authority vested in the controller.",
+              "target_node_type": "Actor"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "GDPR",
+          "evidence_text": "[F51The domestic law ][F52or relevant international law ] shall meet an objective of public interest and be proportionate to the legitimate aim pursued.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [
+            {
+              "relationship_type": "CITES",
+              "source_canonical_name": "Proportionality Requirement",
+              "source_node_type": "Requirement",
+              "target_canonical_name": "[F51The domestic law ][F52or relevant international law ]",
+              "target_node_type": "LegalBasis"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "GDPR",
+          "evidence_text": "processing is necessary for the purposes of a recognised legitimate interest only if it meets a condition in Annex 1",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        }
+      ],
+      "needs_review": true,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    },
+    {
+      "regulation": "GDPR",
+      "chunk_id": "gdpr:sec-0353:0:75fd6cbb1d",
+      "section_title": "2 Where [F193the Commissioner ] is of the opinion that the intended processing referred",
+      "chunk_text": "2 Where [F193the Commissioner ] is of the opinion that the intended processing referred \nto in paragraph 1 would infringe this Regulation, in particular where the controller has \ninsufficiently identified or mitigated the risk, [F193the Commissioner ] shall, within period of \nup to eight weeks of receipt of the request for consultation, provide written advice to the \ncontroller and, where applicable to the processor, and may use any of its powers referred to \nin Article 58. That period may be extended by six weeks, taking into account the complexity \nof the intended processing. [F194The Commissioner ] shall inform the controller and, where \napplicable, the processor, of any such extension within one month of receipt of the request \nfor consultation together with the reasons for the delay. Those periods may be suspended \nuntil [F195the Commissioner has obtained information the Commissioner ] has requested for the \npurposes of the consultation.",
+      "chunk_summary_draft": "The Commissioner can provide written advice to controllers and processors if processing would infringe GDPR, particularly when risks are insufficiently mitigated. Deadlines for this advice exist with potential extensions.",
+      "annotations": [
+        {
+          "source_locator": "GDPR",
+          "evidence_text": "[F193the Commissioner ] is of the opinion that the intended processing referred to in paragraph 1 would infringe this Regulation, in particular where the controller has insufficiently identified or mitigated the risk",
+          "statement_type": "prohibition",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "GDPR",
+          "evidence_text": "[F193the Commissioner ] shall, within period of up to eight weeks of receipt of the request for consultation, provide written advice to the controller and, where applicable to the processor",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "Provide Written Advice",
+              "source_node_type": "Obligation",
+              "target_canonical_name": "Controller",
+              "target_node_type": "Actor"
+            },
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "Provide Written Advice",
+              "source_node_type": "Obligation",
+              "target_canonical_name": "Processor",
+              "target_node_type": "Actor"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "GDPR",
+          "evidence_text": "may use any of its powers referred to in Article 58",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "GDPR",
+          "evidence_text": "[F194The Commissioner ] shall inform the controller and, where applicable, the processor, of any such extension within one month of receipt of the request for consultation together with the reasons for the delay",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "Inform of Extension",
+              "source_node_type": "Obligation",
+              "target_canonical_name": "Controller",
+              "target_node_type": "Actor"
+            },
+            {
+              "relationship_type": "IMPOSES_ON",
+              "source_canonical_name": "Inform of Extension",
+              "source_node_type": "Obligation",
+              "target_canonical_name": "Processor",
+              "target_node_type": "Actor"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "GDPR",
+          "evidence_text": "[F195the Commissioner has obtained information the Commissioner ] has requested for the purposes of the consultation",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        }
+      ],
+      "needs_review": true,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    },
+    {
+      "regulation": "GDPR",
+      "chunk_id": "gdpr:sec-0006:3:f07803997a",
+      "section_title": "10 Regulation (EU) 2016/679 of the European Parliament and of the Council of 27...",
+      "chunk_text": "for such performance.\n(44) Processing should be lawful where it is necessary in the context of a contract or the \nintention to enter into a contract.\n\n[Page 11]\nRegulation (EU) 2016/679 of the European Parliament and of the Council of 27...\nDocument Generated: 2026-06-0311\nChanges to legislation: Regulation (EU) 2016/679 of the European Parliament and of the Council \nis up to date with all changes known to be in force on or before 03 June 2026. There are changes \nthat may be brought into force at a future date. Changes that have been made appear in the content \nand are referenced with annotations. (See end of Document for details) View outstanding changes\n(45) Where processing is carried out in accordance with a legal obligation to which the \ncontroller is subject or where processing is necessary for the performance of a task \ncarried out in the public interest or in the exercise of official authority, the processing \nshould have a basis in Union or Member State law. This Regulation does not require \na specific law for each individual processing. A law as a basis for several processing \noperations based on a legal obligation to which the controller is subject or where \nprocessing is necessary for the performance of a task carried out in the public interest \nor in the exercise of an official authority may be sufficient. It should also be for Union \nor Member State law to determine the purpose of processing. Furthermore, that law \ncould specify the general conditions of this Regulation governing the lawfulness of \npersonal data processing, establish specifications for determining the controller, the \ntype of personal data which are subject to the processing, the data subjects concerned, \nthe entities to which the personal data may be disclosed, the purpose limitations, t",
+      "chunk_summary_draft": "This section outlines lawful processing based on contracts, legal obligations, public interest, and official authority under GDPR. It clarifies that a single law can serve as a basis for multiple processing operations.",
+      "annotations": [
+        {
+          "source_locator": "GDPR | (44)",
+          "evidence_text": "Processing should be lawful where it is necessary in the context of a contract or the intention to enter into a contract.",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "GDPR | (45)",
+          "evidence_text": "Where processing is carried out in accordance with a legal obligation to which the controller is subject or where processing is necessary for the performance of a task carried out in the public interest or in the exercise of official authority, the processing should have a basis in Union or Member State law.",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "GDPR | (45)",
+          "evidence_text": "It should also be for Union or Member State law to determine the purpose of processing.",
+          "statement_type": "control",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "GDPR | (45)",
+          "evidence_text": "Furthermore, that law could specify the general conditions of this Regulation governing the lawfulness of personal data processing.",
+          "statement_type": "control",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        }
+      ],
+      "needs_review": true,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    },
+    {
+      "regulation": "HIPAA",
+      "chunk_id": "hipaa.pdf:sec-0000:11:c233a60022",
+      "section_title": "Preamble",
+      "chunk_text": "specification(s); or change the meaning or intent of the standard’s \nimplementation specification(s). \nC. Additional Requirements for Health Plans \n10\n\n[Page 11]\n6. If an entity requests a health plan to conduct a transaction as a standard \ntransaction, the health plan must do so. \n7. A health plan may not reject a transaction, or attempt to adversely affect \nthe other entity or transaction because it is a standard transaction. \n8. A health plan may not reject a standard transaction on the basis that it \ncontains data elements not needed or used by the health plan. \n9. A health plan may not offer an incentive to a health care provider to \nconduct a transaction as a direct data entry transaction. \n10. A health plan that operates as a health care clearinghouse, or requires an \nentity to use a health care clearinghouse to receive, process, or transmit a standard \ntransaction may not charge fees or costs in excess of the fees or costs for normal \ntelecommunications that the entity incurs. \n11. If a health plan receives a standard transaction and coordinates benefits \nwith another health plan or payer, it must store the coordination of benefits data it \nneeds to forward the standard transaction to the other health plan or payer. \n12. A health plan must accept and promptly process any standard transaction \nthat contains codes that are valid. \n13. A health plan must keep code sets for the current billing period and \nappeals periods still open to processing under the terms of the health plan’s \ncoverage. \nD. Compliance Date \nThe Compliance Date for the Transaction Standards is October 16, 2002. However, \nrecently passed legislation allows covered entities to apply for an extension of this deadline to \ndelay compliance until October 16, 2003. The University applied for this exte",
+      "chunk_summary_draft": "This section outlines specific requirements and limitations for health plans regarding standard transactions under HIPAA, including obligations to process transactions, prohibitions against rejection based on transaction type or data elements, restrictions on incentives, cost limits for clearinghouses, coordination of benefits data storage, acceptance of valid codes, code set maintenance, and a compliance deadline with potential extensions.",
+      "annotations": [
+        {
+          "source_locator": "HIPAA | Preamble",
+          "evidence_text": "If an entity requests a health plan to conduct a transaction as a standard transaction, the health plan must do so.",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [
+            {
+              "relationship_type": "REQUIRES_AUTHORIZATION",
+              "source_canonical_name": "HealthPlanConductStandardTransaction",
+              "source_node_type": "Obligation",
+              "target_canonical_name": "Standard Transaction",
+              "target_node_type": "DataCategory"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "HIPAA | Preamble",
+          "evidence_text": "A health plan may not reject a transaction, or attempt to adversely affect the other entity or transaction because it is a standard transaction.",
+          "statement_type": "prohibition",
+          "nodes": [],
+          "relationships": [
+            {
+              "relationship_type": "LIMITED_BY",
+              "source_canonical_name": "HealthPlanRejectStandardTransaction",
+              "source_node_type": "Prohibition",
+              "target_canonical_name": "Standard Transaction",
+              "target_node_type": "DataCategory"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "HIPAA | Preamble",
+          "evidence_text": "A health plan may not reject a standard transaction on the basis that it contains data elements not needed or used by the health plan.",
+          "statement_type": "prohibition",
+          "nodes": [],
+          "relationships": [
+            {
+              "relationship_type": "LIMITED_BY",
+              "source_canonical_name": "HealthPlanRejectStandardTransactionDataElements",
+              "source_node_type": "Prohibition",
+              "target_canonical_name": "Standard Transaction",
+              "target_node_type": "DataCategory"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "HIPAA | Preamble",
+          "evidence_text": "A health plan may not offer an incentive to a health care provider to conduct a transaction as a direct data entry transaction.",
+          "statement_type": "prohibition",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "HIPAA | Preamble",
+          "evidence_text": "If a health plan receives a standard transaction and coordinates benefits with another health plan or payer, it must store the coordination of benefits data it needs to forward the standard transaction to the other health plan or payer.",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [
+            {
+              "relationship_type": "USES_FOR",
+              "source_canonical_name": "HealthPlanStoreCoordinationData",
+              "source_node_type": "Obligation",
+              "target_canonical_name": "Standard Transaction",
+              "target_node_type": "DataCategory"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "HIPAA | Preamble",
+          "evidence_text": "A health plan must accept and promptly process any standard transaction that contains codes that are valid.",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [
+            {
+              "relationship_type": "USES_FOR",
+              "source_canonical_name": "HealthPlanAcceptProcessValidCodes",
+              "source_node_type": "Obligation",
+              "target_canonical_name": "Standard Transaction",
+              "target_node_type": "DataCategory"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "HIPAA | Preamble",
+          "evidence_text": "A health plan must keep code sets for the current billing period and appeals periods still open to processing under the terms of the health plan’s coverage.",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "HIPAA | Preamble",
+          "evidence_text": "The Compliance Date for the Transaction Standards is October 16, 2002. However, recently passed legislation allows covered entities to apply for an extension of this deadline to delay compliance until October 16, 2003.",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [
+            {
+              "relationship_type": "HAS_DEADLINE",
+              "source_canonical_name": "ComplianceDate",
+              "source_node_type": "Obligation",
+              "target_canonical_name": "Transaction Standards",
+              "target_node_type": "DataCategory"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": true
+        }
+      ],
+      "needs_review": true,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    },
+    {
+      "regulation": "HIPAA",
+      "chunk_id": "hipaa.pdf:sec-0002:1:251ce7d190",
+      "section_title": "30 days, provided that it provides a written statement to the",
+      "chunk_text": "red Entity must provide the individual with a \ntimely, written denial. The denial must use plain language and \ncontain: \ni. The basis for the denial; \nii. The individual’s right to submit a written statement disagreeing with the denial and how the individual may file \nsuch a statement; \niii. A statement that, if the individual does not submit a \nstatement of disagreement, the individual may request the \nCovered Entity provide the individual’s request for \namendment and the denial with any future disclosures of \nthe PHI; and \niv. A description of how the individual may complain to the \n50\n\n[Page 51]\nCovered Entity or to the Secretary of DHHS. The \ndescription must include the name, or title, and phone \nnumber of the designated contact person or office. \nb. Statement of Disagreement - The Covered Entity must permit the individual to submit a written statement disagreeing with the denial \nof all or part of the amendment and the basis of such disagreement. \nThe Covered Entity may reasonably limit the length of a statement \nof disagreement. \nc. Rebuttal Statement - The Covered Entity may prepare a written rebuttal to the statement of disagreement. Whenever a rebuttal is \nprepared, a copy must be provided to the individual. \nd. Recordkeeping  - The Covered Entity must, as appropriate, identify \nthe record of PHI that is the subject of the disputed amendment and \nappend or otherwise link the request, the denial, the statement of \ndisagreement and the rebuttal to the designated record set. \ne. Future Disclosures i. If a statement of disagreement has been submitted, the \nCovered Entity must include the information appended to \nthe record, or an accurate summary of such information, \nwith any subsequent disclosure of the PHI to which the \ndisagreement relates. \nii. If the individ",
+      "chunk_summary_draft": "Describes procedures for handling individual requests for amendment of Protected Health Information (PHI), including denials, statements of disagreement, rebuttals, recordkeeping, and future disclosures.",
+      "annotations": [
+        {
+          "source_locator": "",
+          "evidence_text": "The Covered Entity must provide the individual with a timely, written denial.",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "The denial must use plain language and contain: i. The basis for the denial; ii. The individual’s right to submit a written statement disagreeing with the denial and how the individual may file such a statement; iii. A statement that, if the individual does not submit a statement of disagreement, the individual may request the Covered Entity provide the individual’s request for amendment and the denial with any future disclosures of the PHI; and iv. A description of how the individual may complain to the Covered Entity or to the Secretary of DHHS.",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "The Covered Entity may reasonably limit the length of a statement of disagreement.",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Whenever a rebuttal is prepared, a copy must be provided to the individual.",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "The Covered Entity must, as appropriate, identify the record of PHI that is the subject of the disputed amendment and append or otherwise link the request, the denial, the statement of disagreement and the rebuttal to the designated record set.",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "If a statement of disagreement has been submitted, the Covered Entity must include the information appended to the record, or an accurate summary of such information, with any subsequent disclosure of the PHI to which the disagreement relates.",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        }
+      ],
+      "needs_review": true,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    },
+    {
+      "regulation": "HIPAA",
+      "chunk_id": "hipaa.pdf:sec-0000:30:37bf526edb",
+      "section_title": "Preamble",
+      "chunk_text": "the recipient and no longer protected by the Privacy regulations. \nAn authorization may contain other elements which are not inconsistent with the \n20\n\n[Page 21]\nrequired elements. A valid authorization must be written in plain language. \nIf a Covered Entity seeks an authorization from an individual for use or disclosure of \nPHI, the Covered Entity must provide the individual with a copy of the signed authorization. 3. Defective Authorizations \nAn authorization is not valid if it has any of the following defects: \nb. The expiration date has passed or the expiration event is known by \nthe Covered Entity to have occurred; \nc. The authorization has not been filled out completely with respect \nto a required element, if applicable; \nd. The authorization is known by the Covered Entity to have been \nrevoked; \ne. The authorization is a prohibited compound or conditioned \nauthorization; \nf. Any material information in the authorization is known by the \nCovered Entity to be false. \n3. Compound Authorizations \nAn authorization for use or disclosure of PHI may not be combined with any other \ndocument to create a compound authorization, except as follows: \nb. An authorization for the use or disclosure of PHI for a research \nstudy may be combined with any other type of written permission for the \nsame research study, including another authorization for the use or \ndisclosure of PHI for such research or a consent to participate in such \nresearch. \nc. An authorization for the use or disclosure of psychotherapy notes \nmay only be combined with another authorization for the use or disclosure \nof psychotherapy notes. \nd. An authorization, other than an authorization for the use or \ndisclosure of psychotherapy notes, may be combined with any other such \nauthorization, except where the Cove",
+      "chunk_summary_draft": "This section describes requirements and limitations related to authorizations for the use or disclosure of Protected Health Information (PHI) under HIPAA.",
+      "annotations": [
+        {
+          "source_locator": "hipaa.pdf | sec-0000",
+          "evidence_text": "An authorization may contain other elements which are not inconsistent with the ",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "hipaa.pdf | sec-0000",
+          "evidence_text": "A valid authorization must be written in plain language.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "hipaa.pdf | sec-0000",
+          "evidence_text": "the Covered Entity must provide the individual with a copy of the signed authorization.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "hipaa.pdf | sec-0000",
+          "evidence_text": "The expiration date has passed or the expiration event is known by the Covered Entity to have occurred;",
+          "statement_type": "prohibition",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "hipaa.pdf | sec-0000",
+          "evidence_text": "The authorization has not been filled out completely with respect to a required element, if applicable;",
+          "statement_type": "prohibition",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "hipaa.pdf | sec-0000",
+          "evidence_text": "The authorization is known by the Covered Entity to have been revoked;",
+          "statement_type": "prohibition",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "hipaa.pdf | sec-0000",
+          "evidence_text": "The authorization is a prohibited compound or conditioned authorization;",
+          "statement_type": "prohibition",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "hipaa.pdf | sec-0000",
+          "evidence_text": "Any material information in the authorization is known by the Covered Entity to be false.",
+          "statement_type": "prohibition",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "hipaa.pdf | sec-0000",
+          "evidence_text": "An authorization for use or disclosure of PHI may not be combined with any other document to create a compound authorization, except as follows:",
+          "statement_type": "prohibition",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "hipaa.pdf | sec-0000",
+          "evidence_text": "An authorization for the use or disclosure of PHI for a research study may be combined with any other type of written permission for the same research study, including another authorization for the use or disclosure of PHI for such research or a consent to participate in such research.",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "hipaa.pdf | sec-0000",
+          "evidence_text": "An authorization for the use or disclosure of psychotherapy notes may only be combined with another authorization for the use or disclosure of psychotherapy notes.",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        }
+      ],
+      "needs_review": true,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    },
+    {
+      "regulation": "HIPAA",
+      "chunk_id": "hipaa.pdf:sec-0001:13:70c6faadd6",
+      "section_title": "37 ii",
+      "chunk_text": "t that, where the \nrestricted PHI is needed for emergency treatment, the Covered \nEntity may use or disclose such PHI to a health care provider to \n44\n\n[Page 45]\nprovide such treatment to the individual. If the restricted PHI is \ndisclosed for emergency treatment, the Covered Entity must \nrequest that the health care provider not further use or disclose the \ninformation. \nd. A restriction agreed to is not effective to prevent uses or disclosures permitted or required to the Secretary of DHHS for \ncompliance, for facility directories or for which authorization or an \nopportunity to agree or object is not required. \ne. Terminating a Restriction  - A Covered Entity may terminate its \nagreement to a restriction if: \niii. The individual agrees to or requests \nthe termination in writing; \niv. The individual orally agrees to the \ntermination and the oral agreement is documented; or \nv. The Covered Entity informs the \nindividual it is terminating its agreement to the restriction, except that such termination is only effective with regard to \nPHI created or received after it has so informed the \nindividual. \nf. A Covered Entity that agrees to a restriction must document that \nrestriction. \n2. Confidential Communications Requirements a. A covered health care provider must permit individuals to request \nand must accommodate reasonable requests to receive \ncommunications of PHI by alternative means or at alternative \nlocations. \nb. A health plan must permit individuals to request and must accommodate reasonable requests to receive communications of \nPHI by alternative means or at alternative locations, if the \nindividual clearly states that the disclosure of all or part of that \ninformation could endanger the individual. \nc. A Covered Entity may require an individual to make a requ",
+      "chunk_summary_draft": "This section outlines restrictions on PHI use and disclosure, including emergency treatment exceptions, termination procedures, documentation requirements, and confidential communication requests.",
+      "annotations": [
+        {
+          "source_locator": "",
+          "evidence_text": "where the restricted PHI is needed for emergency treatment, the Covered Entity may use or disclose such PHI to a health care provider to provide such treatment to the individual.",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "If the restricted PHI is disclosed for emergency treatment, the Covered Entity must request that the health care provider not further use or disclose the information.",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "A restriction agreed to is not effective to prevent uses or disclosures permitted or required to the Secretary of DHHS for compliance, for facility directories or for which authorization or an opportunity to agree or object is not required.",
+          "statement_type": "prohibition",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "iii. The individual agrees to or requests the termination in writing;",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "iv. The individual orally agrees to the termination and the oral agreement is documented;",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "v. The Covered Entity informs the individual it is terminating its agreement to the restriction, except that such termination is only effective with regard to PHI created or received after it has so informed the individual.",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "A Covered Entity that agrees to a restriction must document that restriction.",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "A covered health care provider must permit individuals to request and must accommodate reasonable requests to receive communications of PHI by alternative means or at alternative locations.",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "A health plan must permit individuals to request and must accommodate reasonable requests to receive communications of PHI by alternative means or at alternative locations, if the individual clearly states that the disclosure of all or part of that information could endanger the individual.",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "A Covered Entity may require an individual to make a request",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        }
+      ],
+      "needs_review": true,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    },
+    {
+      "regulation": "HIPAA",
+      "chunk_id": "hipaa.pdf:sec-0001:7:5127edcfe1",
+      "section_title": "37 ii",
+      "chunk_text": "uses and \ndisclosures. \nv. A statement that other uses and disclosures will be made only with the individual’s written authorization and that the \n41\n\n[Page 42]\nindividual may revoke such authorization. \nb. Special Uses and Disclosures - If the \nCovered Entity intends to engage in any of the following activities, \nthe description of uses and disclosures must include a separate \nstatement, as applicable, that: \ni. The Covered Entity may contact the individual to provide \nappointment reminders or information about treatment or \nservices which may be of interest to the individual. \nii. The Covered Entity may contact the individual to raise funds for the Covered Entity; or \niii. A group health plan, or a health insurance issuer or HMO \nwith respect to a group health plan, may disclose PHI to the \nsponsor of the plan. \nb. Individual Rights  - The Notice must contain \na statement of the individual’s rights with respect to PHI and a \nbrief description of how the individual may exercise these rights, \nas follows: \ni. The right to request restrictions on certain uses and \ndisclosures, and that the Covered Entity is not required to \nagree to a requested restriction; \nii. The right to receive confidential communications of PHI; \niii. The right to inspect and copy PHI; \niv. The right to amend PHI; \nv. The right to receive an accounting of disclosures; and \nvi. The right of an individual, including an individual who has agreed to receive the notice electronically, to obtain a paper \ncopy of the notice upon request. \nb. Covered Entity’s Duties - The Notice must \ncontain: \ni. A statement that the Covered Entity is required by law to \nmaintain the privacy of PHI and to provide individuals with \nnotice of its legal duties and privacy practices; \nii. A statement that the Covered Entity",
+      "chunk_summary_draft": "This section outlines requirements for HIPAA notices, including authorizations, special uses/disclosures, individual rights, and covered entity duties.",
+      "annotations": [
+        {
+          "source_locator": "HIPAA",
+          "evidence_text": "uses and disclosures. v. A statement that other uses and disclosures will be made only with the individual’s written authorization and that the 41 [Page 42] individual may revoke such authorization.",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [
+            {
+              "relationship_type": "REQUIRES_AUTHORIZATION",
+              "source_canonical_name": "Authorization Required for Uses and Disclosures",
+              "source_node_type": "Permission",
+              "target_canonical_name": "uses and disclosures",
+              "target_node_type": "DataCategory"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "HIPAA",
+          "evidence_text": "The Covered Entity may contact the individual to provide appointment reminders or information about treatment or services which may be of interest to the individual.",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "HIPAA",
+          "evidence_text": "The Covered Entity may contact the individual to raise funds for the Covered Entity;",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "HIPAA",
+          "evidence_text": "A group health plan, or a health insurance issuer or HMO with respect to a group health plan, may disclose PHI to the sponsor of the plan.",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "HIPAA",
+          "evidence_text": "The right to request restrictions on certain uses and disclosures, and that the Covered Entity is not required to agree to a requested restriction;",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "HIPAA",
+          "evidence_text": "The right to receive confidential communications of PHI;",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "HIPAA",
+          "evidence_text": "The right to inspect and copy PHI;",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "HIPAA",
+          "evidence_text": "The right to amend PHI;",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "HIPAA",
+          "evidence_text": "The right to receive an accounting of disclosures;",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "HIPAA",
+          "evidence_text": "The right of an individual, including an individual who has agreed to receive the notice electronically, to obtain a paper copy of the notice upon request.",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "HIPAA",
+          "evidence_text": "A statement that the Covered Entity is required by law to maintain the privacy of PHI and to provide individuals with notice of its legal duties and privacy practices;",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        }
+      ],
+      "needs_review": true,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    },
+    {
+      "regulation": "EU_AI_ACT",
+      "chunk_id": "eu_ai_act.pdf:sec-0106:0:89f985c79d",
+      "section_title": "Article 57",
+      "chunk_text": "Article 57\nAI regulator y sandbo xes\n1. Member States shall ensure that their compet ent author ities establish at least one AI regulato ry sandbo x at national \nlevel, which shall be operational by 2 August 2026. That sandbo x may also be established jointly with the comp etent \nauthor ities of other Member States. The Commission may provide technical suppor t, advice and tools for the establishment \nand operation of AI regulatory sandbo xes.\nThe obligation under the first subparagraph may also be fulfilled by participating in an existing sandbo x in so far as that \nparticipation provides an equivalent level of national coverag e for the participating Member States.\n2. Additional AI regulator y sandbo xes at regional or local level, or established jointly with the compet ent author ities of \nother Member States may also be established.\n3. The European Data Prot ection Super visor may also establish an AI regulator y sandbo x for Union institutions, bodies, \noffices and agencies, and may exercise the roles and the tasks of national compet ent author ities in accordance with this \nChapt er.\n4. Member States shall ensure that the comp etent author ities referred to in paragraphs 1 and 2 allocate suffi cient \nresources to comply with this Article effectively and in a timely manner . Where appropr iate, national compet ent author ities \nshall cooperate with other relevant author ities, and may allow for the involvement of other actors within the AI ecosyste m. \nThis Article shall not affect other regulato ry sandbo xes established under Union or national law. Member States shall ensure \nan appropr iate level of cooperation between the author ities super vising those other sandbo xes and the national compet ent \nauthor ities.",
+      "chunk_summary_draft": "Article 57 outlines the establishment and operation of AI regulatory sandboxes at national, regional, local, or EU levels.",
+      "annotations": [
+        {
+          "source_locator": "EU AI Act | 57 | 1",
+          "evidence_text": "Member States shall ensure that their compet ent author ities establish at least one AI regulato ry sandbo x at national level, which shall be operational by 2 August 2026.",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [
+            {
+              "relationship_type": "HAS_DEADLINE",
+              "source_canonical_name": "Establish AI Regulatory Sandbox",
+              "source_node_type": "Obligation",
+              "target_canonical_name": "2 August 2026",
+              "target_node_type": "Deadline"
+            }
+          ],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "EU AI Act | 57 | 1",
+          "evidence_text": "That sandbo x may also be established jointly with the comp etent author ities of other Member States.",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "EU AI Act | 57 | 4",
+          "evidence_text": "Member States shall ensure that the comp etent author ities referred to in paragraphs 1 and 2 allocate suffi cient resources to comply with this Article effectively and in a timely manner .",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        }
+      ],
+      "needs_review": true,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    },
+    {
+      "regulation": "EU_AI_ACT",
+      "chunk_id": "eu_ai_act.pdf:sec-0121:1:67f35b94a2",
+      "section_title": "Article 67",
+      "chunk_text": "h 2, from amongst stakeholders with recognised exper tise in the field of AI.OJ L, 12.7.2024 EN\nELI: http://data.europa.eu/eli/reg/2024/1689/oj 97/144\n\n[Page 98]\n4. The term of offic e of the members of the advisor y forum shall be two years, which may be extended by up to no more \nthan four years.\n5. The Fundamental Rights Agency , ENISA, the European Committe e for Standardization (CEN), the European \nCommitte e for Electrotec hnical Standardization (CENELEC), and the European Telecommunications Standards Institute \n(ETSI) shall be permanent members of the advisor y forum.\n6. The advisor y forum shall draw up its rules of procedure. It shall elect two co-chairs from among its members, in \naccordance with criteria set out in paragraph 2. The term of office of the co-c hairs shall be two years, renewable once.\n7. The advisor y forum shall hold meetings at least twice a year. The advisor y forum may invit e exper ts and other \nstak eholders to its meetings.\n8. The advisor y forum may prepare opinions, recommendations and written contr ibutions at the request of the Board or \nthe Commission.\n9. The advisor y forum may establish standing or temporar y sub-groups as appropr iate for the purpose of examining \nspecific questions related to the objectives of this Regulation.\n10. The advisor y forum shall prepare an annual repor t on its activities. That repor t shall be made publicly available .",
+      "chunk_summary_draft": "This section outlines the composition, operation, and reporting requirements for the advisory forum established by the EU AI Act.",
+      "annotations": [
+        {
+          "source_locator": "EU AI Act | 67",
+          "evidence_text": "The term of office of the members of the advisory forum shall be two years, which may be extended by up to no more than four years.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "EU AI Act | 67",
+          "evidence_text": "The Fundamental Rights Agency , ENISA, the European Committee for Standardization (CEN), the European Committee for Electrotechnical Standardization (CENELEC), and the European Telecommunications Standards Institute shall be permanent members of the advisory forum.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "EU AI Act | 67",
+          "evidence_text": "The advisory forum shall draw up its rules of procedure.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "EU AI Act | 67",
+          "evidence_text": "It shall elect two co-chairs from among its members, in accordance with criteria set out in paragraph 2.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "EU AI Act | 67",
+          "evidence_text": "The advisory forum shall hold meetings at least twice a year.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "EU AI Act | 67",
+          "evidence_text": "The advisory forum may invite experts and other stakeholders to its meetings.",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "EU AI Act | 67",
+          "evidence_text": "The advisory forum may prepare opinions, recommendations and written contributions at the request of the Board or the Commission.",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "EU AI Act | 67",
+          "evidence_text": "The advisory forum may establish standing or temporary sub-groups as appropriate for the purpose of examining specific questions related to the objectives of this Regulation.",
+          "statement_type": "permission",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "EU AI Act | 67",
+          "evidence_text": "The advisory forum shall prepare an annual report on its activities. That report shall be made publicly available.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        }
+      ],
+      "needs_review": true,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    },
+    {
+      "regulation": "EU_AI_ACT",
+      "chunk_id": "eu_ai_act.pdf:sec-0134:0:971f7efd09",
+      "section_title": "Article 72",
+      "chunk_text": "Article 72\nPost-mark et monitorin g by providers and pos t-mark et monitor ing plan for high-r isk AI systems\n1. Providers shall establish and document a post-mark et monitoring syste m in a manner that is propor tionate to the \nnature of the AI technologies and the risks of the high-r isk AI system.\n2. The post-mark et monito ring system shall actively and systematically collect, document and analyse relevant data \nwhich may be provided by deplo yers or which may be collected through other sources on the perform ance of high-r isk AI \nsyste ms throughout their lifetime, and which allow the provider to evaluate the continuous complia nce of AI systems with \nthe requirements set out in Chap ter III, Section 2. Where relevant, post-mark et monitoring shall include an analysis of the \ninterac tion with other AI syste ms. This obligati on shall not cover sensitive operational data of deplo yers which are \nlaw-enf orcement author ities.\n3. The post-mark et monitori ng system shall be based on a post-mark et monitoring plan. The post-mark et monitoring \nplan shall be part of the technical documentation referred to in Annex IV. The Commission shall adopt an imp lementing act \nlaying down detailed provisions establishing a templat e for the post-mark et monitoring plan and the list of elements to be \nincluded in the plan by 2 Febr uary 2026. That imp lementing act shall be adop ted in accordance with the examination \nprocedure referred to in Article 98(2).\n4. For high-r isk AI syste ms covered by the Union harmonisation legislation listed in Section A of Annex I, where \na post-market monitoring system and plan are already established under that legislation, in order to ensure consiste ncy,",
+      "chunk_summary_draft": "Article 72 outlines post-market monitoring requirements for providers of high-risk AI systems.",
+      "annotations": [
+        {
+          "source_locator": "",
+          "evidence_text": "Providers shall establish and document a post-market monitoring system in a manner that is proportionate to the \nnature of the AI technologies and the risks of the high-r isk AI system.",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "The post-market monitoring system shall actively and systematically collect, document and analyse relevant data \nwhich may be provided by deplo yers or which may be collected through other sources on the perform ance of high-r isk AI \nsyste ms throughout their lifetime, and which allow the provider to evaluate the continuous complia nce of AI systems with \nthe requirements set out in Chap ter III, Section 2.",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Where relevant, post-market monitoring shall include an analysis of the \ninterac tion with other AI syste ms.",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "This obligation shall not cover sensitive operational data of deployers which are \nlaw-enf orcement author ities.",
+          "statement_type": "exception",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "The post-market monitoring system shall be based on a post-market monitoring plan.",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "The post-market monitoring \nplan shall be part of the technical documentation referred to in Annex IV.",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "The Commission shall adopt an implementing act \nlaying down detailed provisions establishing a template for the post-market monitoring plan and the list of elements to be \nincluded in the plan by 2 Febr uary 2026.",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "For high-r isk AI syste ms covered by the Union harmonisation legislation listed in Section A of Annex I, where \na post-market monitoring system and plan are already established under that legislation, in order to ensure consiste ncy,",
+          "statement_type": "obligation",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        }
+      ],
+      "needs_review": true,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    },
+    {
+      "regulation": "EU_AI_ACT",
+      "chunk_id": "eu_ai_act.pdf:sec-0047:3:c4628b619f",
+      "section_title": "Article 79(1), they shall, without undue dela y, inform the provider or distr ibut or and the relevant market surveillance",
+      "chunk_text": "isk AI system for which the author isation was request ed shall be delete d.EN OJ L, 12.7.2024\n68/144 ELI: http://data.europa.eu/eli/reg/2024/1689/oj\n\n[Page 69]\nIn no case shall such high-r isk AI syste m for post-remote biometr ic identifica tion be used for law enforcement purposes in \nan untarget ed way, without any link to a criminal offence, a criminal proceeding, a genuine and present or genuine and \nforeseeable threat of a criminal offenc e, or the searc h for a specif ic missing person. It shall be ensured that no decision that \nproduces an adverse legal effect on a person may be taken by the law enforcement author ities based solely on the output of \nsuch post-remote biometr ic identifi cation syste ms.\nThis paragraph is without prejudice to Article 9 of Regulation (EU) 2016/679 and Article 10 of Directive (EU) 2016/680 \nfor the processing of biometr ic data.\nRegardless of the purpose or deplo yer, each use of such high-r isk AI syste ms shall be documented in the relevant police file \nand shall be made available to the relevant marke t surveillance author ity and the national data protection author ity upon \nrequest, excluding the disclosure of sensitive operational data related to law enforcement. This subparagraph shall be \nwithout prejudice to the powers confe rred by Directive (EU) 2016/680 on super visor y author ities.\nDeplo yers shall submit annual repor ts to the relevant marke t surveillance and national data prot ection author ities on their \nuse of post-remote biometr ic identifica tion systems, excluding the disclosure of sensitive operational data related to law \nenforcement. The repor ts may be aggrega ted to cover more than one deplo yment.\nMember States may introduce, in accordance with Union law, more restr ictive laws on the use of post-remo",
+      "chunk_summary_draft": "This section outlines restrictions and requirements for the use of high-risk AI systems for post-remote biometric identification, particularly concerning law enforcement applications. It mandates documentation, reporting, and respects existing data protection regulations.",
+      "annotations": [
+        {
+          "source_locator": "EU AI Act | sec-0047",
+          "evidence_text": "In no case shall such high-r isk AI syste m for post-remote biometr ic identifica tion be used for law enforcement purposes in \nan untarget ed way, without any link to a criminal offence, a criminal proceeding, a genuine and present or genuine and \nforeseeable threat of a criminal offenc e, or the searc h for a specif ic missing person.",
+          "statement_type": "prohibition",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "EU AI Act | sec-0047",
+          "evidence_text": "It shall be ensured that no decision that \nproduces an adverse legal effect on a person may be taken by the law enforcement author ities based solely on the output of \nsuch post-remote biometr ic identifi cation syste ms.",
+          "statement_type": "prohibition",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "EU AI Act | sec-0047",
+          "evidence_text": "Regardless of the purpose or deplo yer, each use of such high-r isk AI syste ms shall be documented in the relevant police file \nand shall be made available to the relevant marke t surveillance author ity and the national data protection author ity upon \nrequest, excluding the disclosure of sensitive operational data related to law enforcement.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "EU AI Act | sec-0047",
+          "evidence_text": "Deplo yers shall submit annual repor ts to the relevant marke t surveillance and national data prot ection author ities on their \nuse of post-remote biometr ic identifica tion systems, excluding the disclosure of sensitive operational data related to law \nenforcement. The repor ts may be aggrega ted to cover more than one deplo yment.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        }
+      ],
+      "needs_review": true,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    },
+    {
+      "regulation": "EU_AI_ACT",
+      "chunk_id": "eu_ai_act.pdf:sec-0056:1:25a4ab2971",
+      "section_title": "Article 31",
+      "chunk_text": "of the conf ormity assessment activities that the notif ied bodies \nconduct.OJ L, 12.7.2024 EN\nELI: http://data.europa.eu/eli/reg/2024/1689/oj 71/144\n\n[Page 72]\n4. Notifi ed bodies shall be independent of the provid er of a high-r isk AI syste m in relation to which they perform \nconf ormity assessment activities. Notifi ed bodies shall also be independent of any other operat or having an economic \nintere st in high-r isk AI syste ms assessed, as well as of any competit ors of the provider . This shall not preclude the use of \nassessed high-r isk AI syste ms that are necessar y for the operations of the conf ormity assessment body , or the use of such \nhigh-r isk AI syste ms for personal purposes.\n5. Neither a conf ormity assessment body , its top-level managem ent nor the personnel responsible for carrying out its \nconf ormity assessment tasks shall be directly involved in the design, development, marke ting or use of high-r isk AI systems, \nnor shall they represent the parties engag ed in those activities. They shall not enga ge in any activity that might conf lict with \ntheir independence of judgement or integrity in relation to conf ormity assessment activities for which they are notified. \nThis shall, in particular , apply to consultancy services.\n6. Notifi ed bodies shall be organised and operat ed so as to safeguard the independence, objectivity and imp artiality of \ntheir activities. Notifi ed bodies shall document and implement a structure and procedures to safeguard impartiality and to \npromot e and apply the principles of imp artiality throughout their organisation, personnel and assessment activities.\n7. Notifi ed bodies shall have documented procedures in place ensur ing that their personnel, committ ees, subsidiar ies, \nsubcontractors and any associated b",
+      "chunk_summary_draft": "This section outlines the independence requirements for notified bodies conducting conformity assessments of high-risk AI systems under the EU AI Act.",
+      "annotations": [
+        {
+          "source_locator": "",
+          "evidence_text": "Notified bodies shall be independent of the provider of a high-r isk AI syste m in relation to which they perform \nconformity assessment activities.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Notified bodies shall also be independent of any other operat or having an economic \nintere st in high-r isk AI syste ms assessed, as well as of any competit ors of the provider .",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "This shall not preclude the use of \nassessed high-r isk AI syste ms that are necessar y for the operations of the conf ormity assessment body , or the use of such \nhigh-r isk AI syste ms for personal purposes.",
+          "statement_type": "exception",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Neither a conf ormity assessment body , its top-level managem ent nor the personnel responsible for carrying out its \nconformity assessment tasks shall be directly involved in the design, development, marke ting or use of high-r isk AI systems, \nnor shall they represent the parties engag ed in those activities.",
+          "statement_type": "prohibition",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "They shall not enga ge in any activity that might conf lict with \ntheir independence of judgement or integrity in relation to conf ormity assessment activities for which they are notified.",
+          "statement_type": "prohibition",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Notifi ed bodies shall be organised and operat ed so as to safeguar d the independence, objectivity and imp artiality of \ntheir activities.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Notifi ed bodies shall document and implem ent a structure and procedures to safeguar d imp artiality and to \npromot e and apply the principles of imp artiality throughout their organisation, personnel and assessment activities.",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        },
+        {
+          "source_locator": "",
+          "evidence_text": "Notifi ed bodies shall have documente d procedures in place ensur ing that their personnel, committ ees, subsidiar ies,\nsubcontractors and any associated b",
+          "statement_type": "requirement",
+          "nodes": [],
+          "relationships": [],
+          "ambiguity_note": "",
+          "needs_review": true
+        }
+      ],
+      "needs_review": true,
+      "reviewer_notes": "UNVALIDATED DRAFT - pre-filled from model output. Add missed statements/nodes/relationships, fix wrong types, remove hallucinated items, resolve ambiguity_note."
+    }
+  ]
+}

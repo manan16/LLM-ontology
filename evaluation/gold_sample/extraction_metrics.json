@@ -1,0 +1,84 @@
+{
+  "statement": {
+    "true_positive": 45,
+    "system_count": 67,
+    "gold_count": 73,
+    "precision": 0.6716417910447762,
+    "recall": 0.6164383561643836,
+    "f1": 0.6428571428571429
+  },
+  "node": {
+    "true_positive": 0,
+    "system_count": 0,
+    "gold_count": 81,
+    "precision": null,
+    "recall": 0.0,
+    "f1": 0.0
+  },
+  "relationship": {
+    "true_positive": 70,
+    "system_count": 77,
+    "gold_count": 72,
+    "precision": 0.9090909090909091,
+    "recall": 0.9722222222222222,
+    "f1": 0.9395973154362416
+  },
+  "error_categories": {
+    "unsupported_extraction": 6,
+    "wrong_statement_type": 22,
+    "missing_extraction": 89,
+    "incorrect_entity_type": 0,
+    "incorrect_relationship": 1,
+    "evidence_span_error": 0,
+    "dedup_normalisation_error": 0,
+    "retrieval_grounding_error": 0
+  },
+  "error_categories_by_regulation": {
+    "EU_AI_ACT": {
+      "unsupported_extraction": 4,
+      "wrong_statement_type": 9,
+      "missing_extraction": 26,
+      "incorrect_entity_type": 0,
+      "incorrect_relationship": 0,
+      "evidence_span_error": 0,
+      "dedup_normalisation_error": 0,
+      "retrieval_grounding_error": 0
+    },
+    "GDPR": {
+      "unsupported_extraction": 2,
+      "wrong_statement_type": 6,
+      "missing_extraction": 29,
+      "incorrect_entity_type": 0,
+      "incorrect_relationship": 1,
+      "evidence_span_error": 0,
+      "dedup_normalisation_error": 0,
+      "retrieval_grounding_error": 0
+    },
+    "HIPAA": {
+      "unsupported_extraction": 0,
+      "wrong_statement_type": 7,
+      "missing_extraction": 34,
+      "incorrect_entity_type": 0,
+      "incorrect_relationship": 0,
+      "evidence_span_error": 0,
+      "dedup_normalisation_error": 0,
+      "retrieval_grounding_error": 0
+    }
+  },
+  "meta": {
+    "gold_file": "evaluation/gold_sample/gold_annotations.json",
+    "system_file": "evaluation/gold_sample/raw_extractions.json",
+    "model": "qwen2.5:7b-instruct",
+    "gold_human_validated": true,
+    "gold_provenance": "Claude-pre-reviewed then human-validated",
+    "chunk_count": 15,
+    "failed_extraction_chunks": [
+      "gdpr:sec-0078:0:d46a526c26"
+    ],
+    "match_thresholds": {
+      "evidence_overlap_coefficient_match": 0.5,
+      "evidence_exact": 0.999,
+      "node_name_near_jaccard": 0.5
+    }
+  }
+}

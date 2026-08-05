@@ -18,6 +18,23 @@
     });
   })();
 
+  // --- retrieval-mode comparison: metric tabs -------------------------------
+  // All metric panels are server-rendered; the tabs only toggle visibility.
+  (function ablationTabs() {
+    const tabs = document.getElementById("ablationTabs");
+    if (!tabs) return;
+    tabs.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-metric]");
+      if (!btn) return;
+      const metric = btn.getAttribute("data-metric");
+      tabs.querySelectorAll("[data-metric]").forEach((b) => b.classList.toggle("on", b === btn));
+      document.querySelectorAll("[data-metric-panel]").forEach((p) => {
+        if (p.getAttribute("data-metric-panel") === metric) p.removeAttribute("hidden");
+        else p.setAttribute("hidden", "");
+      });
+    });
+  })();
+
   const table = document.getElementById("evalTable");
   if (!table) return;
 

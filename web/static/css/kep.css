@@ -99,22 +99,23 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   --bg-1: #f6f4ec;
   --bg-2: #fbfaf5;
   --bg-3: #ffffff;
-  --fg-0: #1b2333;
+  --fg-0: #10283D;
   --fg-1: #45506a;
   --fg-2: #8a93a6;
   --line: #d8d3c4;
   --line-2: #c5bfae;
-  --accent: #2f5fd0;
-  --accent-2: #b0451f;
+  --accent: #0D7D75;
+  --accent-2: #B4530F;
   --accent-on: #ffffff;
-  --accent-soft: rgba(47,95,208,0.10);
+  --accent-soft: rgba(13,125,117,0.10);
   --good: #1f8a5b;
   --warn: #b07d12;
   --danger: #b0451f;
   --font-ui: 'IBM Plex Sans', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
-  --radius: 6px;
-  --radius-sm: 4px;
+  --font-voice: 'Spectral', serif;
+  --radius: 0;
+  --radius-sm: 0;
   --shadow: 0 1px 2px rgba(27,35,51,0.06), 0 4px 14px rgba(27,35,51,0.05);
   --node-question: #2f5fd0;
   --node-concept: #1f8a5b;
@@ -203,6 +204,18 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 :root[data-direction="schematic"] .tag.reg-aiact { color: #2f5fd0; border-color: rgba(47,95,208,0.4); }
 :root[data-direction="schematic"] .tag.reg-gdpr  { color: #b07d12; border-color: rgba(176,125,18,0.4); }
 
+/* KEP blueprint = sharp corners. These card/tag/chip/pill elements set a
+   hardcoded border-radius literal (4px/6px/100px) that bypasses --radius:0,
+   so flatten them explicitly under schematic (mirrors the terminal overrides). */
+:root[data-direction="schematic"] .tag,
+:root[data-direction="schematic"] .chip,
+:root[data-direction="schematic"] .suggest,
+:root[data-direction="schematic"] .cite-ref,
+:root[data-direction="schematic"] .pill,
+:root[data-direction="schematic"] .flag,
+:root[data-direction="schematic"] .answer-cite,
+:root[data-direction="schematic"] .demo-badge { border-radius: 0; }
+
 /* ============================ LEFT PANE ================================== */
 .lp { padding: 16px 14px; }
 .lp-sec-title { display: flex; align-items: center; justify-content: space-between; margin: 4px 4px 12px; }
@@ -214,6 +227,14 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   transition: filter .15s;
 }
 .lp-new:hover { filter: brightness(1.08); }
+/* Reset session — clears history only; the demo questions in the composer stay. */
+.lp-reset {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--fg-2); padding: 3px 7px; border: 1px solid var(--line);
+  border-radius: var(--radius-sm); transition: color .12s, border-color .12s, background .12s;
+}
+.lp-reset:hover { color: var(--fg-0); border-color: var(--line-2); background: var(--bg-2); }
+.lp-reset.arm { color: var(--warn); border-color: var(--warn); }
 .session {
   width: 100%; text-align: left; padding: 11px 12px; margin-bottom: 7px;
   border: 1px solid transparent; border-radius: var(--radius-sm);
@@ -347,11 +368,12 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.03em;
   padding: 5px 10px; border-radius: var(--radius-sm); text-transform: uppercase; white-space: nowrap; flex: none;
 }
-.verdict-badge.permit { background: rgba(70,192,138,0.16); color: var(--good); }
-.verdict-badge.obligation { background: var(--accent-soft); color: var(--accent); }
-.verdict-badge.nuance { background: rgba(224,179,65,0.16); color: var(--warn); }
-.verdict-badge.prohibit { background: rgba(224,104,107,0.16); color: var(--danger); }
-.verdict-badge.insufficient { background: rgba(107,117,137,0.16); color: var(--fg-2); }
+/* Fixed determination-verdict tones (see VERDICT_META in kep-app.js):
+   teal = graph-confirmed, rust-orange = prohibited, gray = insufficient/
+   unavailable/unconfirmed. Colour is fixed per verdict, not styled generically. */
+.verdict-badge.confirmed { background: var(--accent-soft); color: var(--accent); }
+.verdict-badge.prohibited { background: rgba(180,83,15,0.16); color: var(--accent-2); }
+.verdict-badge.muted { background: rgba(107,117,137,0.16); color: var(--fg-2); }
 .verdict-text { font-size: 14.5px; font-weight: 600; color: var(--fg-0); }
 .determination-obs { margin-top: 14px; }
 
@@ -531,13 +553,20 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .answer-md p:last-child { margin-bottom: 0; }
 .answer-md strong { color: var(--fg-0); font-weight: 650; }
 .answer-md ul, .answer-md ol { margin: 0 0 13px; padding-left: 4px; list-style: none; display: flex; flex-direction: column; gap: 9px; }
-.answer-md li { display: grid; grid-template-columns: auto 1fr; gap: 11px; align-items: start; font-size: 13.5px; line-height: 1.55; }
-.answer-md li::before { content: "→"; color: var(--accent); font-family: var(--font-mono); font-size: 12px; padding-top: 1px; }
+/* Marker sits in the padding gutter, NOT in a grid column: a grid list item
+   would promote every inline child (<strong>, the [E#] chips) into its own grid
+   item and shatter the sentence across rows. */
+.answer-md li { position: relative; padding-left: 23px; font-size: 13.5px; line-height: 1.55; }
+.answer-md li::before {
+  content: "→"; position: absolute; left: 0; top: 0; width: 20px;
+  color: var(--accent); font-family: var(--font-mono); font-size: 12px; line-height: 1.75;
+}
 .answer-md ol { counter-reset: ans; }
-.answer-md ol li { counter-increment: ans; }
-.answer-md ol li::before { content: counter(ans, decimal-leading-zero); font-size: 11px; font-weight: 600; }
+.answer-md ol li { counter-increment: ans; padding-left: 28px; }
+.answer-md ol li::before { content: counter(ans, decimal-leading-zero); width: 24px; font-size: 11px; font-weight: 600; }
 .answer-md h4 { font-size: 13px; color: var(--fg-0); margin: 16px 0 8px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; }
 .answer-cite {
+  display: inline-block; vertical-align: baseline; margin-left: 2px; margin-right: 0;
   font-family: var(--font-mono); font-size: 10px; font-weight: 600; color: var(--accent);
   background: var(--accent-soft); padding: 1px 6px; border-radius: 4px; cursor: pointer; white-space: nowrap;
 }
@@ -602,6 +631,28 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 /* a. summary */
 .eval-summary { grid-template-columns: repeat(4, 1fr); margin-bottom: 6px; }
+
+/* a2. retrieval-mode comparison (semantic / graph / hybrid ablation) */
+.abl-cards { grid-template-columns: repeat(3, 1fr); }
+.abl-cards .abl-prod { border-color: var(--accent); }
+.abl-sub { font-size: 10px; margin-top: 5px; }
+.abl-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 10px; }
+.abl-tab {
+  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--fg-2); padding: 6px 10px; border: 1px solid var(--line); border-radius: var(--radius-sm);
+  transition: color .12s, border-color .12s, background .12s;
+}
+.abl-tab:hover { color: var(--fg-0); border-color: var(--line-2); }
+.abl-tab.on { color: var(--accent-on); background: var(--accent); border-color: var(--accent); }
+.abl-tab.on .muted { color: var(--accent-on); opacity: .7; }
+.abl-table { min-width: 520px; }
+.abl-table td.num { font-weight: 600; }
+.abl-cat { color: var(--fg-1); }
+.abl-na { color: var(--fg-2); font-style: italic; }
+.abl-best { position: relative; }
+.abl-best::after { content: " ▲"; font-size: 9px; color: var(--accent); vertical-align: middle; }
+.abl-overall td { border-top: 1px solid var(--line-2); background: var(--bg-2); font-weight: 700; }
+.abl-note { font-size: 10.5px; margin: 8px 2px 0; }
 
 /* b. category breakdown */
 .eval-cats { display: flex; flex-direction: column; gap: 2px; }

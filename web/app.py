@@ -8,7 +8,7 @@ from neo4j import GraphDatabase
 
 from app.config import get_settings
 from rag.retrieval_service import retrieve as retrieval_retrieve
-from web.services.evaluation_report import load_evaluation_report
+from web.services.evaluation_report import load_ablation_comparison, load_evaluation_report
 from web.services.rag_service import answer_question
 
 
@@ -27,7 +27,11 @@ def index() -> str:
 
 @app.get("/evaluation")
 def evaluation() -> str:
-    return render_template("evaluation.html", report=load_evaluation_report())
+    return render_template(
+        "evaluation.html",
+        report=load_evaluation_report(),
+        ablation=load_ablation_comparison(),
+    )
 
 
 @app.get("/health")
@@ -203,4 +207,8 @@ def _node_count(session: Any, label: str) -> int:
 if __name__ == "__main__":
     host = os.environ.get("WEB_HOST", "127.0.0.1")
     port = int(os.environ.get("WEB_PORT", "5001"))
-    app.run(host=host, port=port, debug=True)
+    # Debug mode enables Werkzeug's interactive debugger, which allows arbitrary
+    # code execution -- never on by default (the app may be exposed via a
+    # Cloudflare tunnel). Opt in explicitly for local dev with FLASK_DEBUG=1.
+    debug = os.environ.get("FLASK_DEBUG", "0") == "1"
+    app.run(host=host, port=port, debug=debug)

@@ -180,13 +180,26 @@ def test_hybrid_mode_shape_delegates_to_hybrid_retriever(harness: Harness) -> No
     result = harness.service.retrieve("what applies to providers?", mode="hybrid", top_k=7, debug=True)
 
     _assert_result_shape(result, "hybrid", top_k=7)
-    # Graph rows kept first, then the (deduplicated) semantic rows appended.
+    # Rows are returned in weighted-hybrid-score order (rank_rows), matching the
+    # production ranking in rag_service.answer_question — NOT the raw graph-first /
+    # semantic-appended merge order. With graph scores 40/20 (normalised 1.0/0.5),
+    # semantic similarities 0.9/0.7, and default weights 0.4 semantic / 0.6 graph:
+    #   Provider Compliance = 0.6*1.0 = 0.60
+    #   Semantic Section 1  = 0.4*0.9 = 0.36
+    #   Deployer Duty       = 0.6*0.5 = 0.30
+    #   Semantic Section 2  = 0.4*0.7 = 0.28
     assert [row["statement_name"] for row in result.rows] == [
         "Provider Compliance",
-        "Deployer Duty",
         "Semantic Section 1",
+        "Deployer Duty",
         "Semantic Section 2",
     ]
+    # rank_rows attached the weighted score fields to every row.
+    assert [row["hybrid_score"] for row in result.rows] == [0.6, 0.36, 0.3, 0.28]
+    assert all(
+        {"semantic_score", "graph_relevance_score", "hybrid_score"} <= row.keys()
+        for row in result.rows
+    )
     # Hybrid used both subsystems.
     assert harness.graph.retrieve_calls == 1
     assert harness.semantic.retrieve_calls == 1

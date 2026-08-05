@@ -1,0 +1,857 @@
+{
+  "description": "H2 first-attempt schema-validation rate over a larger unannotated, stratified sample. Single attempt, no adaptive retry, no fallback model.",
+  "model": "qwen2.5:7b-instruct",
+  "timeout_seconds": 300,
+  "chunk_max_chars": 1800,
+  "sample_size": 100,
+  "stratification": {
+    "GDPR": 34,
+    "hipaa.pdf": 34,
+    "eu_ai_act.pdf": 32
+  },
+  "first_attempt_pass": {
+    "valid": 94,
+    "total": 100,
+    "fraction": 0.94
+  },
+  "validation_failures": {
+    "count": 0,
+    "fraction": 0.0,
+    "by_reason": {
+      "literal_enum_rejection": 0,
+      "evidence_span_order": 0,
+      "empty_required_field": 0,
+      "malformed_json": 0,
+      "other_validation_error": 0
+    }
+  },
+  "infrastructure_failures_not_validation": {
+    "count": 6,
+    "fraction": 0.06,
+    "by_reason": {
+      "timeout": 6,
+      "empty_content": 0,
+      "other_error": 0
+    },
+    "note": "Timeouts/empty content are infra outcomes under the production timeout, not schema-validation failures; reported separately."
+  },
+  "outcomes_raw": {
+    "timeout": 6,
+    "valid": 94
+  },
+  "statement_chunk_id_resolvability": {
+    "validated_statements": 440,
+    "approach_b_owning_chunk_primary": {
+      "resolvable": 440,
+      "fraction": 1.0,
+      "definition": "statement resolves to source via its owning chunk_id, which normalizer.py assigns deterministically at normalisation (ExtractedStatement.chunk_id is None by design at raw-extraction stage)."
+    },
+    "approach_a_strict_llm_emitted": {
+      "resolvable": 15,
+      "fraction": 0.03409090909090909,
+      "note": "Expected near-zero and BY DESIGN: the LLM is not asked to populate ExtractedStatement.chunk_id at this stage; not a traceability gap."
+    }
+  },
+  "per_chunk": [
+    {
+      "chunk_id": "gdpr:sec-0078:0:d46a526c26",
+      "regulation": "GDPR",
+      "char_len": 1628,
+      "outcome": "timeout",
+      "statements": 0,
+      "detail": "Ollama timed out after 300s for model qwen2.5:7b-instruct. Increase OLLAMA_TIMEOUT_SECONDS or reduce CHUNK_MAX_CHARS for local execution."
+    },
+    {
+      "chunk_id": "gdpr:sec-0016:0:11436987f5",
+      "regulation": "GDPR",
+      "char_len": 1759,
+      "outcome": "valid",
+      "statements": 4,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0019:3:77902c1dfc",
+      "regulation": "GDPR",
+      "char_len": 1800,
+      "outcome": "valid",
+      "statements": 3,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0093:0:7c5a90e033",
+      "regulation": "GDPR",
+      "char_len": 319,
+      "outcome": "valid",
+      "statements": 1,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0149:0:937dc2255a",
+      "regulation": "GDPR",
+      "char_len": 1130,
+      "outcome": "valid",
+      "statements": 2,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0353:0:75fd6cbb1d",
+      "regulation": "GDPR",
+      "char_len": 956,
+      "outcome": "valid",
+      "statements": 3,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0005:0:ae78aee481",
+      "regulation": "GDPR",
+      "char_len": 1786,
+      "outcome": "valid",
+      "statements": 3,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0006:4:f9126b4cd7",
+      "regulation": "GDPR",
+      "char_len": 1737,
+      "outcome": "valid",
+      "statements": 3,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0019:1:c1d55704e7",
+      "regulation": "GDPR",
+      "char_len": 1730,
+      "outcome": "valid",
+      "statements": 6,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0044:1:9c620e39dd",
+      "regulation": "GDPR",
+      "char_len": 570,
+      "outcome": "valid",
+      "statements": 2,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0121:0:8e585f3d7f",
+      "regulation": "GDPR",
+      "char_len": 890,
+      "outcome": "valid",
+      "statements": 3,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0135:0:3ddebcb94f",
+      "regulation": "GDPR",
+      "char_len": 467,
+      "outcome": "valid",
+      "statements": 5,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0289:0:4a2d96afd0",
+      "regulation": "GDPR",
+      "char_len": 993,
+      "outcome": "valid",
+      "statements": 3,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0372:0:f92559b925",
+      "regulation": "GDPR",
+      "char_len": 377,
+      "outcome": "valid",
+      "statements": 3,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0408:0:c9ff9ea62e",
+      "regulation": "GDPR",
+      "char_len": 735,
+      "outcome": "valid",
+      "statements": 2,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0002:3:07c0b57284",
+      "regulation": "GDPR",
+      "char_len": 1799,
+      "outcome": "valid",
+      "statements": 3,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0004:4:83f851f8be",
+      "regulation": "GDPR",
+      "char_len": 1763,
+      "outcome": "valid",
+      "statements": 4,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0006:3:f07803997a",
+      "regulation": "GDPR",
+      "char_len": 1799,
+      "outcome": "valid",
+      "statements": 2,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0007:0:9faf98ecb0",
+      "regulation": "GDPR",
+      "char_len": 1753,
+      "outcome": "valid",
+      "statements": 2,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0007:1:b7b0f42e2c",
+      "regulation": "GDPR",
+      "char_len": 1760,
+      "outcome": "valid",
+      "statements": 6,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0007:3:98cd97dfa3",
+      "regulation": "GDPR",
+      "char_len": 1800,
+      "outcome": "valid",
+      "statements": 4,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0007:4:026257c124",
+      "regulation": "GDPR",
+      "char_len": 1780,
+      "outcome": "valid",
+      "statements": 4,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0008:3:7ce4ce37ee",
+      "regulation": "GDPR",
+      "char_len": 1798,
+      "outcome": "valid",
+      "statements": 3,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0011:0:3d38e39ac9",
+      "regulation": "GDPR",
+      "char_len": 1764,
+      "outcome": "valid",
+      "statements": 1,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0013:3:5f2f916f2b",
+      "regulation": "GDPR",
+      "char_len": 1800,
+      "outcome": "valid",
+      "statements": 4,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0014:1:81126870ec",
+      "regulation": "GDPR",
+      "char_len": 1761,
+      "outcome": "valid",
+      "statements": 4,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0016:1:c931a7f1be",
+      "regulation": "GDPR",
+      "char_len": 1788,
+      "outcome": "valid",
+      "statements": 4,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0019:4:339bec66a9",
+      "regulation": "GDPR",
+      "char_len": 1778,
+      "outcome": "valid",
+      "statements": 5,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0020:0:72718bb666",
+      "regulation": "GDPR",
+      "char_len": 1762,
+      "outcome": "valid",
+      "statements": 3,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0020:3:34591adde5",
+      "regulation": "GDPR",
+      "char_len": 1800,
+      "outcome": "valid",
+      "statements": 3,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0073:0:3f39584e14",
+      "regulation": "GDPR",
+      "char_len": 1717,
+      "outcome": "valid",
+      "statements": 5,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0077:0:f38b8836ed",
+      "regulation": "GDPR",
+      "char_len": 1392,
+      "outcome": "valid",
+      "statements": 4,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0092:0:22a98bb141",
+      "regulation": "GDPR",
+      "char_len": 416,
+      "outcome": "valid",
+      "statements": 2,
+      "detail": null
+    },
+    {
+      "chunk_id": "gdpr:sec-0103:0:51a8c02213",
+      "regulation": "GDPR",
+      "char_len": 501,
+      "outcome": "valid",
+      "statements": 4,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0000:11:c233a60022",
+      "regulation": "hipaa.pdf",
+      "char_len": 1800,
+      "outcome": "valid",
+      "statements": 9,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0002:1:251ce7d190",
+      "regulation": "hipaa.pdf",
+      "char_len": 1800,
+      "outcome": "valid",
+      "statements": 5,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0001:13:70c6faadd6",
+      "regulation": "hipaa.pdf",
+      "char_len": 1800,
+      "outcome": "valid",
+      "statements": 5,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0000:24:26709b769f",
+      "regulation": "hipaa.pdf",
+      "char_len": 1800,
+      "outcome": "valid",
+      "statements": 8,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0001:0:22efbb6091",
+      "regulation": "hipaa.pdf",
+      "char_len": 1800,
+      "outcome": "valid",
+      "statements": 4,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0001:7:5127edcfe1",
+      "regulation": "hipaa.pdf",
+      "char_len": 1798,
+      "outcome": "valid",
+      "statements": 4,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0001:9:cb8bb4be3f",
+      "regulation": "hipaa.pdf",
+      "char_len": 1800,
+      "outcome": "valid",
+      "statements": 11,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0003:0:1fb6ccdd8d",
+      "regulation": "hipaa.pdf",
+      "char_len": 1546,
+      "outcome": "valid",
+      "statements": 3,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0003:3:98e9a4c252",
+      "regulation": "hipaa.pdf",
+      "char_len": 1800,
+      "outcome": "timeout",
+      "statements": 0,
+      "detail": "Ollama timed out after 300s for model qwen2.5:7b-instruct. Increase OLLAMA_TIMEOUT_SECONDS or reduce CHUNK_MAX_CHARS for local execution."
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0000:30:37bf526edb",
+      "regulation": "hipaa.pdf",
+      "char_len": 1800,
+      "outcome": "valid",
+      "statements": 6,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0000:36:c0060bc396",
+      "regulation": "hipaa.pdf",
+      "char_len": 1799,
+      "outcome": "valid",
+      "statements": 3,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0000:51:cf633ffcb4",
+      "regulation": "hipaa.pdf",
+      "char_len": 1799,
+      "outcome": "timeout",
+      "statements": 0,
+      "detail": "Ollama timed out after 300s for model qwen2.5:7b-instruct. Increase OLLAMA_TIMEOUT_SECONDS or reduce CHUNK_MAX_CHARS for local execution."
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0002:0:4956f5f042",
+      "regulation": "hipaa.pdf",
+      "char_len": 1738,
+      "outcome": "timeout",
+      "statements": 0,
+      "detail": "Ollama timed out after 300s for model qwen2.5:7b-instruct. Increase OLLAMA_TIMEOUT_SECONDS or reduce CHUNK_MAX_CHARS for local execution."
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0000:16:5ed339db6b",
+      "regulation": "hipaa.pdf",
+      "char_len": 1800,
+      "outcome": "timeout",
+      "statements": 0,
+      "detail": "Ollama timed out after 300s for model qwen2.5:7b-instruct. Increase OLLAMA_TIMEOUT_SECONDS or reduce CHUNK_MAX_CHARS for local execution."
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0000:22:a4448a5861",
+      "regulation": "hipaa.pdf",
+      "char_len": 1799,
+      "outcome": "valid",
+      "statements": 7,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0000:34:d2067e8a38",
+      "regulation": "hipaa.pdf",
+      "char_len": 1800,
+      "outcome": "valid",
+      "statements": 4,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0001:19:d2565cf4ed",
+      "regulation": "hipaa.pdf",
+      "char_len": 1800,
+      "outcome": "valid",
+      "statements": 8,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0001:6:6f1f2478a6",
+      "regulation": "hipaa.pdf",
+      "char_len": 943,
+      "outcome": "valid",
+      "statements": 6,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0003:1:815964fd12",
+      "regulation": "hipaa.pdf",
+      "char_len": 1800,
+      "outcome": "valid",
+      "statements": 5,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0003:5:3fbc0c5ca5",
+      "regulation": "hipaa.pdf",
+      "char_len": 1799,
+      "outcome": "valid",
+      "statements": 6,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0000:15:3a937bea3d",
+      "regulation": "hipaa.pdf",
+      "char_len": 1799,
+      "outcome": "valid",
+      "statements": 4,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0000:18:366071dc10",
+      "regulation": "hipaa.pdf",
+      "char_len": 1800,
+      "outcome": "timeout",
+      "statements": 0,
+      "detail": "Ollama timed out after 300s for model qwen2.5:7b-instruct. Increase OLLAMA_TIMEOUT_SECONDS or reduce CHUNK_MAX_CHARS for local execution."
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0000:52:58596f087d",
+      "regulation": "hipaa.pdf",
+      "char_len": 1799,
+      "outcome": "valid",
+      "statements": 5,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0000:53:7dac2abcc3",
+      "regulation": "hipaa.pdf",
+      "char_len": 1396,
+      "outcome": "valid",
+      "statements": 5,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0003:14:ab361271c3",
+      "regulation": "hipaa.pdf",
+      "char_len": 1285,
+      "outcome": "valid",
+      "statements": 4,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0000:23:0364fdeef0",
+      "regulation": "hipaa.pdf",
+      "char_len": 1422,
+      "outcome": "valid",
+      "statements": 3,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0000:32:1362306312",
+      "regulation": "hipaa.pdf",
+      "char_len": 1798,
+      "outcome": "valid",
+      "statements": 5,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0000:45:ed129b7aca",
+      "regulation": "hipaa.pdf",
+      "char_len": 1058,
+      "outcome": "valid",
+      "statements": 3,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0000:58:fa01936785",
+      "regulation": "hipaa.pdf",
+      "char_len": 1799,
+      "outcome": "valid",
+      "statements": 7,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0000:59:4736603c14",
+      "regulation": "hipaa.pdf",
+      "char_len": 1799,
+      "outcome": "valid",
+      "statements": 5,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0001:11:3878b70b60",
+      "regulation": "hipaa.pdf",
+      "char_len": 1800,
+      "outcome": "valid",
+      "statements": 8,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0001:12:c295203333",
+      "regulation": "hipaa.pdf",
+      "char_len": 1012,
+      "outcome": "valid",
+      "statements": 4,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0001:1:c0eacef6aa",
+      "regulation": "hipaa.pdf",
+      "char_len": 1800,
+      "outcome": "valid",
+      "statements": 7,
+      "detail": null
+    },
+    {
+      "chunk_id": "hipaa.pdf:sec-0001:20:db25ad071f",
+      "regulation": "hipaa.pdf",
+      "char_len": 994,
+      "outcome": "valid",
+      "statements": 7,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0106:0:89f985c79d",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1750,
+      "outcome": "valid",
+      "statements": 6,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0056:1:25a4ab2971",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1799,
+      "outcome": "valid",
+      "statements": 3,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0121:1:67f35b94a2",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1411,
+      "outcome": "valid",
+      "statements": 7,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0103:1:5091bbaa64",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1718,
+      "outcome": "valid",
+      "statements": 5,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0128:1:67c0c90c5c",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1800,
+      "outcome": "valid",
+      "statements": 6,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0134:0:971f7efd09",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1710,
+      "outcome": "valid",
+      "statements": 6,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0137:1:04684d7abb",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1706,
+      "outcome": "valid",
+      "statements": 6,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0209:0:090f84af1a",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1788,
+      "outcome": "valid",
+      "statements": 10,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0047:3:c4628b619f",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1799,
+      "outcome": "valid",
+      "statements": 4,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0089:1:308cec022c",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1721,
+      "outcome": "valid",
+      "statements": 4,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0089:2:bc1bef0b94",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1672,
+      "outcome": "valid",
+      "statements": 3,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0177:2:3656323610",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1547,
+      "outcome": "valid",
+      "statements": 7,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0016:2:da4467a2d4",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1799,
+      "outcome": "valid",
+      "statements": 4,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0019:1:90f67ccd0f",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1791,
+      "outcome": "valid",
+      "statements": 4,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0026:0:a5d7b9e8cd",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1765,
+      "outcome": "valid",
+      "statements": 8,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0030:0:ec83207faa",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1709,
+      "outcome": "valid",
+      "statements": 6,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0047:0:a0b3450b37",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1714,
+      "outcome": "valid",
+      "statements": 4,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0047:1:7f0c2a3052",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1694,
+      "outcome": "valid",
+      "statements": 6,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0061:0:5680414cb4",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1799,
+      "outcome": "valid",
+      "statements": 6,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0106:4:40603c245f",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1686,
+      "outcome": "valid",
+      "statements": 5,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0128:0:645abae2cd",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1622,
+      "outcome": "valid",
+      "statements": 7,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0137:0:0d486afb64",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1747,
+      "outcome": "valid",
+      "statements": 6,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0148:0:01650c4abd",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1727,
+      "outcome": "valid",
+      "statements": 4,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0149:1:be2a4900d3",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1395,
+      "outcome": "valid",
+      "statements": 4,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0175:0:db31e0bb20",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1798,
+      "outcome": "valid",
+      "statements": 4,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0210:0:926e0d9ed3",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1777,
+      "outcome": "valid",
+      "statements": 5,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0016:3:72e09be83e",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1732,
+      "outcome": "valid",
+      "statements": 6,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0082:0:59c5764493",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1737,
+      "outcome": "valid",
+      "statements": 5,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0082:1:50c159489b",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1706,
+      "outcome": "valid",
+      "statements": 5,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0086:0:71eeae07fe",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1440,
+      "outcome": "valid",
+      "statements": 5,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0089:0:a32fea1359",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1748,
+      "outcome": "valid",
+      "statements": 2,
+      "detail": null
+    },
+    {
+      "chunk_id": "eu_ai_act.pdf:sec-0094:1:6e043281cc",
+      "regulation": "eu_ai_act.pdf",
+      "char_len": 1799,
+      "outcome": "valid",
+      "statements": 6,
+      "detail": null
+    }
+  ]
+}

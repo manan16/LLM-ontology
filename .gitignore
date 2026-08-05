@@ -11,3 +11,8 @@ data/
 *.png
 *.csv
 Neo4j-*.txt
+.claude
+test-results/
+.ruff_cache/
+*.egg-info/
+.ipynb_checkpoints/

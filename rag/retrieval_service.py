@@ -169,10 +169,16 @@ class RetrievalService:
             settings=self.settings,
         )
         outcome = hybrid.retrieve(query, limit=top_k)
+        # Apply the weighted hybrid ranking (0.4 semantic / 0.6 graph, sourced from
+        # Settings) so hybrid mode matches the production ordering in
+        # rag_service.answer_question, instead of returning the raw graph-first /
+        # semantic-appended merge order. rank_rows() attaches semantic_score,
+        # graph_relevance_score and hybrid_score and sorts by hybrid_score.
+        ranked_rows = hybrid.rank_rows(outcome.rows)
         return RetrievalResult(
             mode="hybrid",
             query=query,
-            rows=outcome.rows,
+            rows=ranked_rows,
             top_k=top_k,
             graph_expansion=outcome.graph_expansion,
             timings_ms={

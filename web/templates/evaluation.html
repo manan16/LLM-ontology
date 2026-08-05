@@ -6,7 +6,7 @@
   <title>KEP · Evaluation Report</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;550;600;650;700&family=JetBrains+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;550;600;650;700&family=JetBrains+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Spectral:wght@400;500;600&display=swap" rel="stylesheet" />
   <!-- ../static/... resolves to /static/... when served by Flask and to web/static/... when opened directly -->
   <link rel="stylesheet" href="../static/css/kep.css" />
 </head>
@@ -47,7 +47,7 @@
       </div>
     {% else %}
       <div class="eval-wrap">
-        <div class="sec-head"><span class="eyebrow">Evaluation report</span><span class="ln"></span><span class="eyebrow">batch · generated {{ report.generated_at }}</span></div>
+        <div class="sec-head"><span class="eyebrow">Evaluation report</span><span class="ln"></span><span class="eyebrow">{{ report.summary.total }} golden questions · {{ report.mode }} retrieval · generated {{ report.generated_at }}</span></div>
 
         <!-- a. Summary -->
         <div class="mgrid eval-summary">
@@ -56,6 +56,83 @@
           <div class="mcell"><div class="mcell-v">{{ "%.1f"|format(report.summary.mean_latency) if report.summary.mean_latency is not none else "—" }}<span class="u">s</span></div><div class="mcell-k">mean latency</div></div>
           <div class="mcell"><div class="mcell-v" style="color:{{ 'var(--danger)' if report.summary.error_count else 'var(--good)' }}">{{ report.summary.error_count }}</div><div class="mcell-k">failed rows (status=error)</div></div>
         </div>
+
+        {# a2. Retrieval-mode comparison — omitted entirely when no ablation runs exist. #}
+        {% if ablation %}
+        <div class="sec-head"><span class="eyebrow">Retrieval mode comparison</span><span class="ln"></span><span class="eyebrow">semantic · graph · hybrid over the same golden set</span></div>
+
+        <div class="mgrid eval-summary abl-cards">
+          {% for m in ablation.modes %}
+          <div class="mcell{{ ' abl-prod' if m.production }}">
+            <div class="mcell-v {{ sclass(m.retrieval_recall) }}">{{ "%.3f"|format(m.retrieval_recall) if m.retrieval_recall is not none else "—" }}</div>
+            <div class="mcell-k">{{ m.label }} · mean recall{% if m.production %} · production{% endif %}</div>
+            <div class="abl-sub mono muted">
+              {{ m.count }} questions ·
+              {% if m.overall_score is not none %}overall {{ "%.3f"|format(m.overall_score) }}{% else %}retrieval-only{% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="abl-tabs" id="ablationTabs">
+          {% for mt in ablation.metrics %}
+          <button class="abl-tab{{ ' on' if loop.first }}" data-metric="{{ mt.key }}" title="{{ mt.key }}">{{ mt.label }}{% if mt.hybrid_only %} <span class="muted">·hybrid</span>{% endif %}</button>
+          {% endfor %}
+        </div>
+
+        {% for mt in ablation.metrics %}
+        <div class="abl-panel" data-metric-panel="{{ mt.key }}" {% if not loop.first %}hidden{% endif %}>
+          <div class="eval-table-wrap">
+            <table class="eval-table abl-table">
+              <thead>
+                <tr>
+                  <th data-type="text">Category</th>
+                  {% for m in ablation.modes %}
+                  <th class="num">{{ m.label }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for c in mt.categories %}
+                <tr>
+                  <td class="abl-cat">{{ c.label }} <span class="muted mono">· {{ c.counts.hybrid or c.counts.semantic or c.counts.graph }}</span></td>
+                  {% for cell in c.cells %}
+                  <td class="num {{ 'abl-na' if cell.not_applicable else sclass(cell.value) }}{{ ' abl-best' if cell.best }}">
+                    {% if cell.not_applicable %}n/a{% else %}{{ "%.3f"|format(cell.value) if cell.value is not none else "—" }}{% endif %}
+                  </td>
+                  {% endfor %}
+                </tr>
+                {% endfor %}
+                <tr class="abl-overall">
+                  <td class="abl-cat">Overall</td>
+                  {% for cell in mt.overall %}
+                  <td class="num {{ 'abl-na' if cell.not_applicable else sclass(cell.value) }}{{ ' abl-best' if cell.best }}">
+                    {% if cell.not_applicable %}n/a{% else %}{{ "%.3f"|format(cell.value) if cell.value is not none else "—" }}{% endif %}
+                  </td>
+                  {% endfor %}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          {% if mt.hybrid_only %}
+          <div class="abl-note muted mono">{{ mt.label }} needs answer generation — the retrieval-only semantic and graph modes report n/a rather than a 0 score.</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+
+        {% if ablation.has_abstention %}
+        <div class="sec-head"><span class="eyebrow">Abstention accuracy</span><span class="ln"></span><span class="eyebrow">questions annotated expects_abstention</span></div>
+        <div class="eval-cats">
+          {% for a in ablation.abstention %}
+          <div class="eval-cat">
+            <div class="eval-cat-label">{{ a.label }} <span class="muted mono">· {{ a.correct }}/{{ a.count }}</span></div>
+            <div class="eval-cat-bar"><span class="score-bar eval-bar"><span class="score-fill {{ sclass(a.accuracy) }}" style="width:{{ (a.accuracy * 100)|round(1) if a.accuracy is not none else 0 }}%"></span></span></div>
+            <div class="eval-cat-val mono {{ sclass(a.accuracy) }}">{{ "%.3f"|format(a.accuracy) if a.accuracy is not none else "—" }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% endif %}
 
         <!-- b. Category breakdown -->
         <div class="sec-head"><span class="eyebrow">Category breakdown</span><span class="ln"></span><span class="eyebrow">mean overall</span></div>
