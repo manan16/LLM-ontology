@@ -227,6 +227,14 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   transition: filter .15s;
 }
 .lp-new:hover { filter: brightness(1.08); }
+/* Reset session — clears history only; the demo questions in the composer stay. */
+.lp-reset {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--fg-2); padding: 3px 7px; border: 1px solid var(--line);
+  border-radius: var(--radius-sm); transition: color .12s, border-color .12s, background .12s;
+}
+.lp-reset:hover { color: var(--fg-0); border-color: var(--line-2); background: var(--bg-2); }
+.lp-reset.arm { color: var(--warn); border-color: var(--warn); }
 .session {
   width: 100%; text-align: left; padding: 11px 12px; margin-bottom: 7px;
   border: 1px solid transparent; border-radius: var(--radius-sm);
@@ -545,13 +553,20 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .answer-md p:last-child { margin-bottom: 0; }
 .answer-md strong { color: var(--fg-0); font-weight: 650; }
 .answer-md ul, .answer-md ol { margin: 0 0 13px; padding-left: 4px; list-style: none; display: flex; flex-direction: column; gap: 9px; }
-.answer-md li { display: grid; grid-template-columns: auto 1fr; gap: 11px; align-items: start; font-size: 13.5px; line-height: 1.55; }
-.answer-md li::before { content: "→"; color: var(--accent); font-family: var(--font-mono); font-size: 12px; padding-top: 1px; }
+/* Marker sits in the padding gutter, NOT in a grid column: a grid list item
+   would promote every inline child (<strong>, the [E#] chips) into its own grid
+   item and shatter the sentence across rows. */
+.answer-md li { position: relative; padding-left: 23px; font-size: 13.5px; line-height: 1.55; }
+.answer-md li::before {
+  content: "→"; position: absolute; left: 0; top: 0; width: 20px;
+  color: var(--accent); font-family: var(--font-mono); font-size: 12px; line-height: 1.75;
+}
 .answer-md ol { counter-reset: ans; }
-.answer-md ol li { counter-increment: ans; }
-.answer-md ol li::before { content: counter(ans, decimal-leading-zero); font-size: 11px; font-weight: 600; }
+.answer-md ol li { counter-increment: ans; padding-left: 28px; }
+.answer-md ol li::before { content: counter(ans, decimal-leading-zero); width: 24px; font-size: 11px; font-weight: 600; }
 .answer-md h4 { font-size: 13px; color: var(--fg-0); margin: 16px 0 8px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; }
 .answer-cite {
+  display: inline-block; vertical-align: baseline; margin-left: 2px; margin-right: 0;
   font-family: var(--font-mono); font-size: 10px; font-weight: 600; color: var(--accent);
   background: var(--accent-soft); padding: 1px 6px; border-radius: 4px; cursor: pointer; white-space: nowrap;
 }
@@ -616,6 +631,28 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 /* a. summary */
 .eval-summary { grid-template-columns: repeat(4, 1fr); margin-bottom: 6px; }
+
+/* a2. retrieval-mode comparison (semantic / graph / hybrid ablation) */
+.abl-cards { grid-template-columns: repeat(3, 1fr); }
+.abl-cards .abl-prod { border-color: var(--accent); }
+.abl-sub { font-size: 10px; margin-top: 5px; }
+.abl-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 10px; }
+.abl-tab {
+  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--fg-2); padding: 6px 10px; border: 1px solid var(--line); border-radius: var(--radius-sm);
+  transition: color .12s, border-color .12s, background .12s;
+}
+.abl-tab:hover { color: var(--fg-0); border-color: var(--line-2); }
+.abl-tab.on { color: var(--accent-on); background: var(--accent); border-color: var(--accent); }
+.abl-tab.on .muted { color: var(--accent-on); opacity: .7; }
+.abl-table { min-width: 520px; }
+.abl-table td.num { font-weight: 600; }
+.abl-cat { color: var(--fg-1); }
+.abl-na { color: var(--fg-2); font-style: italic; }
+.abl-best { position: relative; }
+.abl-best::after { content: " ▲"; font-size: 9px; color: var(--accent); vertical-align: middle; }
+.abl-overall td { border-top: 1px solid var(--line-2); background: var(--bg-2); font-weight: 700; }
+.abl-note { font-size: 10.5px; margin: 8px 2px 0; }
 
 /* b. category breakdown */
 .eval-cats { display: flex; flex-direction: column; gap: 2px; }
