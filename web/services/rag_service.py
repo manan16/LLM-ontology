@@ -109,7 +109,7 @@ def answer_question(
         }
 
     # --- Case 2: semantic-only -> answer WITHOUT a confident determination -----
-    # Graph expansion (Task 1) surfaced no confirmed entities/obligations, so we
+    # Graph expansion surfaced no confirmed entities/obligations, so we
     # must not stamp a verdict from vector-similarity chunks alone. We still keep
     # the semantic hits and present them as possibly-related context.
     if not graph_confirmed:

@@ -1,4 +1,4 @@
-"""Build the manually-annotated extraction evaluation sample (Task 1 / H1).
+"""Build the manually-annotated extraction evaluation sample (H1).
 
 This script is measurement-only. It does NOT modify the extraction pipeline.
 It reuses the exact production chunker (ingestion.chunking.build_chunks with the

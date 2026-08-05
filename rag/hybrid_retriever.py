@@ -38,11 +38,10 @@ class HybridRetrieval:
 class HybridRetriever:
     """Combines the symbolic GraphRetriever with dense semantic retrieval.
 
-    Responsibilities (all lifted verbatim from the previous inline logic in
-    ``rag_service.answer_question`` — behaviour is preserved, not reimplemented):
+    Responsibilities:
 
     * merge deduplicated semantic rows onto the graph rows,
-    * expand the semantic chunks into their graph neighbourhood (Task 1),
+    * expand the semantic chunks into their graph neighbourhood,
     * assign a weighted ``hybrid_score`` per row so the *confirmed* state can be
       ranked instead of merely concatenated.
 
@@ -94,7 +93,7 @@ class HybridRetriever:
 
         Graph rows keep their ranking priority; semantic rows are added afterwards
         and only when they contribute chunk text the graph retrieval did not
-        surface. (Was ``rag_service._augment_with_semantic``.)
+        surface.
         """
         semantic_retriever = self._semantic_provider()
         if semantic_retriever is None:
@@ -120,10 +119,10 @@ class HybridRetriever:
         return rows, added
 
     def _expand_semantic_chunks(self, rows: list[dict[str, Any]]) -> dict[str, Any]:
-        """Enrich semantic chunks with their graph neighbourhood (Task 1 expansion).
+        """Enrich semantic chunks with their graph neighbourhood.
 
         Never raises: on any failure it returns an empty dict and the caller
-        degrades gracefully. (Was ``rag_service._expand_semantic_chunks``.)
+        degrades gracefully.
         """
         chunk_ids = [
             _clean(row.get("chunk_id"))

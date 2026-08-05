@@ -65,7 +65,7 @@
     html.style.setProperty("--accent", accent);
     html.style.setProperty("--accent-on", ACCENT_ON[state.direction]);
     html.style.setProperty("--accent-soft", hexA(accent, 0.14));
-    // reflect in header switcher + settings
+    // reflect in the settings popover controls
     document.querySelectorAll("[data-dir]").forEach((b) => b.classList.toggle("on", b.getAttribute("data-dir") === state.direction));
     document.querySelectorAll("[data-dens]").forEach((b) => b.classList.toggle("on", b.getAttribute("data-dens") === state.density));
     renderSwatches();
@@ -572,7 +572,7 @@
   // load or after a reset) so a recording can open a complete result instantly
   // instead of waiting on a live query. Uses the bundled sample payloads, so the
   // item carries the same "sample data" badge as the offline fallback.
-  // Seed more of them by widening the slice below.
+  // Raise SEED_COUNT to preload more than one.
   const SEED_COUNT = 1;
   function seedDemoQueries() {
     if (state.history.length) return;

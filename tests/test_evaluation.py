@@ -197,30 +197,30 @@ def test_provenance_gated_metrics_full_audit(monkeypatch) -> None:
     monkeypatch.setattr("evaluation.run_evaluation.answer_question", fake_answer_question)
     row = evaluate_question(question)
 
-    # T2: provenance-gated regulation detection (HIPAA aliases inside GDPR text ignored).
+    # Provenance-gated regulation detection (HIPAA aliases inside GDPR text ignored).
     assert row["retrieved_regulations"] == ["GDPR", "EU AI Act"]
     assert "HIPAA" not in row["retrieved_regulations"]
 
-    # Retrieval coverages computed against evidence_text (T1).
+    # Retrieval coverages computed against evidence_text.
     assert row["regulation_coverage"] == 1.0
     assert row["concept_coverage"] == 0.5
     assert row["evidence_keyword_coverage"] == 0.5
     assert row["retrieval_recall"] == 0.667
 
-    # T1: answer relevance scored against the answer only.
+    # Answer relevance scored against the answer only.
     assert row["answer_relevance_score"] == 0.5
 
-    # T3: structural citation/grounding signals and their accurately-named aliases.
+    # Structural citation/grounding signals and their accurately-named aliases.
     assert row["citation_coverage"] == 1.0
     assert row["has_citations"] is True
     assert row["faithfulness_score"] == 1.0
     assert row["evidence_grounding"] == 1.0
 
-    # T4: single weighted average over orthogonal axes, each counted once.
+    # Single weighted average over orthogonal axes, each counted once.
     # 0.40*0.667 + 0.30*0.5 + 0.15*1.0 + 0.15*1.0 = 0.717
     assert row["overall_score"] == 0.717
 
-    # T5: matched vs missed audit trail.
+    # Matched vs missed audit trail.
     assert row["matched_regulations"] == ["GDPR", "EU AI Act"]
     assert row["missed_regulations"] == []
     assert row["matched_concepts"] == ["HumanOversightRequirement"]

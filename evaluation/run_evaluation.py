@@ -127,10 +127,10 @@ CITATION_PATTERNS = [
     r"\[[^\]]+\]",
 ]
 
-# T4: overall_score weights. Each axis is orthogonal and counted exactly once, so the
+# overall_score weights. Each axis is orthogonal and counted exactly once, so the
 # lexical-overlap coverages (already folded into retrieval_recall) are not re-added
-# separately as they were before. Weights sum to 1.0: retrieval recall carries the
-# most signal, answer relevance next, and the two structural axes least.
+# separately. Weights sum to 1.0: retrieval recall carries the most signal, answer
+# relevance next, and the two structural axes least.
 OVERALL_SCORE_WEIGHTS = {
     "retrieval_recall": 0.40,    # did retrieval surface expected regs/concepts/keywords
     "answer_relevance": 0.30,    # does the answer cover expected concepts/keywords
@@ -155,8 +155,8 @@ def main() -> None:
     summaries: dict[str, float | None] = {}
     for mode in modes:
         # For a single-mode run (including the default hybrid) results go straight
-        # into --output-dir, preserving today's behaviour. Only `--mode all` fans
-        # out into results/<mode>/ subdirectories.
+        # into --output-dir. Only `--mode all` fans out into results/<mode>/
+        # subdirectories.
         if args.mode == "all":
             print(f"\n=== Mode: {mode} ===")
             output_dir = args.output_dir / mode
@@ -358,10 +358,10 @@ def build_result_row(
     debug = result.get("debug") if isinstance(result.get("debug"), dict) else {}
     top_rows = debug.get("top_rows") if isinstance(debug.get("top_rows"), list) else []
 
-    # T1: score against clean, separated text fields instead of one combined blob.
+    # Score against clean, separated text fields rather than one combined blob.
     # answer_text  -> the model's answer only.
-    # evidence_text -> retrieved statement text only (no IDs, scores, field names,
-    #                  or json.dumps metadata that previously leaked into matches).
+    # evidence_text -> retrieved statement text only (no IDs, scores, field names
+    #                  or json.dumps metadata, which would pollute the matches).
     answer_text = answer
     evidence_text = joined_text(
         [
@@ -382,7 +382,7 @@ def build_result_row(
     matched_concepts = [concept for concept in expected_concepts if concept_matches(concept, evidence_text)]
     matched_keywords = [keyword for keyword in expected_keywords if keyword_matches(keyword, evidence_text)]
 
-    # T5: audit trail -- record which expected items were matched vs missed.
+    # Audit trail -- record which expected items were matched vs missed.
     missed_regulations = [reg for reg in expected_regulations if reg not in matched_regulations]
     missed_concepts = [concept for concept in expected_concepts if concept not in matched_concepts]
     missed_keywords = [keyword for keyword in expected_keywords if keyword not in matched_keywords]
@@ -403,15 +403,15 @@ def build_result_row(
     answer_relevance = score_answer_relevance(answer_text, answer_matched_keywords, expected_keywords, answer_matched_concepts, expected_concepts)
     citation_accuracy = score_citation_accuracy(citations, expected_citations)
     faithfulness = score_faithfulness(answer, citations, evidence, expected_citations)
-    # T3: accurately-named structural signals. citation_coverage and faithfulness_score
+    # Accurately-named structural signals. citation_coverage and faithfulness_score
     # are structural (presence checks), not semantic, so surface what they actually
     # measure under honest names. Values mirror the structural metrics above; no
     # semantic faithfulness is fabricated.
     has_citations = detect_has_citations(answer, citations)
     evidence_grounding = faithfulness
-    # T4: single weighted average over orthogonal axes, each counted once. Lexical
+    # Single weighted average over orthogonal axes, each counted once. Lexical
     # overlap (regulation/concept/keyword coverage) lives only inside retrieval_recall
-    # and is no longer re-added on its own.
+    # and is not re-added on its own.
     axis_values = {
         "retrieval_recall": retrieval_recall,
         "answer_relevance": answer_relevance,
@@ -488,7 +488,7 @@ def build_result_row(
         row["retrieved_context"] = result.get("context")
     row["retrieved_evidence"] = evidence
     row["retrieval_debug"] = debug
-    # T5: consolidated audit trail (JSON-only, like retrieved_evidence/retrieval_debug).
+    # Consolidated audit trail (JSON-only, like retrieved_evidence/retrieval_debug).
     row["match_audit"] = {
         "regulations": {"expected": expected_regulations, "matched": matched_regulations, "missed": missed_regulations},
         "concepts": {"expected": expected_concepts, "matched": matched_concepts, "missed": missed_concepts},
